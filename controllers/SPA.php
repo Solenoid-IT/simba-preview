@@ -23,7 +23,7 @@ class SPA extends Controller
 
 
         // (Printing the value)
-        echo $app->blade->build_html( '../../web/build/index.blade.php' );
+        echo $app->blade->build_html( '../web/build/index.blade.php' );
     }
 }
 

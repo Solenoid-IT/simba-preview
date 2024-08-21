@@ -11,6 +11,7 @@ use \App\Controllers\Test;
 use \App\Controllers\TestArgs;
 use \App\Controllers\Fallback;
 
+use \App\Controllers\RPC;
 use \App\Controllers\SPA;
 use \App\Controllers\Admin;
 use \App\Controllers\User;
@@ -23,6 +24,13 @@ use \App\Controllers\FormData;
 $router = new Router
 (
     [
+        '/rpc' =>
+        [
+            'RPC' => Target::link( RPC::class, 'rpc' )->set_middlewares(['RPC/Parser'])
+        ],
+
+
+
         '/test' =>
         [
             'GET' => Target::link( Test::class, 'get' )->set_tags( [ 'fw' ] )
@@ -167,7 +175,7 @@ $router = new Router
         [
             'GET' => Target::link( FormData::class, 'get' ),
             'RPC' => Target::link( FormData::class, 'rpc' )->set_middlewares(['RPC/Parser'])
-        ]
+        ],
     ],
 
     Target::link( Fallback::class, 'view' )

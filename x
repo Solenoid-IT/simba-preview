@@ -20,16 +20,16 @@ $helper =
 
     x init
 
-    x lib <id> create
+    x make:lib <id>
 
-    x store <id> create
-    x service <id> create
+    x make:store <id>
+    x make:service <id>
 
-    x middleware <id> create
+    x make:middleware <id>
 
-    x task <id> create
+    x make:task <id>
 
-    x controller <id> create
+    x make:controller <id>
 
     x mysql build <root-username>
     x mysql import-models
@@ -296,654 +296,636 @@ switch ( $argv[1] )
 
 
 
-    case 'lib':
+    case 'make:lib':
         // (Getting the value)
         $id = $argv[2];
 
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $folder_path = __DIR__ . "/lib/src/$id";
 
-                if ( is_dir( $folder_path ) )
-                {// (Directory found)
-                    // Printing the value
-                    echo "\n\nCannot create the library :: Library '$id' already exists !\n\n\n";
+
+        // (Getting the value)
+        $folder_path = __DIR__ . "/lib/src/$id";
+
+        if ( is_dir( $folder_path ) )
+        {// (Directory found)
+            // Printing the value
+            echo "\n\nCannot create the library :: Library '$id' already exists !\n\n\n";
+        }
+        else
+        {// (Directory not found)
+            // (Making the directories)
+            mkdir( $folder_path, 0777, true );
+            mkdir( "$folder_path/src" );
+
+
+
+            // (Getting the values)
+            $sample_file_path = "$folder_path/src/Sample.php";
+            $sample_ns        = str_replace( '/', '\\', $id );
+            $sample_content   =
+                <<<EOD
+                <?php
+
+
+
+                namespace App\Libraries\\$sample_ns;
+                
+                
+                
+                class Sample
+                {
+                    # Returns [string]
+                    public static function build (string \$key, array \$value = [])
+                    {
+                        // Returning the value
+                        return \$key . ' -> ' . json_encode( \$value );
+                    }
                 }
-                else
-                {// (Directory not found)
-                    // (Making the directories)
-                    mkdir( $folder_path, 0777, true );
-                    mkdir( "$folder_path/src" );
+                
+                
+                
+                ?>
+                EOD
+            ;
 
 
 
-                    // (Getting the values)
-                    $sample_file_path = "$folder_path/src/Sample.php";
-                    $sample_ns        = str_replace( '/', '\\', $id );
-                    $sample_content   =
-                        <<<EOD
-                        <?php
+            if ( file_put_contents( $sample_file_path, $sample_content ) === false )
+            {// (Unable to write to the file)
+                // (Setting the value)
+                $message = "Unable to write to the file '$sample_file_path'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
 
 
 
-                        namespace App\Libraries\\$sample_ns;
-                        
-                        
-                        
-                        class Sample
-                        {
-                            # Returns [string]
-                            public static function build (string \$key, array \$value = [])
+            // Printing the value
+            echo "\n\nFile `$sample_file_path` has been created !\n\n\n";
+        }
+    break;
+
+    case 'make:store':
+        // (Getting the value)
+        $id = $argv[2];
+
+
+
+        // (Getting the value)
+        $file_path = __DIR__ . "/stores/$id.php";
+
+        if ( file_exists( $file_path ) )
+        {// (File found)
+            // Printing the value
+            echo "\n\nCannot create the store :: File '$file_path' already exists !\n\n\n";
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // (Getting the values)
+        $parts        = explode( '/', $id );
+        $class_name   = $parts[ count( $parts ) - 1 ];
+        $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
+        $file_content =
+            <<<EOD
+            <?php
+
+
+
+            namespace App\Stores$class_path;
+
+
+
+            use \Solenoid\Core\Store;
+
+
+
+            class $class_name extends Store
+            {
+                private static self \$instance;
+
+
+
+                # Returns [self]
+                private function __construct ()
+                {
+                    
+                }
+
+
+
+                # Returns [self]
+                public static function fetch ()
+                {
+                    if ( !isset( self::\$instance ) )
+                    {// Value not found
+                        // (Getting the value)
+                        self::\$instance = new self();
+                    }
+
+
+
+                    // Returning the value
+                    return self::\$instance;
+                }
+
+
+
+                # Returns [int]
+                public function fetch_time ()
+                {
+                    // Returning the value
+                    return time();
+                }
+            }
+
+
+
+            ?>
+            EOD
+        ;
+
+
+
+        // (Getting the value)
+        $dir = dirname( $file_path );
+
+        if ( !is_dir( $dir ) )
+        {// (Directory not found)
+            if ( !mkdir( $dir, 0777, true ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$dir'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+        }
+
+
+
+        if ( file_put_contents( $file_path, $file_content ) === false )
+        {// (Unable to write to the file)
+            // (Setting the value)
+            $message = "Unable to write to the file '$file_path'";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // Printing the value
+        echo "\n\nFile `$file_path` has been created !\n\n\n";
+    break;
+
+    case 'make:service':
+        // (Getting the value)
+        $id = $argv[2];
+
+
+
+        // (Getting the value)
+        $file_path = __DIR__ . "/services/$id.php";
+
+        if ( file_exists( $file_path ) )
+        {// (File found)
+            // Printing the value
+            echo "\n\nCannot create the service :: File '$file_path' already exists !\n\n\n";
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // (Getting the values)
+        $parts        = explode( '/', $id );
+        $class_name   = $parts[ count( $parts ) - 1 ];
+        $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
+        $file_content =
+            <<<EOD
+            <?php
+
+
+
+            namespace App\Services$class_path;
+
+
+
+            use \Solenoid\Core\Service;
+
+            use \Solenoid\Core\App\WebApp;
+
+
+
+            class $class_name extends Service
+            {
+                # Returns [assoc] | Throws [Exception]
+                public static function fetch_url ()
+                {
+                    // (Getting the value)
+                    \$app = WebApp::fetch();
+
+
+
+                    // Returning the value
+                    return \$app->request->url;
+                }
+            }
+
+
+
+            ?>
+            EOD
+        ;
+
+
+
+        // (Getting the value)
+        $dir = dirname( $file_path );
+
+        if ( !is_dir( $dir ) )
+        {// (Directory not found)
+            if ( !mkdir( $dir, 0777, true ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$dir'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+        }
+
+
+
+        if ( file_put_contents( $file_path, $file_content ) === false )
+        {// (Unable to write to the file)
+            // (Setting the value)
+            $message = "Unable to write to the file '$file_path'";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // Printing the value
+        echo "\n\nFile `$file_path` has been created !\n\n\n";
+    break;
+
+    case 'make:middleware':
+        // (Getting the value)
+        $id = $argv[2];
+
+
+
+        // (Getting the value)
+        $file_path = __DIR__ . "/middlewares/src/$id.php";
+
+        if ( file_exists( $file_path ) )
+        {// (File found)
+            // Printing the value
+            echo "\n\nCannot create the middleware :: File '$file_path' already exists !\n\n\n";
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // (Getting the values)
+        $parts        = explode( '/', $id );
+        $class_name   = $parts[ count( $parts ) - 1 ];
+        $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
+        $file_content =
+            <<<EOD
+            <?php
+
+
+
+            namespace App\Middlewares$class_path;
+
+
+
+            use \Solenoid\Core\Middleware;
+
+            use \Solenoid\Core\App\WebApp;
+
+
+
+            class $class_name extends Middleware
+            {
+                
+                # Returns [bool] | Throws [Exception]
+                public static function run ()
+                {
+                    // (Getting the value)
+                    \$app = WebApp::fetch();
+
+
+
+                    // Returning the value
+                    return \$app->request->headers['Auth-Token'] === 'test';
+                }
+            }
+
+
+
+            ?>
+            EOD
+        ;
+
+
+
+        // (Getting the value)
+        $dir = dirname( $file_path );
+
+        if ( !is_dir( $dir ) )
+        {// (Directory not found)
+            if ( !mkdir( $dir, 0777, true ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$dir'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+        }
+
+
+
+        if ( file_put_contents( $file_path, $file_content ) === false )
+        {// (Unable to write to the file)
+            // (Setting the value)
+            $message = "Unable to write to the file '$file_path'";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // Printing the value
+        echo "\n\nFile `$file_path` has been created !\n\n\n";
+    break;
+
+    case 'make:task':
+        // (Getting the value)
+        $id = $argv[2];
+
+
+
+        // (Getting the value)
+        $file_path = __DIR__ . "/tasks/src/$id.php";
+
+        if ( file_exists( $file_path ) )
+        {// (File found)
+            // Printing the value
+            echo "\n\nCannot create the task :: File '$file_path' already exists !\n\n\n";
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // (Getting the values)
+        $parts        = explode( '/', $id );
+        $class_name   = $parts[ count( $parts ) - 1 ];
+        $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
+        $file_content =
+            <<<EOD
+            <?php
+
+
+
+            namespace App\Tasks$class_path;
+
+
+
+            use \Solenoid\Core\Task\Task;
+
+            use \Solenoid\Core\App\App;
+
+
+
+            class $class_name extends Task
+            {
+                public static array \$tags = [ 'test' ];
+
+
+
+                # Returns [void]
+                public function run ()
+                {
+                    // (Getting the value)
+                    \$app = App::get();
+
+
+
+                    // (Writing to the storage)
+                    \$app->storage->write( '/a/b/c/d/e/file.txt', date('c') );
+
+                    // (Writing to the storage)
+                    \$app->storage->write( '/../a/b/c/d/e/file-ext.txt', 'Hello World !!!' );
+                }
+            }
+
+
+
+            ?>
+            EOD
+        ;
+
+
+
+        // (Getting the value)
+        $dir = dirname( $file_path );
+
+        if ( !is_dir( $dir ) )
+        {// (Directory not found)
+            if ( !mkdir( $dir, 0777, true ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$dir'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+        }
+
+
+
+        if ( file_put_contents( $file_path, $file_content ) === false )
+        {// (Unable to write to the file)
+            // (Setting the value)
+            $message = "Unable to write to the file '$file_path'";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // Printing the value
+        echo "\n\nFile `$file_path` has been created !\n\n\n";
+    break;
+
+    case 'make:controller':
+        // (Getting the value)
+        $id = $argv[2];
+
+
+
+        // (Getting the value)
+        $file_path = __DIR__ . "/controllers/$id.php";
+
+        if ( file_exists( $file_path ) )
+        {// (File found)
+            // Printing the value
+            echo "\n\nCannot create the controller :: File '$file_path' already exists !\n\n\n";
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // (Getting the values)
+        $parts        = explode( '/', $id );
+        $class_name   = $parts[ count( $parts ) - 1 ];
+        $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
+        $file_content =
+            <<<EOD
+            <?php
+
+
+
+            namespace App\Controllers$class_path;
+
+
+
+            use \Solenoid\Core\MVC\Controller;
+
+            use \Solenoid\Core\App\WebApp;
+
+            use \Solenoid\HTTP\Server;
+            use \Solenoid\HTTP\Status;
+            use \Solenoid\HTTP\Response;
+
+            use \App\Middlewares\RPC\Parser as RPC;
+
+
+
+            class $class_name extends Controller
+            {
+                # Returns [void]
+                public function get ()
+                {
+                    // Returning the value
+                    return 'test';
+                }
+
+                # Returns [void]
+                public function rpc ()
+                {
+                    // (Getting the value)
+                    \$app = WebApp::fetch();
+
+
+
+                    switch ( RPC::\$subject )
+                    {
+                        case 'user':
+                            switch ( RPC::\$verb )
                             {
-                                // Returning the value
-                                return \$key . ' -> ' . json_encode( \$value );
-                            }
-                        }
-                        
-                        
-                        
-                        ?>
-                        EOD
-                    ;
-
-
-
-                    if ( file_put_contents( $sample_file_path, $sample_content ) === false )
-                    {// (Unable to write to the file)
-                        // (Setting the value)
-                        $message = "Unable to write to the file '$sample_file_path'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
-                    }
-
-
-
-                    // Printing the value
-                    echo "\n\nFile `$sample_file_path` has been created !\n\n\n";
-                }
-            break;
-        }
-    break;
-
-    case 'store':
-        // (Getting the value)
-        $id = $argv[2];
-
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $file_path = __DIR__ . "/stores/$id.php";
-
-                if ( file_exists( $file_path ) )
-                {// (File found)
-                    // Printing the value
-                    echo "\n\nCannot create the store :: File '$file_path' already exists !\n\n\n";
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // (Getting the values)
-                $parts        = explode( '/', $id );
-                $class_name   = $parts[ count( $parts ) - 1 ];
-                $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
-                $file_content =
-                    <<<EOD
-                    <?php
-
-
-
-                    namespace App\Stores$class_path;
-
-
-
-                    use \Solenoid\Core\Store;
-
-
-
-                    class $class_name extends Store
-                    {
-                        private static self \$instance;
-
-
-
-                        # Returns [self]
-                        private function __construct ()
-                        {
-                            
-                        }
-
-
-
-                        # Returns [self]
-                        public static function fetch ()
-                        {
-                            if ( !isset( self::\$instance ) )
-                            {// Value not found
-                                // (Getting the value)
-                                self::\$instance = new self();
-                            }
-
-
-
-                            // Returning the value
-                            return self::\$instance;
-                        }
-
-
-
-                        # Returns [int]
-                        public function fetch_time ()
-                        {
-                            // Returning the value
-                            return time();
-                        }
-                    }
-
-
-
-                    ?>
-                    EOD
-                ;
-
-
-
-                // (Getting the value)
-                $dir = dirname( $file_path );
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    if ( !mkdir( $dir, 0777, true ) )
-                    {// (Unable to make the directory)
-                        // (Setting the value)
-                        $message = "Unable to make the directory '$dir'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
-                    }
-                }
-
-
-
-                if ( file_put_contents( $file_path, $file_content ) === false )
-                {// (Unable to write to the file)
-                    // (Setting the value)
-                    $message = "Unable to write to the file '$file_path'";
-
-                    // Throwing an exception
-                    throw new \Exception($message);
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // Printing the value
-                echo "\n\nFile `$file_path` has been created !\n\n\n";
-            break;
-        }
-    break;
-
-    case 'service':
-        // (Getting the value)
-        $id = $argv[2];
-
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $file_path = __DIR__ . "/services/$id.php";
-
-                if ( file_exists( $file_path ) )
-                {// (File found)
-                    // Printing the value
-                    echo "\n\nCannot create the service :: File '$file_path' already exists !\n\n\n";
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // (Getting the values)
-                $parts        = explode( '/', $id );
-                $class_name   = $parts[ count( $parts ) - 1 ];
-                $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
-                $file_content =
-                    <<<EOD
-                    <?php
-
-
-
-                    namespace App\Services$class_path;
-
-
-
-                    use \Solenoid\Core\Service;
-
-                    use \Solenoid\Core\App\WebApp;
-
-
-
-                    class $class_name extends Service
-                    {
-                        # Returns [assoc] | Throws [Exception]
-                        public static function fetch_url ()
-                        {
-                            // (Getting the value)
-                            \$app = WebApp::fetch();
-
-
-
-                            // Returning the value
-                            return \$app->request->url;
-                        }
-                    }
-
-
-
-                    ?>
-                    EOD
-                ;
-
-
-
-                // (Getting the value)
-                $dir = dirname( $file_path );
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    if ( !mkdir( $dir, 0777, true ) )
-                    {// (Unable to make the directory)
-                        // (Setting the value)
-                        $message = "Unable to make the directory '$dir'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
-                    }
-                }
-
-
-
-                if ( file_put_contents( $file_path, $file_content ) === false )
-                {// (Unable to write to the file)
-                    // (Setting the value)
-                    $message = "Unable to write to the file '$file_path'";
-
-                    // Throwing an exception
-                    throw new \Exception($message);
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // Printing the value
-                echo "\n\nFile `$file_path` has been created !\n\n\n";
-            break;
-        }
-    break;
-
-    case 'middleware':
-        // (Getting the value)
-        $id = $argv[2];
-
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $file_path = __DIR__ . "/middlewares/src/$id.php";
-
-                if ( file_exists( $file_path ) )
-                {// (File found)
-                    // Printing the value
-                    echo "\n\nCannot create the middleware :: File '$file_path' already exists !\n\n\n";
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // (Getting the values)
-                $parts        = explode( '/', $id );
-                $class_name   = $parts[ count( $parts ) - 1 ];
-                $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
-                $file_content =
-                    <<<EOD
-                    <?php
-
-
-
-                    namespace App\Middlewares$class_path;
-
-
-
-                    use \Solenoid\Core\Middleware;
-
-                    use \Solenoid\Core\App\WebApp;
-
-
-
-                    class $class_name extends Middleware
-                    {
-                        
-                        # Returns [bool] | Throws [Exception]
-                        public static function run ()
-                        {
-                            // (Getting the value)
-                            \$app = WebApp::fetch();
-
-
-
-                            // Returning the value
-                            return \$app->request->headers['Auth-Token'] === 'test';
-                        }
-                    }
-
-
-
-                    ?>
-                    EOD
-                ;
-
-
-
-                // (Getting the value)
-                $dir = dirname( $file_path );
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    if ( !mkdir( $dir, 0777, true ) )
-                    {// (Unable to make the directory)
-                        // (Setting the value)
-                        $message = "Unable to make the directory '$dir'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
-                    }
-                }
-
-
-
-                if ( file_put_contents( $file_path, $file_content ) === false )
-                {// (Unable to write to the file)
-                    // (Setting the value)
-                    $message = "Unable to write to the file '$file_path'";
-
-                    // Throwing an exception
-                    throw new \Exception($message);
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // Printing the value
-                echo "\n\nFile `$file_path` has been created !\n\n\n";
-            break;
-        }
-    break;
-
-    case 'task':
-        // (Getting the value)
-        $id = $argv[2];
-
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $file_path = __DIR__ . "/tasks/src/$id.php";
-
-                if ( file_exists( $file_path ) )
-                {// (File found)
-                    // Printing the value
-                    echo "\n\nCannot create the task :: File '$file_path' already exists !\n\n\n";
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // (Getting the values)
-                $parts        = explode( '/', $id );
-                $class_name   = $parts[ count( $parts ) - 1 ];
-                $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
-                $file_content =
-                    <<<EOD
-                    <?php
-
-
-
-                    namespace App\Tasks$class_path;
-
-
-
-                    use \Solenoid\Core\Task\Task;
-
-                    use \Solenoid\Core\App\App;
-
-
-
-                    class $class_name extends Task
-                    {
-                        public static array \$tags = [ 'test' ];
-
-
-
-                        # Returns [void]
-                        public function run ()
-                        {
-                            // (Getting the value)
-                            \$app = App::get();
-
-
-
-                            // (Writing to the storage)
-                            \$app->storage->write( '/a/b/c/d/e/file.txt', date('c') );
-
-                            // (Writing to the storage)
-                            \$app->storage->write( '/../a/b/c/d/e/file-ext.txt', 'Hello World !!!' );
-                        }
-                    }
-
-
-
-                    ?>
-                    EOD
-                ;
-
-
-
-                // (Getting the value)
-                $dir = dirname( $file_path );
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    if ( !mkdir( $dir, 0777, true ) )
-                    {// (Unable to make the directory)
-                        // (Setting the value)
-                        $message = "Unable to make the directory '$dir'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
-                    }
-                }
-
-
-
-                if ( file_put_contents( $file_path, $file_content ) === false )
-                {// (Unable to write to the file)
-                    // (Setting the value)
-                    $message = "Unable to write to the file '$file_path'";
-
-                    // Throwing an exception
-                    throw new \Exception($message);
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // Printing the value
-                echo "\n\nFile `$file_path` has been created !\n\n\n";
-            break;
-        }
-    break;
-
-    case 'controller':
-        // (Getting the value)
-        $id = $argv[2];
-
-        switch ( $argv[3] )
-        {
-            case 'create':
-                // (Getting the value)
-                $file_path = __DIR__ . "/controllers/$id.php";
-
-                if ( file_exists( $file_path ) )
-                {// (File found)
-                    // Printing the value
-                    echo "\n\nCannot create the controller :: File '$file_path' already exists !\n\n\n";
-
-                    // Closing the process
-                    exit;
-                }
-
-
-
-                // (Getting the values)
-                $parts        = explode( '/', $id );
-                $class_name   = $parts[ count( $parts ) - 1 ];
-                $class_path   = count( $parts ) === 1 ? '' : '\\' . implode( '\\', array_slice( $parts, 0, count( $parts ) - 1 ) );
-                $file_content =
-                    <<<EOD
-                    <?php
-
-
-
-                    namespace App\Controllers$class_path;
-
-
-
-                    use \Solenoid\Core\MVC\Controller;
-
-                    use \Solenoid\Core\App\WebApp;
-
-                    use \Solenoid\HTTP\Server;
-                    use \Solenoid\HTTP\Status;
-                    use \Solenoid\HTTP\Response;
-
-                    use \App\Middlewares\RPC\Parser as RPC;
-
-
-
-                    class $class_name extends Controller
-                    {
-                        # Returns [void]
-                        public function get ()
-                        {
-                            // Returning the value
-                            return 'test';
-                        }
-
-                        # Returns [void]
-                        public function rpc ()
-                        {
-                            // (Getting the value)
-                            \$app = WebApp::fetch();
-
-
-
-                            switch ( RPC::\$subject )
-                            {
-                                case 'user':
-                                    switch ( RPC::\$verb )
-                                    {
-                                        case 'change':
-                                            // Returning the value
-                                            return
-                                                Server::send( new Response( new Status(200), [], \$app->request->url ) )
-                                            ;
-                                        break;
-                                    }
+                                case 'change':
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(200), [], \$app->request->url ) )
+                                    ;
                                 break;
                             }
-                        }
-                    }
-
-
-
-                    ?>
-                    EOD
-                ;
-
-
-
-                // (Getting the value)
-                $dir = dirname( $file_path );
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    if ( !mkdir( $dir, 0777, true ) )
-                    {// (Unable to make the directory)
-                        // (Setting the value)
-                        $message = "Unable to make the directory '$dir'";
-
-                        // Throwing an exception
-                        throw new \Exception($message);
-
-                        // Closing the process
-                        exit;
+                        break;
                     }
                 }
+            }
 
 
 
-                if ( file_put_contents( $file_path, $file_content ) === false )
-                {// (Unable to write to the file)
-                    // (Setting the value)
-                    $message = "Unable to write to the file '$file_path'";
-
-                    // Throwing an exception
-                    throw new \Exception($message);
-
-                    // Closing the process
-                    exit;
-                }
+            ?>
+            EOD
+        ;
 
 
 
-                // Printing the value
-                echo "\n\nFile `$file_path` has been created !\n\n\n";
-            break;
+        // (Getting the value)
+        $dir = dirname( $file_path );
+
+        if ( !is_dir( $dir ) )
+        {// (Directory not found)
+            if ( !mkdir( $dir, 0777, true ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$dir'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
         }
+
+
+
+        if ( file_put_contents( $file_path, $file_content ) === false )
+        {// (Unable to write to the file)
+            // (Setting the value)
+            $message = "Unable to write to the file '$file_path'";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Closing the process
+            exit;
+        }
+
+
+
+        // Printing the value
+        echo "\n\nFile `$file_path` has been created !\n\n\n";
     break;
 
 
@@ -1286,7 +1268,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/daemon.php start');
+                system('php ./system/daemon.php start');
             break;
 
             case 'stop':
@@ -1296,7 +1278,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/daemon.php stop');
+                system('php ./system/daemon.php stop');
             break;
 
             case 'restart':
@@ -1306,7 +1288,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/daemon.php restart');
+                system('php ./system/daemon.php restart');
             break;
 
 
@@ -1350,7 +1332,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/scheduler.php start');
+                system('php ./system/scheduler.php start');
             break;
 
             case 'stop':
@@ -1360,7 +1342,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/scheduler.php stop');
+                system('php ./system/scheduler.php stop');
             break;
 
             case 'restart':
@@ -1370,7 +1352,7 @@ switch ( $argv[1] )
 
 
                 // (Executing the cmd)
-                system('php private/system/scheduler.php restart');
+                system('php ./system/scheduler.php restart');
             break;
 
 

@@ -14,9 +14,9 @@ use \Solenoid\RPC\Request;
 
 class Parser extends Middleware
 {
-    public static string     $subject;
-    public static string     $verb;
-    public static ?\stdClass $input;
+    public static string $subject;
+    public static string $verb;
+    public static ?array $input;
 
 
 

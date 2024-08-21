@@ -3,7 +3,7 @@
 
 
 // (Getting the value)
-$root = realpath( __DIR__ . '/..' );
+$root = __DIR__;
 
 
 

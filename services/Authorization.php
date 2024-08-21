@@ -98,7 +98,7 @@ class Authorization extends Service
         {// (Unable to insert the record)
             // Returning the value
             return
-                new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to register the authorization' ] ] )
+                new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to insert the record (authorization)' ] ] )
             ;
         }
 
@@ -110,20 +110,20 @@ class Authorization extends Service
             $connection = SMTPConnectionStore::fetch()->connections['service'];
 
             // (Creating a Mail)
-            $mail = Mail::create
+            $mail = new Mail
             (
-                MailBox::create( $app->fetch_credentials()['smtp']['profiles']['service']['username'], $app->name ),
+                new MailBox( $app->fetch_credentials()['smtp']['profiles']['service']['username'], $app->name ),
 
                 [
-                    MailBox::create( $receiver )
+                    new MailBox( $receiver )
                 ],
 
                 [],
                 [],
                 [],
 
-                $app->name . ' - authorization required',
-                MailBody::create
+                $app->name . ' - Authorization Required',
+                new MailBody
                 (
                     '',
 
@@ -142,7 +142,7 @@ class Authorization extends Service
             )
             ;
 
-            if ( !$connection->send( $mail, Retry::create() ) )
+            if ( !$connection->send( $mail, new Retry() ) )
             {// (Unable to send the mail)
                 // Returning the value
                 return
@@ -177,7 +177,7 @@ class Authorization extends Service
         {// (Authorization is expired)
             // Returning the value
             return
-                new Response( new Status(403), [], [ 'error' => [ 'message' => 'Authorization is not valid' ] ] )
+                new Response( new Status(403), [], [ 'error' => [ 'message' => 'Authorization is expired' ] ] )
             ;
         }
 
