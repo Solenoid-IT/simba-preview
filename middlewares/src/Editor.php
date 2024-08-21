@@ -1,0 +1,68 @@
+<?php
+
+
+
+namespace App\Middlewares;
+
+
+
+use \Solenoid\Core\Middleware;
+
+use \Solenoid\HTTP\Server;
+use \Solenoid\HTTP\Response;
+use \Solenoid\HTTP\Status;
+
+use \Solenoid\MySQL\Condition;
+
+use \App\Stores\Session\User as UserSessionStore;
+use \App\Models\DB\local\simba_db\User as UserDBModel;
+
+
+
+class Editor extends Middleware
+{
+    # Returns [bool] | Throws [Exception]
+    public static function run ()
+    {
+        // (Getting the value)
+        $user_id = UserSessionStore::fetch()->session->data['user'];
+
+
+
+        // (Getting the value)
+        $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
+
+        if ( $user === false )
+        {// (User not found)
+            // (Sending the response)
+            Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'User not found' ] ] ) );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        if ( !in_array( $user->hierarchy, [ 1, 2 ] ) )
+        {// (Match failed)
+            // (Sending the response)
+            Server::send( new Response( new Status(403), [], [ 'error' => [ 'message' => 'Operation not permitted' ] ] ) );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return true;
+    }
+}
+
+
+
+?>

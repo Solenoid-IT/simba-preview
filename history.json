@@ -1,0 +1,24 @@
+{
+    "1.0.0":
+    {
+        "buildTime": 1714520844,
+
+        "bugfixes":
+        [
+            "CORS problems"
+        ],
+
+        "features":
+        {
+            "improved":
+            [
+                "Responsive layout for mobile usage"
+            ],
+
+            "added":
+            [
+                "App-Info module"
+            ]
+        }
+    }
+}

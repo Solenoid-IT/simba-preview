@@ -1,0 +1,36 @@
+{
+    "id":              "dev.simba.solenoid.it",
+    "name":            "Simba",
+
+    "history":         "./history.json",
+    "credentials":     "./credentials.json",
+
+    "logs":
+    {
+        "cli":
+        {
+            "error":    "./logs/cli/error.log",
+            "activity": "./logs/cli/activity.log"
+        },
+
+        "http":
+        {
+            "error":    "./logs/http/error.log",
+            "activity": "./logs/http/activity.log"
+        }
+    },
+
+    "storage":
+    {
+        "folder_path": "./storage",
+        "chroot":      true
+    },
+
+    "blade":
+    {
+        "views":       "./views",
+        "cache":       "./views/_cache"
+    },
+
+    "timezone":        "UTC"
+}
