@@ -8,10 +8,9 @@ namespace App\Models\DB\local\simba_db;
 
 use \Solenoid\MySQL\Model;
 
-use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Query;
 
-use \App\Stores\Connection\MySQL as MySQLConnectionStore;
+use \App\Stores\Connections\MySQL as MySQLConnectionsStore;
 
 
 
@@ -25,7 +24,7 @@ class Authorization extends Model
     private function __construct ()
     {
         // (Calling the function)
-        parent::__construct( MySQLConnectionStore::fetch()->connections['local/simba_db'], 'simba_db', 'authorization' );
+        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'authorization' );
     }
 
 
@@ -60,7 +59,7 @@ class Authorization extends Model
     public function get ()
     {
         // (Getting the value)
-        $record = self::fetch()->find();
+        $record = self::fetch()->filter()->find();
 
         if ( $record === false )
         {// (Record not found)
@@ -71,7 +70,7 @@ class Authorization extends Model
 
 
         // (Getting the value)
-        $record->data = json_decode( $record->data );
+        $record->data = json_decode( $record->data, true );
 
 
 

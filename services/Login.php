@@ -12,7 +12,7 @@ use \Solenoid\Core\App\WebApp;
 
 use \Solenoid\HTTP\Cookie;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 
 
 
@@ -48,7 +48,7 @@ class Login extends Service
 
 
         // (Deleting the cookie)
-        Cookie::delete( 'fwd_route', UserSessionStore::fetch()->cookie_domain, '/' );
+        Cookie::delete( 'fwd_route', SessionsStore::fetch()->cookie_domain, '/' );
 
 
 

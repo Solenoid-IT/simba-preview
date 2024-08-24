@@ -20,7 +20,7 @@ use \Solenoid\SSE\Event as SSEEvent;
 
 use \Solenoid\MySQL\Condition;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\Authorization as AuthorizationDBModel;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 
@@ -29,7 +29,7 @@ use \App\Models\DB\local\simba_db\User as UserDBModel;
 class Authorization extends Controller
 {
     # Returns [void]
-    public function get ()
+    public function get (string $token)
     {
         // (Setting the header)
         header('Content-Type: application/json');
@@ -41,13 +41,12 @@ class Authorization extends Controller
 
 
 
-        // (Getting the values)
-        $token  = $app->target->args['token'];
+        // (Getting the value)
         $action = $app->request->url->fetch_params()['action'];
 
 
 
-        if ( $action === 'run' )
+        if ( $action === 'accept' )
         {// Match OK
             // (Getting the value)
             $authorization = AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->get();
@@ -62,22 +61,20 @@ class Authorization extends Controller
 
 
 
-            if ( $authorization->data->request )
-            {// (Authorization contains a request to do)
+            if ( $authorization->data['request'] )
+            {// (Authorization contains a request to make)
                 // (Sending an http request)
                 $response = Client::send
                 (
-                    $app->request->url->fetch_base() . $authorization->data->request->endpoint_path,
+                    $app->request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
                     'RPC',
                     [
-                        'Action: ' . $authorization->data->request->action
+                        'Action: ' . $authorization->data['request']['action'],
+                        'Content-Type: application/json',
+
+                        "Auth-Token: $token"
                     ],
-                    json_encode
-                    (
-                        [
-                            'authorization' => $token
-                        ]
-                    )
+                    $authorization->data['request']['input']
                 )
                 ;
 
@@ -92,23 +89,23 @@ class Authorization extends Controller
 
 
 
-            if ( $authorization->data->login )
+            if ( $authorization->data['login'] )
             {// (Authorization contains a login to do)
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'email' => $authorization->data->request->input->email ] ] )->find();
+                $user = UserDBModel::fetch()->filter( [ [ 'email' => $authorization->data['request']['input']['email'] ] ] )->find();
 
                 if ( $user === false )
                 {// (User not found)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'User not found' ] ] ) )
+                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
                     ;
                 }
 
 
 
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -180,13 +177,13 @@ class Authorization extends Controller
         {// (Unable to delete the record)
             // Returning the value
             return
-                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to unregister the authorization' ] ] ) )
+                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to delete the authorization' ] ] ) )
             ;
         }
 
 
 
-        if ( $action === 'run' )
+        if ( $action === 'accept' )
         {// Match OK
             if ( $authorization->callback_url )
             {// Value found
@@ -209,7 +206,7 @@ class Authorization extends Controller
     public function sse ()
     {
         // (Getting the value)
-        $session = UserSessionStore::fetch()->session;
+        $session = SessionsStore::fetch()->sessions['user'];
 
 
 

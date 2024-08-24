@@ -14,7 +14,7 @@ use \Solenoid\HTTP\Status;
 
 use \Solenoid\MySQL\Condition;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Middlewares\RPC\Parser as RPC;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Models\DB\local\simba_db\Visitor as VisitorDBModel;
@@ -30,7 +30,7 @@ class Visitor extends Controller
         {
             case 'empty_log':
                 // (Getting the value)
-                $user_id = UserSessionStore::fetch()->session->data['user'];
+                $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 

@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\Visitor as VisitorDBModel;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Middlewares\RPC\Parser as RPC;
@@ -31,7 +31,7 @@ class Dashboard extends Controller
         {
             case 'fetch_data':
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 

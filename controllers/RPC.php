@@ -42,7 +42,7 @@ class RPC extends Controller
             case 'user':
                 switch ( RPCParser::$verb )
                 {
-                    case 'insert':
+                    case 'register':
                         // (Getting the value)
                         $app = WebApp::fetch();
 
@@ -55,14 +55,19 @@ class RPC extends Controller
                             {// (Unable to fetch the authorization)
                                 // Returning the value
                                 return
-                                    Server::send( new Response( new Status(200) ) )
+                                    Server::send( $response )
                                 ;
                             }
 
 
 
                             // (Getting the value)
-                            $record = (array) $response->body->request->input;
+                            $authorization = $response->body;
+
+
+
+                            // (Getting the value)
+                            $record = $authorization->data['request']['input'];
 
                             if ( UserDBModel::fetch()->insert( [ $record ] ) === false )
                             {// (Unable to insert the record)
@@ -84,7 +89,6 @@ class RPC extends Controller
                             // (Starting an authorization)
                             $response = AuthorizationService::start
                             (
-                                null,
                                 [
                                     'request'           =>
                                     [
@@ -92,25 +96,38 @@ class RPC extends Controller
                                         'action'        => $app->request->headers['Action'],
                                         'input'         =>
                                         [
-                                            'hierarchy'                       => RPCParser::$input['hierarchy'],
+                                            'hierarchy' => RPCParser::$input['hierarchy'],
 
-                                            'username'                        => RPCParser::$input['username'],
-                                            'email'                           => RPCParser::$input['email'],
-
-                                            'profile.name'                    => RPCParser::$input['profile']['name'],
-                                            'profile.surname'                 => RPCParser::$input['profile']['surname'],
-                                            'profile.photo'                   => RPCParser::$input['profile']['photo'],
-
-                                            'security.password'               => RPCParser::$input['security']['password'],
-                                            'security.mfa'                    => RPCParser::$input['security']['mfa'],
+                                            'username'  => RPCParser::$input['username'],
+                                            'email'     => RPCParser::$input['email'],
                                         ]
-                                    ]
-                                ],
-                                RPCParser::$input['email'],
-                                'user.insert',
-                                ''
+                                    ],
+
+                                    'login' => true
+                                ]
                             )
                             ;
+                            
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to start the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the authorization' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Sending the authorization)
+                            $response = AuthorizationService::send( $response->body['token'], RPCParser::$input['email'], 'user.register' );
+                            
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to send the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to send the authorization' ] ] ) )
+                                ;
+                            }
 
 
 

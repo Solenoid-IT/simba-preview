@@ -20,7 +20,7 @@ use \Solenoid\IDK\IDK;
 use \Solenoid\HTTP\URL;
 use \Solenoid\MySQL\Condition;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Stores\Credentials as CredentialsStore;
 use \App\Middlewares\User as UserMiddleware;
 use \App\Middlewares\RPC\Parser as RPC;
@@ -54,7 +54,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 
@@ -112,7 +112,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 
@@ -207,7 +207,7 @@ class User extends Controller
 
 
                             // (Getting the values)
-                            $session   = UserSessionStore::fetch()->session;
+                            $session   = SessionsStore::fetch()->sessions['user'];
                             $user_id   = $session->data['user'];
                             $new_email = RPC::$input->email;
 
@@ -298,7 +298,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $session = UserSessionStore::fetch()->session;
+                        $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -374,7 +374,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 
@@ -439,7 +439,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 
@@ -518,7 +518,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 
@@ -601,7 +601,7 @@ class User extends Controller
 
 
                             // (Getting the value)
-                            $session = UserSessionStore::fetch()->session;
+                            $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -832,7 +832,7 @@ class User extends Controller
 
 
                                 // (Getting the value)
-                                $session = UserSessionStore::fetch()->session;
+                                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -989,7 +989,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $session = UserSessionStore::fetch()->session;
+                        $session = SessionsStore::fetch()->sessions['user'];
 
                         if ( !$session->destroy() )
                         {// (Unable to destroy the session)
@@ -1013,7 +1013,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user_id = UserSessionStore::fetch()->session->data['user'];
+                        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 

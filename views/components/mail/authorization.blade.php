@@ -1,4 +1,4 @@
-Authorization request for <b>{{ $type }}</b>
+Authorization Request for <b>{{ $type }}</b>
 
 <br><br>
 
@@ -59,10 +59,10 @@ Authorization request for <b>{{ $type }}</b>
             </th>
             <td style="text-align: right;">
                 <div style="padding: 10px;">
-                    <a href="{{ "$endpoint_url?action=run" }}" target="_blank" style="padding: 10px 20px; background-color: green; color: #ffffff; text-decoration: none; border-radius: 4px;">
+                    <a href="{{ "$endpoint_url?action=accept" }}" target="_blank" style="padding: 10px 20px; background-color: green; color: #ffffff; text-decoration: none; border-radius: 4px;">
                         Run
                     </a>
-                    <a href="{{ "$endpoint_url?action=cancel" }}" target="_blank" style="margin-left: 20px; padding: 10px 20px; background-color: red; color: #ffffff; text-decoration: none; border-radius: 4px;">
+                    <a href="{{ "$endpoint_url?action=decline" }}" target="_blank" style="margin-left: 20px; padding: 10px 20px; background-color: red; color: #ffffff; text-decoration: none; border-radius: 4px;">
                         Cancel
                     </a>
                 </div>

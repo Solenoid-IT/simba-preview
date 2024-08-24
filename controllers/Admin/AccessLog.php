@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Models\DB\local\simba_db\Access as AccessDBModel;
 use \App\Middlewares\RPC\Parser as RPC;
@@ -31,7 +31,7 @@ class AccessLog extends Controller
         {
             case 'fetch_data':
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -95,7 +95,7 @@ class AccessLog extends Controller
 
             case 'empty':
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => UserSessionStore::fetch()->session->data['user'] ] ] )->find();
+                $user = UserDBModel::fetch()->filter( [ [ 'id' => SessionsStore::fetch()->sessions['user']->data['user'] ] ] )->find();
 
                 if ( $user === false )
                 {// (User not found)

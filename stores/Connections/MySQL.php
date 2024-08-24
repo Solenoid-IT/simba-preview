@@ -2,7 +2,7 @@
 
 
 
-namespace App\Stores\Connection;
+namespace App\Stores\Connections;
 
 
 

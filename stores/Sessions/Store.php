@@ -2,11 +2,9 @@
 
 
 
-namespace App\Stores\Session;
+namespace App\Stores\Sessions;
 
 
-
-use \Solenoid\Core\Store;
 
 use \Solenoid\Core\App\WebApp;
 
@@ -17,14 +15,13 @@ use \Solenoid\HTTP\Cookie;
 use \Solenoid\KeyGen\Generator;
 use \Solenoid\KeyGen\Token;
 
-use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\DateTime;
 
 use \App\Models\DB\local\simba_db\Session as SessionDBModel;
 
 
 
-class User extends Store
+class Store
 {
     private static self $instance;
 
@@ -32,6 +29,8 @@ class User extends Store
 
     public Session $session;
     public string  $cookie_domain;
+
+    public array $sessions;
 
 
 
@@ -43,9 +42,8 @@ class User extends Store
 
 
 
-        // (Getting the values)
-        $this->cookie_domain = '.' . $app->id;
-        $this->session       = Session::create
+        // (Getting the value)
+        $this->sessions['user'] = Session::create
         (
             [
                 'validate_id' => function ( $id )
@@ -192,7 +190,7 @@ class User extends Store
             new Cookie
             (
                 'user',
-                $this->cookie_domain,
+                '.' . $app->id,
                 '/',
                 true,
                 true

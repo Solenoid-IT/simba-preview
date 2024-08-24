@@ -1170,7 +1170,7 @@ switch ( $argv[1] )
 
                                 use \Solenoid\MySQL\Query;
 
-                                use \App\Stores\Connection\MySQL as MySQLConnectionStore;
+                                use \App\Stores\Connections\MySQL as MySQLConnectionsStore;
 
 
 
@@ -1184,7 +1184,7 @@ switch ( $argv[1] )
                                     private function __construct ()
                                     {
                                         // (Calling the function)
-                                        parent::__construct( MySQLConnectionStore::fetch()->connections['$profile/$db_name'], '$database->name', '$entity->name' );
+                                        parent::__construct( MySQLConnectionsStore::fetch()->connections['$profile/$db_name'], '$database->name', '$entity->name' );
                                     }
 
 

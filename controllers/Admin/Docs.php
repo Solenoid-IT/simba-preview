@@ -17,7 +17,7 @@ use \Solenoid\HTML\Document as HTMLDocument;
 
 use \Solenoid\MySQL\DateTime;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
 use \App\Models\DB\local\simba_db\Tag as TagDBModel;
@@ -42,7 +42,7 @@ class Docs extends Controller
         {
             case 'fetch_data':
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -91,7 +91,7 @@ class Docs extends Controller
 
 
                 // (Getting the value)
-                $user_id = UserSessionStore::fetch()->session->data['user'];
+                $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 

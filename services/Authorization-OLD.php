@@ -20,17 +20,33 @@ use \Solenoid\SMTP\MailBox;
 use \Solenoid\SMTP\MailBody;
 use \Solenoid\SMTP\Retry;
 
-use \App\Stores\Connections\SMTP as SMTPConnectionsStore;
+use \App\Stores\Connections\SMTP as SMTPConnectionStore;
 use \App\Models\DB\local\simba_db\Authorization as AuthorizationDBModel;
 use \App\Services\Client as ClientService;
 
 
 
-class Authorization extends Service
+class AuthorizationOLD extends Service
 {
-    # Returns [Response]
-    public static function start (array $data, ?string $callback_url = null, int $duration = 60)
+    # Returns [Response] | Throws [Exception]
+    public static function start
+    (
+        ?string $callback_url = null,
+
+        array   $data         = [],
+
+        ?string $receiver     = null,
+        ?string $type         = null,
+        string  $custom_text  = '',
+
+        int     $duration     = 60
+    )
     {
+        // (Getting the value)
+        $app = WebApp::fetch();
+
+
+
         // (Getting the value)
         $token = Generator::start
         (
@@ -69,9 +85,9 @@ class Authorization extends Service
         [
             'token'               => $token,
 
-            'data'                => $data ? json_encode( $data ) : null,
-
             'callback_url'        => $callback_url,
+
+            'data'                => $data ? json_encode( $data ) : null,
 
             'datetime.insert'     => DateTime::fetch( $current_timestamp ),
             'datetime.expiration' => DateTime::fetch( $expiration_timestamp )
@@ -88,71 +104,62 @@ class Authorization extends Service
 
 
 
-        // Returning the value
-        return
-            new Response( new Status(200), [], [ 'token' => $token, 'exp_time' => $expiration_timestamp ] )
-        ;
-    }
+        if ( $receiver )
+        {// Value found
+            // (Getting the value)
+            $connection = SMTPConnectionStore::fetch()->connections['service'];
 
-    # Returns [Response]
-    public static function send (string $token, string $receiver, string $type)
-    {
-        // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
-        // (Getting the value)
-        $connection = SMTPConnectionsStore::fetch()->connections['service'];
-
-        // (Creating a Mail)
-        $mail = new Mail
-        (
-            new MailBox( $app->fetch_credentials()['smtp']['profiles']['service']['username'], $app->name ),
-
-            [
-                new MailBox( $receiver )
-            ],
-
-            [],
-            [],
-            [],
-
-            $app->name . ' - Authorization Required',
-            new MailBody
+            // (Creating a Mail)
+            $mail = new Mail
             (
-                '',
+                new MailBox( $app->fetch_credentials()['smtp']['profiles']['service']['username'], $app->name ),
 
-                $app->blade->build
+                [
+                    new MailBox( $receiver )
+                ],
+
+                [],
+                [],
+                [],
+
+                $app->name . ' - Authorization Required',
+                new MailBody
                 (
-                    'components/mail/authorization.blade.php',
-                    [
-                        'type'         => $type,
-                        'client'       => ClientService::detect(),
-                        'endpoint_url' => $app->request->url->fetch_base() . "/admin/authorization/$token"
-                    ]
+                    '',
+
+                    $app->blade->build
+                    (
+                        'components/mail/authorization.blade.php',
+                        [
+                            'client'       => ClientService::detect(),
+                            'endpoint_url' => $app->request->url->fetch_base() . "/admin/authorization/$token",
+                            'type'         => $type,
+
+                            'custom_text'  => $custom_text
+                        ]
+                    )
                 )
             )
-        )
-        ;
-
-        if ( !$connection->send( $mail, new Retry() ) )
-        {// (Unable to send the mail)
-            // Returning the value
-            return
-                new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to send the mail' ] ] )
             ;
+
+            if ( !$connection->send( $mail, new Retry() ) )
+            {// (Unable to send the mail)
+                // Returning the value
+                return
+                    new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to send the mail' ] ] )
+                ;
+            }
         }
 
 
 
         // Returning the value
         return
-            new Response( new Status(200) )
+            new Response( new Status(200), [], [ 'token' => $token, 'exp_time' => $expiration_timestamp ] )
         ;
     }
 
-    # Returns [Response]
+    # Returns [Response] | Throws [Exception]
     public static function fetch (string $token)
     {
         // (Getting the value)
@@ -162,7 +169,7 @@ class Authorization extends Service
         {// (Authorization not found)
             // Returning the value
             return
-                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (authorization)' ] ] )
+                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Authorization not found' ] ] )
             ;
         }
 
@@ -179,25 +186,6 @@ class Authorization extends Service
         // Returning the value
         return
             new Response( new Status(200), [], $authorization )
-        ;
-    }
-
-    # Returns [Response]
-    public static function remove (string $token)
-    {
-        if ( AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->delete() === false )
-        {// (Unable to delete the record)
-            // Returning the value
-            return
-                new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to delete the record (authorization)' ] ] )
-            ;
-        }
-
-
-
-        // Returning the value
-        return
-            new Response( new Status(200) )
         ;
     }
 }

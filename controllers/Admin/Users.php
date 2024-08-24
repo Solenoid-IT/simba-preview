@@ -16,7 +16,7 @@ use \Solenoid\HTTP\Status;
 
 use \Solenoid\HTTP\URL;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Models\DB\local\simba_db\Hierarchy as HierarchyDBModel;
 use \App\Services\Authorization as AuthorizationService;
@@ -43,7 +43,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -246,7 +246,7 @@ class Users extends Controller
 
 
                         // (Getting the value)
-                        $session = UserSessionStore::fetch()->session;
+                        $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -367,7 +367,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -409,7 +409,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -476,7 +476,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 

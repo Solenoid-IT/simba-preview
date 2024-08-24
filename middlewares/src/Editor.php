@@ -14,7 +14,7 @@ use \Solenoid\HTTP\Status;
 
 use \Solenoid\MySQL\Condition;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 
 
@@ -25,7 +25,7 @@ class Editor extends Middleware
     public static function run ()
     {
         // (Getting the value)
-        $user_id = UserSessionStore::fetch()->session->data['user'];
+        $user_id = SessionsStore::fetch()->sessions['user']->data['user'];
 
 
 

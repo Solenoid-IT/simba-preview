@@ -13,7 +13,7 @@ use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTML\Document as HTMLDocument;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
 use \App\Models\DB\local\simba_db\Tag as TagDBModel;
 use \App\Models\DB\local\simba_db\DocumentTag as DocumentTagDBModel;
@@ -35,7 +35,7 @@ class Tags extends Controller
         {
             case 'fetch_data':
                 // (Getting the value)
-                $session = UserSessionStore::fetch()->session;
+                $session = SessionsStore::fetch()->sessions['user'];
 
 
 

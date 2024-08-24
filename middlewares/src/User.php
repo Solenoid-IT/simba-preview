@@ -16,7 +16,7 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Cookie;
 use \Solenoid\HTTP\URL;
 
-use \App\Stores\Session\User as UserSessionStore;
+use \App\Stores\Sessions\Store as SessionsStore;
 
 
 
@@ -31,7 +31,7 @@ class User extends Middleware
 
 
         // (Getting the value)
-        $session = UserSessionStore::fetch()->session;
+        $session = SessionsStore::fetch()->sessions['user'];
 
 
 
@@ -129,7 +129,7 @@ class User extends Middleware
 
 
             // (Setting the cookie)
-            ( new Cookie( 'fwd_route', UserSessionStore::fetch()->cookie_domain, '/', true, true ) )->set( $fwd_route );
+            ( new Cookie( 'fwd_route', SessionsStore::fetch()->cookie_domain, '/', true, true ) )->set( $fwd_route );
 
 
 
