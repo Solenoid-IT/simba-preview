@@ -29,7 +29,7 @@ use \App\Services\Client as ClientService;
 class Authorization extends Service
 {
     # Returns [Response]
-    public static function start (array $data, ?string $callback_url = null, int $duration = 60)
+    public static function start (?array $data = null, ?string $callback_url = null, int $duration = 60)
     {
         // (Getting the value)
         $token = Generator::start
@@ -59,8 +59,8 @@ class Authorization extends Service
 
 
         // (Getting the values)
-        $current_timestamp    = time();
-        $expiration_timestamp = $current_timestamp + $duration;
+        $creation_timestamp   = time();
+        $expiration_timestamp = $creation_timestamp + $duration;
 
 
 
@@ -73,7 +73,7 @@ class Authorization extends Service
 
             'callback_url'        => $callback_url,
 
-            'datetime.insert'     => DateTime::fetch( $current_timestamp ),
+            'datetime.insert'     => DateTime::fetch( $creation_timestamp ),
             'datetime.expiration' => DateTime::fetch( $expiration_timestamp )
         ]
         ;
@@ -127,6 +127,7 @@ class Authorization extends Service
                 (
                     'components/mail/authorization.blade.php',
                     [
+                        'app_name'     => $app->name,
                         'type'         => $type,
                         'client'       => ClientService::detect(),
                         'endpoint_url' => $app->request->url->fetch_base() . "/admin/authorization/$token"
@@ -162,7 +163,7 @@ class Authorization extends Service
         {// (Authorization not found)
             // Returning the value
             return
-                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (authorization)' ] ] )
+                new Response( new Status(401), [], [ 'error' => [ 'message' => 'Authorization is not valid' ] ] )
             ;
         }
 
@@ -170,7 +171,7 @@ class Authorization extends Service
         {// (Authorization is expired)
             // Returning the value
             return
-                new Response( new Status(403), [], [ 'error' => [ 'message' => 'Authorization is expired' ] ] )
+                new Response( new Status(401), [], [ 'error' => [ 'message' => 'Authorization is not valid' ] ] )
             ;
         }
 

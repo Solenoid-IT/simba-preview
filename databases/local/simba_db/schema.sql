@@ -126,6 +126,25 @@ CREATE TABLE `access`
 
 
 
+CREATE TABLE `authorization`
+(
+    `token`                              VARCHAR(255)                                             NOT NULL,
+
+    `callback_url`                       TEXT                                                         NULL,
+
+    `data`                               LONGBLOB                                                     NULL,
+
+    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `datetime.expiration`                TIMESTAMP                                                NOT NULL,
+
+
+
+    PRIMARY KEY (`token`)
+)
+;
+
+
+
 CREATE TABLE `document`
 (
     `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
@@ -218,24 +237,5 @@ CREATE TABLE `visitor`
     `hw`                                 VARCHAR(255)                                             NOT NULL,
 
     `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL
-)
-;
-
-
-
-CREATE TABLE `authorization`
-(
-    `token`                              VARCHAR(255)                                             NOT NULL,
-
-    `callback_url`                       TEXT                                                         NULL,
-
-    `data`                               LONGBLOB                                                     NULL,
-
-    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    `datetime.expiration`                TIMESTAMP                                                NOT NULL,
-
-
-
-    PRIMARY KEY (`token`)
 )
 ;

@@ -48,6 +48,16 @@ class RPC extends Controller
 
                         if ( $app->request->headers['Auth-Token'] )
                         {// (Authorization has been provided)
+                            if ( $app->request->client_ip !== $app->request->server_ip )
+                            {// Match failed
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
+                            }
+
+
+
                             // (Getting the value)
                             $response = AuthorizationService::fetch( $app->request->headers['Auth-Token'] );
 

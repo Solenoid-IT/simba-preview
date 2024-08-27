@@ -23,6 +23,7 @@ use \Solenoid\MySQL\Condition;
 use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\DB\local\simba_db\Authorization as AuthorizationDBModel;
 use \App\Models\DB\local\simba_db\User as UserDBModel;
+use \App\Services\Authorization as AuthorizationService;
 
 
 
@@ -49,10 +50,10 @@ class Authorization extends Controller
         if ( $action === 'accept' )
         {// Match OK
             // (Getting the value)
-            $authorization = AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->get();
+            $response = AuthorizationService::fetch( $token );
 
-            if ( $authorization === false )
-            {// (Authorization not found)
+            if ( $response->status->code !== 200 )
+            {// (Authorization is not valid)
                 // Returning the value
                 return
                     Server::send( new Response( new Status(200), [], [ 'message' => 'Request has been processed' ] ) )
@@ -61,10 +62,15 @@ class Authorization extends Controller
 
 
 
+            // (Getting the value)
+            $authorization = $response->body;
+
+
+
             if ( $authorization->data['request'] )
             {// (Authorization contains a request to make)
                 // (Sending an http request)
-                $response = Client::send
+                $res = Client::send
                 (
                     $app->request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
                     'RPC',
@@ -73,16 +79,15 @@ class Authorization extends Controller
                         'Content-Type: application/json',
 
                         "Auth-Token: $token"
-                    ],
-                    $authorization->data['request']['input']
+                    ]
                 )
                 ;
 
-                if ( $response->fetch_tail()->status->code !== 200 )
+                if ( $res->fetch_tail()->status->code !== 200 )
                 {// (Request failed)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body ) )
+                        Server::send( new Response( new Status( $res->fetch_tail()->status->code ), [], $response->body ) )
                     ;
                 }
             }
@@ -113,7 +118,7 @@ class Authorization extends Controller
                 {// (Unable to start the session)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status(500), [], json_encode( [ 'error' => [ 'message' => [ 'Unable to start the session' ] ] ] ) ) )
+                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to start the session' ] ] ] ) )
                     ;
                 }
 
@@ -121,7 +126,7 @@ class Authorization extends Controller
                 {// (Unable to regenerate the session id)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status(500), [], json_encode( [ 'error' => [ 'message' => [ 'Unable to regenerate the session id' ] ] ] ) ) )
+                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to regenerate the session id' ] ] ] ) )
                     ;
                 }
 
@@ -129,7 +134,7 @@ class Authorization extends Controller
                 {// (Unable to set the session duration)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status(500), [], json_encode( [ 'error' => [ 'message' => [ 'Unable to set the session duration' ] ] ] ) ) )
+                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to set the session duration' ] ] ] ) )
                     ;
                 }
 
@@ -173,11 +178,11 @@ class Authorization extends Controller
 
 
 
-        if ( AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->delete() === false )
+        if ( AuthorizationService::remove( $token )->status->code !== 200 )
         {// (Unable to delete the record)
             // Returning the value
             return
-                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to delete the authorization' ] ] ) )
+                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to remove the authorization' ] ] ) )
             ;
         }
 
