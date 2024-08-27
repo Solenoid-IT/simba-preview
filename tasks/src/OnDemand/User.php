@@ -31,10 +31,11 @@ class User extends Task
         // (Sending an http request)
         $response = Client::send
         (
-            'https://' . $app->id . '/admin/users',
+            'https://' . $app->id . '/rpc',
             'RPC',
             [
-                'Action: register'
+                'Action: user::register',
+                'Content-Type: application/json'
             ],
             json_encode
             (
@@ -51,7 +52,7 @@ class User extends Task
         if ( $response->fetch_tail()->status->code !== 200 )
         {// (Request failed)
             // (Setting the value)
-            $message = "Request failed :: " . $response->body->error->message;
+            $message = "Request failed :: " . $response->body['error']['message'];
 
             // Throwing an exception
             throw new \Exception($message);
@@ -63,7 +64,7 @@ class User extends Task
 
 
         // (Getting the value)
-        $seconds_left = $response->body->exp_time - time();
+        $seconds_left = $response->body['exp_time'] - time();
 
 
 

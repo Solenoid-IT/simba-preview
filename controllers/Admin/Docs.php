@@ -18,10 +18,10 @@ use \Solenoid\HTML\Document as HTMLDocument;
 use \Solenoid\MySQL\DateTime;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
-use \App\Models\DB\local\simba_db\Tag as TagDBModel;
-use \App\Models\DB\local\simba_db\DocumentTag as DocumentTagDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
+use \App\Models\local\simba_db\Tag as TagModel;
+use \App\Models\local\simba_db\DocumentTag as DocumentTagModel;
 use \App\Services\SPA as SPAService;
 use \App\Middlewares\Editor as EditorMiddleware;
 use \App\Middlewares\RPC\Parser as RPC;
@@ -52,7 +52,7 @@ class Docs extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user === false )
                 {// (Record not found)
@@ -70,7 +70,7 @@ class Docs extends Controller
                     'user'             => $user,
                     'required_actions' => $session->data['set_password'] ? [ 'set_password' ] : [],
 
-                    'records'          => DocumentDBModel::fetch()->filter()->view(),
+                    'records'          => DocumentModel::fetch()->filter()->view(),
                     'template'         => base64_encode( $app->blade->build_html( 'root/Admin/Docs/template.blade.php', [ 'host' => SPAService::fetch_be_host() ] ) )
                 ]
                 ;
@@ -98,7 +98,7 @@ class Docs extends Controller
                 // (Getting the value)
                 $path = '/' . preg_replace( '/^\//', '', RPC::$input->path );
 
-                if ( DocumentDBModel::fetch()->filter( [ [ 'path' => $path ] ] )->find() !== false )
+                if ( DocumentModel::fetch()->filter( [ [ 'path' => $path ] ] )->find() !== false )
                 {// (Document found)
                     // Returning the value
                     return
@@ -142,7 +142,7 @@ class Docs extends Controller
                 ]
                 ;
 
-                if ( DocumentDBModel::fetch()->insert( [ $record ] ) === false )
+                if ( DocumentModel::fetch()->insert( [ $record ] ) === false )
                 {// (Unable to insert the record)
                     // Returning the value
                     return
@@ -153,14 +153,14 @@ class Docs extends Controller
 
 
                 // (Getting the value)
-                $document_id = DocumentDBModel::fetch()->fetch_ids()[0];
+                $document_id = DocumentModel::fetch()->fetch_ids()[0];
 
 
 
                 foreach ( $keywords as $keyword )
                 {// Processing each entry
                     // (Getting the value)
-                    $tag = TagDBModel::fetch()->filter( [ [ 'value' => $keyword ] ] )->find();
+                    $tag = TagModel::fetch()->filter( [ [ 'value' => $keyword ] ] )->find();
                     
                     if ( $tag )
                     {// (Tag found)
@@ -176,7 +176,7 @@ class Docs extends Controller
                         ]
                         ;
 
-                        if ( TagDBModel::fetch()->insert( [ $record ] ) === false )
+                        if ( TagModel::fetch()->insert( [ $record ] ) === false )
                         {// (Unable to register the record)
                             // Returning the value
                             return
@@ -187,7 +187,7 @@ class Docs extends Controller
 
 
                         // (Getting the value)
-                        $tag_id = TagDBModel::fetch()->fetch_ids()[0];
+                        $tag_id = TagModel::fetch()->fetch_ids()[0];
                     }
 
 
@@ -200,7 +200,7 @@ class Docs extends Controller
                     ]
                     ;
 
-                    if ( DocumentTagDBModel::fetch()->insert( [ $record ] ) === false )
+                    if ( DocumentTagModel::fetch()->insert( [ $record ] ) === false )
                     {// (Unable to insert the record)
                         // Returning the value
                         return
@@ -222,7 +222,7 @@ class Docs extends Controller
 
 
 
-                if ( DocumentDBModel::fetch()->condition_start()->where_field( null, 'id' )->in( RPC::$input->list )->condition_end()->delete() === false )
+                if ( DocumentModel::fetch()->condition_start()->where_field( null, 'id' )->in( RPC::$input->list )->condition_end()->delete() === false )
                 {// (Unable to delete the records)
                     // Returning the value
                     return
@@ -252,7 +252,7 @@ class Docs extends Controller
 
 
                 // (Getting the value)
-                $document = DocumentDBModel::fetch()->filter( [ [ 'path' => $path ] ] )->find();
+                $document = DocumentModel::fetch()->filter( [ [ 'path' => $path ] ] )->find();
 
                 if ( $document !== false && $document->id !== $document_id )
                 {// Match failed
@@ -296,7 +296,7 @@ class Docs extends Controller
                 ]
                 ;
 
-                if ( DocumentDBModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
+                if ( DocumentModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
                 {// (Unable to update the record)
                     // Returning the value
                     return
@@ -306,7 +306,7 @@ class Docs extends Controller
 
 
 
-                if ( DocumentTagDBModel::fetch()->filter( [ [ 'document' => $document_id ] ] )->delete() === false )
+                if ( DocumentTagModel::fetch()->filter( [ [ 'document' => $document_id ] ] )->delete() === false )
                 {// (Unable to delete the record)
                     // Returning the value
                     return
@@ -319,7 +319,7 @@ class Docs extends Controller
                 foreach ( $keywords as $keyword )
                 {// Processing each entry
                     // (Getting the value)
-                    $tag = TagDBModel::fetch()->filter( [ [ 'value' => $keyword ] ] )->find();
+                    $tag = TagModel::fetch()->filter( [ [ 'value' => $keyword ] ] )->find();
                     
                     if ( $tag )
                     {// (Tag found)
@@ -335,7 +335,7 @@ class Docs extends Controller
                         ]
                         ;
 
-                        if ( TagDBModel::fetch()->insert( [ $record ] ) === false )
+                        if ( TagModel::fetch()->insert( [ $record ] ) === false )
                         {// (Unable to insert the record)
                             // Returning the value
                             return
@@ -346,7 +346,7 @@ class Docs extends Controller
 
 
                         // (Getting the value)
-                        $tag_id = TagDBModel::fetch()->fetch_ids()[0];
+                        $tag_id = TagModel::fetch()->fetch_ids()[0];
                     }
 
 
@@ -359,7 +359,7 @@ class Docs extends Controller
                     ]
                     ;
 
-                    if ( DocumentTagDBModel::fetch()->insert( [ $record ] ) === false )
+                    if ( DocumentTagModel::fetch()->insert( [ $record ] ) === false )
                     {// (Unable to insert the record)
                         // Returning the value
                         return
@@ -408,7 +408,7 @@ class Docs extends Controller
                 ]
                 ;
 
-                if ( DocumentDBModel::fetch()->filter( [ [ 'id' => RPC::$input->id ] ] )->update($record) === false )
+                if ( DocumentModel::fetch()->filter( [ [ 'id' => RPC::$input->id ] ] )->update($record) === false )
                 {// (Unable to update the record)
                     // Returning the value
                     return
@@ -448,7 +448,7 @@ class Docs extends Controller
 
 
                 // (Getting the value)
-                $document = DocumentDBModel::fetch()->filter( [ [ $key => RPC::$input->value ] ] )->find();
+                $document = DocumentModel::fetch()->filter( [ [ $key => RPC::$input->value ] ] )->find();
 
                 if ( $document === false )
                 {// (Document not found)

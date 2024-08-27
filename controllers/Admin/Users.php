@@ -17,8 +17,8 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\URL;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Hierarchy as HierarchyDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Hierarchy as HierarchyModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Middlewares\User as UserMiddleware;
 use \App\Middlewares\RPC\Parser as RPC;
@@ -53,7 +53,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user === false )
                 {// (Record not found)
@@ -78,7 +78,7 @@ class Users extends Controller
                 // (Setting the value)
                 $hierarchies = [];
 
-                foreach ( HierarchyDBModel::fetch()->list() as $hierarchy )
+                foreach ( HierarchyModel::fetch()->list() as $hierarchy )
                 {// Processing each entry
                     // (Getting the value)
                     $hierarchies[ $hierarchy->id ] = $hierarchy;
@@ -92,7 +92,7 @@ class Users extends Controller
                     'user'             => $user,
                     'required_actions' => $session->data['set_password'] ? [ 'set_password' ] : [],
 
-                    'records'          => UserDBModel::fetch()->filter()->get_list(),
+                    'records'          => UserModel::fetch()->filter()->get_list(),
                     'hierarchies'      => $hierarchies
                 ]
                 ;
@@ -131,7 +131,7 @@ class Users extends Controller
                     // (Getting the value)
                     $record = (array) $authorization->data->request->input;
 
-                    if ( UserDBModel::fetch()->insert( [ $record ] ) === false )
+                    if ( UserModel::fetch()->insert( [ $record ] ) === false )
                     {// (Unable to insert the record)
                         // Returning the value
                         return
@@ -151,7 +151,7 @@ class Users extends Controller
                     if ( $app->request->client_ip === $app->request->server_ip )
                     {// (Request is from localhost)
                         // (Getting the value)
-                        $username_user = UserDBModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
+                        $username_user = UserModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
 
                         if ( $username_user !== false )
                         {// (Username found)
@@ -164,7 +164,7 @@ class Users extends Controller
 
 
                         // (Getting the value)
-                        $email_user = UserDBModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
+                        $email_user = UserModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
 
                         if ( $email_user !== false )
                         {// (Email found)
@@ -252,7 +252,7 @@ class Users extends Controller
 
                         // (Getting the value)
                         $user_id = $session->data['user'];
-                        $user    = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                        $user    = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                         if ( $user->hierarchy !== 1 )
                         {// (User is not a root)
@@ -265,7 +265,7 @@ class Users extends Controller
 
 
                         // (Getting the value)
-                        $username_user = UserDBModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
+                        $username_user = UserModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
 
                         if ( $username_user !== false )
                         {// (Username found)
@@ -278,7 +278,7 @@ class Users extends Controller
 
 
                         // (Getting the value)
-                        $email_user = UserDBModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
+                        $email_user = UserModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
 
                         if ( $email_user !== false )
                         {// (Email found)
@@ -373,7 +373,7 @@ class Users extends Controller
 
                 // (Getting the value)
                 $user_id = $session->data['user'];
-                $user    = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user    = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user->hierarchy !== 1 )
                 {// (User is not a root)
@@ -385,7 +385,7 @@ class Users extends Controller
 
 
 
-                if ( UserDBModel::fetch()->condition_start()->where_field( null, 'id' )->in( RPC::$input->list )->condition_end()->delete() === false )
+                if ( UserModel::fetch()->condition_start()->where_field( null, 'id' )->in( RPC::$input->list )->condition_end()->delete() === false )
                 {// (Unable to delete the records)
                     // Returning the value
                     return
@@ -415,7 +415,7 @@ class Users extends Controller
 
                 // (Getting the value)
                 $user_id = $session->data['user'];
-                $user    = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user    = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user->hierarchy !== 1 )
                 {// (User is not a root)
@@ -428,7 +428,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $username_user = UserDBModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
+                $username_user = UserModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->get();
 
                 if ( $username_user && $username_user->id !== RPC::$input->id )
                 {// (Username is not available)
@@ -452,7 +452,7 @@ class Users extends Controller
                 ]
                 ;
 
-                if ( UserDBModel::fetch()->filter( [ [ 'id' => RPC::$input->id ] ] )->update( $record ) === false )
+                if ( UserModel::fetch()->filter( [ [ 'id' => RPC::$input->id ] ] )->update( $record ) === false )
                 {// (Unable to update the record)
                     // Returning the value
                     return
@@ -482,7 +482,7 @@ class Users extends Controller
 
                 // (Getting the value)
                 $user_id = $session->data['user'];
-                $user    = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user    = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user->hierarchy !== 1 )
                 {// (User is not a root)
@@ -513,7 +513,7 @@ class Users extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => RPC::$input->value ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => RPC::$input->value ] ] )->get();
 
                 if ( $user === false )
                 {// (User not found)

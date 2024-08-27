@@ -2,23 +2,21 @@
 
 
 
-namespace App\Stores;
+namespace App\Stores\Credentials;
 
 
-
-use \Solenoid\Core\Store;
 
 use \Solenoid\Core\App\App;
 
 
 
-class Credentials extends Store
+class Store
 {
     private static self $instance;
 
 
 
-    public array $data;
+    public array $credentials;
 
 
 
@@ -31,11 +29,7 @@ class Credentials extends Store
 
 
         // (Getting the value)
-        $this->data =
-        [
-            'IDK_PASSPHRASE' => $app->fetch_credentials()['idk']['passphrase']
-        ]
-        ;
+        $this->credentials = $app->fetch_credentials();
     }
 
 

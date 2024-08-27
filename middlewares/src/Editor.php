@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\MySQL\Condition;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
+use \App\Models\local\simba_db\User as UserModel;
 
 
 
@@ -30,7 +30,7 @@ class Editor extends Middleware
 
 
         // (Getting the value)
-        $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
+        $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
 
         if ( $user === false )
         {// (User not found)

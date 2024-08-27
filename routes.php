@@ -137,7 +137,7 @@ $router = new Router
             'SSE' => Target::link( Admin\Authorization::class, 'sse' )
         ],
 
-        '/admin/authorization/[ token ]' =>
+        '/admin/authorization/[ token ]/[ action ]' =>
         [
             'GET' => Target::link( Admin\Authorization::class, 'get' )
         ],

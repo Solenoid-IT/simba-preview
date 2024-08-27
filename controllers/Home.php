@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 
-use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
 use \App\Middlewares\RPC\Parser as RPC;
 
 
@@ -61,7 +61,7 @@ class Home extends Controller
                             return new Record($record);
                         },
 
-                        DocumentDBModel::fetch()->query()
+                        DocumentModel::fetch()->query()
                             ->condition_start()
                                 ->where_field( null, 'datetime.option.active' )->is_not(null)
                                     ->and()
@@ -200,7 +200,7 @@ class Home extends Controller
                             return new Record($record);
                         },
 
-                        DocumentDBModel::fetch()->view( ( new Condition() )->where_field( null, 'datetime.option.active' )->is_not(null) )->list()
+                        DocumentModel::fetch()->view( ( new Condition() )->where_field( null, 'datetime.option.active' )->is_not(null) )->list()
                     )
                 )
                 ;

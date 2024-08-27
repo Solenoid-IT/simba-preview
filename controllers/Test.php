@@ -8,7 +8,7 @@ namespace App\Controllers;
 
 use \Solenoid\Core\MVC\Controller;
 
-use \App\Models\DB\local\simba_db\Session as SessionDBModel;
+use \App\Models\local\simba_db\Session as SessionModel;
 
 
 
@@ -18,7 +18,7 @@ class Test extends Controller
     public function get ()
     {
         // Returning the value
-        return SessionDBModel::fetch()->filter( [ [ 'id' => 'ahcid' ] ] )->count();
+        return SessionModel::fetch()->filter( [ [ 'id' => 'ahcid' ] ] )->count();
     }
 }
 

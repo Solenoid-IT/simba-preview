@@ -21,8 +21,8 @@ use \Solenoid\SSE\Event as SSEEvent;
 use \Solenoid\MySQL\Condition;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\Authorization as AuthorizationDBModel;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
+use \App\Models\local\simba_db\Authorization as AuthorizationModel;
+use \App\Models\local\simba_db\User as UserModel;
 use \App\Services\Authorization as AuthorizationService;
 
 
@@ -30,20 +30,10 @@ use \App\Services\Authorization as AuthorizationService;
 class Authorization extends Controller
 {
     # Returns [void]
-    public function get (string $token)
+    public function get (string $token, string $action)
     {
-        // (Setting the header)
-        header('Content-Type: application/json');
-
-
-
         // (Getting the value)
         $app = WebApp::fetch();
-
-
-
-        // (Getting the value)
-        $action = $app->request->url->fetch_params()['action'];
 
 
 
@@ -97,7 +87,7 @@ class Authorization extends Controller
             if ( $authorization->data['login'] )
             {// (Authorization contains a login to do)
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'email' => $authorization->data['request']['input']['email'] ] ] )->find();
+                $user = UserModel::fetch()->where( 'email', $authorization->data['request']['input']['email'] )->find();
 
                 if ( $user === false )
                 {// (User not found)
@@ -152,37 +142,19 @@ class Authorization extends Controller
 
                 // (Setting the value)
                 $session->data['set_password'] = true;
-
-
-
-                /*
-
-                // (Setting the header)
-                header('Content-Type: text/html');
-
-                // Printing the value
-                echo
-                    <<<EOD
-                    <script>
-
-                        // (Setting the location)
-                        window.location.href = '/admin';
-
-                    </script>
-                    EOD
-                ;
-
-                */
             }
         }
 
 
 
-        if ( AuthorizationService::remove( $token )->status->code !== 200 )
-        {// (Unable to delete the record)
+        // (Removing the authorization)
+        $res = AuthorizationService::remove( $token );
+
+        if ( $res->status->code !== 200 )
+        {// (Unable to remove the authorization)
             // Returning the value
             return
-                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to remove the authorization' ] ] ) )
+                Server::send( $res )
             ;
         }
 
@@ -249,7 +221,7 @@ class Authorization extends Controller
 
 
                 // (Getting the value)
-                $authorization = AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->get();
+                $authorization = AuthorizationModel::fetch()->filter( [ [ 'token' => $token ] ] )->get();
 
                 if ( $authorization === false )
                 {// (Authorization not found)
@@ -268,7 +240,7 @@ class Authorization extends Controller
                     if ( strtotime( $authorization->datetime->expiration ) <= time() )
                     {// (Authorization is not valid)
                         // (Deleting the record)
-                        AuthorizationDBModel::fetch()->delete( ( new Condition() )->filter( [ [ 'token' => $authorization->token ] ] ) );
+                        AuthorizationModel::fetch()->delete( ( new Condition() )->filter( [ [ 'token' => $authorization->token ] ] ) );
                     }
                 }
             }

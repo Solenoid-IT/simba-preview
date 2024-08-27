@@ -2,11 +2,9 @@
 
 
 
-namespace App\Stores\Connections;
+namespace App\Stores\Connections\MySQL;
 
 
-
-use \Solenoid\Core\Store;
 
 use \Solenoid\Core\App\App;
 
@@ -14,7 +12,7 @@ use \Solenoid\MySQL\Connection;
 
 
 
-class MySQL extends Store
+class Store
 {
     private static self $instance;
 

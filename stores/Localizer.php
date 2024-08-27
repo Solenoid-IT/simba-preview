@@ -6,15 +6,13 @@ namespace App\Stores;
 
 
 
-use \Solenoid\Core\Store;
-
 use \Solenoid\HTTP\Cookie;
 use \Solenoid\MySQL\DateTime as MySQLDateTime;
 use \Solenoid\DateTime\DateTime;
 
 
 
-class Localizer extends Store
+class Localizer
 {
     private static self $instance;
 

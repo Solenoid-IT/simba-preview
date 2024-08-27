@@ -16,8 +16,8 @@ use \Solenoid\MySQL\Condition;
 
 use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Middlewares\RPC\Parser as RPC;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Visitor as VisitorDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Visitor as VisitorModel;
 
 
 
@@ -35,7 +35,7 @@ class Visitor extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
 
                 if ( $user === false )
                 {// (User not found)
@@ -57,7 +57,7 @@ class Visitor extends Controller
 
 
 
-                if ( VisitorDBModel::fetch()->delete() === false )
+                if ( VisitorModel::fetch()->delete() === false )
                 {// (Unable to delete the records)
                     // Returning the value
                     return

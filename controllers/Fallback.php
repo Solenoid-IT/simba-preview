@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\Status;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
 
 
 
@@ -78,7 +78,7 @@ class Fallback extends Controller
             $list = [];
 
             // (Getting the value)
-            $documents = DocumentDBModel::fetch()->query()
+            $documents = DocumentModel::fetch()->query()
                 ->condition_start()
                     ->where_field( null, 'datetime.option.active' )->is_not(null)
                         ->and()

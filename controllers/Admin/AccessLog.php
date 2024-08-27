@@ -16,8 +16,8 @@ use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Access as AccessDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Access as AccessModel;
 use \App\Middlewares\RPC\Parser as RPC;
 
 
@@ -41,7 +41,7 @@ class AccessLog extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user === false )
                 {// (Record not found)
@@ -54,7 +54,7 @@ class AccessLog extends Controller
 
 
                 // (Getting the value)
-                $records = AccessDBModel::fetch()->filter( [ [ 'user' => $user_id ] ] )->list
+                $records = AccessModel::fetch()->filter( [ [ 'user' => $user_id ] ] )->list
                 (
                     [],
                     false,
@@ -95,7 +95,7 @@ class AccessLog extends Controller
 
             case 'empty':
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => SessionsStore::fetch()->sessions['user']->data['user'] ] ] )->find();
+                $user = UserModel::fetch()->filter( [ [ 'id' => SessionsStore::fetch()->sessions['user']->data['user'] ] ] )->find();
 
                 if ( $user === false )
                 {// (User not found)
@@ -107,7 +107,7 @@ class AccessLog extends Controller
 
 
 
-                if ( AccessDBModel::fetch()->filter( [ [ 'user' => $user->id ] ] )->delete() === false )
+                if ( AccessModel::fetch()->filter( [ [ 'user' => $user->id ] ] )->delete() === false )
                 {// (Unable to delete the record)
                     // Returning the value
                     return

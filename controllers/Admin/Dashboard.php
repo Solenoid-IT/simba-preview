@@ -16,8 +16,8 @@ use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\Visitor as VisitorDBModel;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
+use \App\Models\local\simba_db\Visitor as VisitorModel;
+use \App\Models\local\simba_db\User as UserModel;
 use \App\Middlewares\RPC\Parser as RPC;
 
 
@@ -41,7 +41,7 @@ class Dashboard extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user === false )
                 {// (Record not found)
@@ -56,8 +56,8 @@ class Dashboard extends Controller
                 // (Getting the value)
                 $report =
                 [
-                    'monthly' => VisitorDBModel::fetch()->list_monthly_report(),
-                    'yearly'  => VisitorDBModel::fetch()->list_yearly_report()
+                    'monthly' => VisitorModel::fetch()->list_monthly_report(),
+                    'yearly'  => VisitorModel::fetch()->list_yearly_report()
                 ]
                 ;
 
@@ -87,7 +87,7 @@ class Dashboard extends Controller
                     'required_actions' => $session->data['set_password'] ? [ 'set_password' ] : [],
 
                     'charts'           => $charts,
-                    'visitors'         => VisitorDBModel::fetch()->list
+                    'visitors'         => VisitorModel::fetch()->list
                     (
                         [],
                         false,

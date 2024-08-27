@@ -20,8 +20,8 @@ use \Solenoid\SMTP\MailBox;
 use \Solenoid\SMTP\MailBody;
 use \Solenoid\SMTP\Retry;
 
-use \App\Stores\Connections\SMTP as SMTPConnectionsStore;
-use \App\Models\DB\local\simba_db\Authorization as AuthorizationDBModel;
+use \App\Stores\Connections\SMTP\Store as SMTPConnectionsStore;
+use \App\Models\local\simba_db\Authorization as AuthorizationModel;
 use \App\Services\Client as ClientService;
 
 
@@ -37,7 +37,7 @@ class Authorization extends Service
             function ( $key )
             {
                 // Returning the value
-                return AuthorizationDBModel::fetch()->filter( [ [ 'token' => $key ] ] )->count() === 0;
+                return !AuthorizationModel::fetch()->where( 'token', $key )->exists();
             },
 
             function ()
@@ -78,7 +78,7 @@ class Authorization extends Service
         ]
         ;
 
-        if ( AuthorizationDBModel::fetch()->insert( [ $record ] ) === false )
+        if ( AuthorizationModel::fetch()->insert( [ $record ] ) === false )
         {// (Unable to insert the record)
             // Returning the value
             return
@@ -157,7 +157,7 @@ class Authorization extends Service
     public static function fetch (string $token)
     {
         // (Getting the value)
-        $authorization = AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->get();
+        $authorization = AuthorizationModel::fetch()->where( 'token', $token )->get();
 
         if ( $authorization === false )
         {// (Authorization not found)
@@ -167,7 +167,7 @@ class Authorization extends Service
             ;
         }
 
-        if ( strtotime( $authorization->datetime->expiration ) <= time() )
+        if ( time() >= strtotime( $authorization->datetime->expiration ) )
         {// (Authorization is expired)
             // Returning the value
             return
@@ -186,7 +186,7 @@ class Authorization extends Service
     # Returns [Response]
     public static function remove (string $token)
     {
-        if ( AuthorizationDBModel::fetch()->filter( [ [ 'token' => $token ] ] )->delete() === false )
+        if ( AuthorizationModel::fetch()->where( 'token', $token )->delete() === false )
         {// (Unable to delete the record)
             // Returning the value
             return

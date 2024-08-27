@@ -17,7 +17,7 @@ use \Solenoid\KeyGen\Token;
 
 use \Solenoid\MySQL\DateTime;
 
-use \App\Models\DB\local\simba_db\Session as SessionDBModel;
+use \App\Models\local\simba_db\Session as SessionModel;
 
 
 
@@ -26,9 +26,6 @@ class Store
     private static self $instance;
 
 
-
-    public Session $session;
-    public string  $cookie_domain;
 
     public array $sessions;
 
@@ -61,7 +58,7 @@ class Store
                             function ($id)
                             {
                                 // Returning the value
-                                return SessionDBModel::fetch()->filter( [ [ 'id' => $id ] ] )->count() === 0;
+                                return SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->count() === 0;
                             },
                             function ()
                             {
@@ -87,7 +84,7 @@ class Store
                 'read' => function ( $id, $duration )
                 {
                     // (Getting the value)
-                    $session = SessionDBModel::fetch()->filter( [ [ 'id' => $id ] ] )->find();
+                    $session = SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->find();
 
                     if ( $session !== false )
                     {// (Record exists)
@@ -101,7 +98,7 @@ class Store
                         ]
                         ;
 
-                        if ( time() - $content['creation'] >= $content['expiration'] )
+                        if ( time() >= $content['expiration'] )
                         {// (Session is expired)
                             // (Setting the value)
                             $content['data'] = [];
@@ -138,7 +135,7 @@ class Store
                     ]
                     ;
 
-                    if ( SessionDBModel::fetch()->set( $values, [ 'id' ] ) === false )
+                    if ( SessionModel::fetch()->set( $values, [ 'id' ] ) === false )
                     {// (Unable to set the record)
                         // (Setting the value)
                         $message = "Unable to set the session";
@@ -153,7 +150,7 @@ class Store
 
                 'change_id' => function ( $old, $new )
                 {
-                    if ( SessionDBModel::fetch()->filter( [ [ 'id' => $old ] ] )->update( [ 'id' => $new ] ) === false )
+                    if ( SessionModel::fetch()->filter( [ [ 'id' => $old ] ] )->update( [ 'id' => $new ] ) === false )
                     {// (Unable to update the record)
                         // (Setting the value)
                         $message = "Unable to change the session";
@@ -174,7 +171,7 @@ class Store
 
                 'destroy' => function ( $id )
                 {
-                    if ( SessionDBModel::fetch()->filter( [ [ 'id' => $id ] ] )->delete() === false )
+                    if ( SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->delete() === false )
                     {// (Unable to delete the record)
                         // (Setting the value)
                         $message = "Unable to remove the session";

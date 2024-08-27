@@ -2,7 +2,7 @@
 
 
 
-namespace App\Models\DB\local\simba_db;
+namespace App\Models\local\simba_db;
 
 
 
@@ -10,11 +10,11 @@ use \Solenoid\MySQL\Model;
 
 use \Solenoid\MySQL\Query;
 
-use \App\Stores\Connections\MySQL as MySQLConnectionsStore;
+use \App\Stores\Connections\MySQL\Store as MySQLConnectionsStore;
 
 
 
-class Tag extends Model
+class Access extends Model
 {
     private static self $instance;
 
@@ -24,7 +24,7 @@ class Tag extends Model
     private function __construct ()
     {
         // (Calling the function)
-        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'tag' );
+        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'access' );
     }
 
 
@@ -37,6 +37,11 @@ class Tag extends Model
             // (Getting the value)
             self::$instance = new self();
         }
+
+
+
+        // (Resetting the condition)
+        ( self::$instance )->reset();
 
 
 

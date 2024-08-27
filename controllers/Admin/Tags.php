@@ -14,10 +14,10 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\HTML\Document as HTMLDocument;
 
 use \App\Stores\Sessions\Store as SessionsStore;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Tag as TagDBModel;
-use \App\Models\DB\local\simba_db\DocumentTag as DocumentTagDBModel;
-use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Tag as TagModel;
+use \App\Models\local\simba_db\DocumentTag as DocumentTagModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
 use \App\Middlewares\RPC\Parser as RPC;
 use \App\Middlewares\Editor as EditorMiddleware;
 
@@ -45,7 +45,7 @@ class Tags extends Controller
 
 
                 // (Getting the value)
-                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                 if ( $user === false )
                 {// (Record not found)
@@ -63,7 +63,7 @@ class Tags extends Controller
                     'user'             => $user,
                     'required_actions' => $session->data['set_password'] ? [ 'set_password' ] : [],
 
-                    'records'          => TagDBModel::fetch()->list( [], false, [ 'id' => 'DESC' ] ),
+                    'records'          => TagModel::fetch()->list( [], false, [ 'id' => 'DESC' ] ),
                 ]
                 ;
 
@@ -91,7 +91,7 @@ class Tags extends Controller
                 ;
 
                 // (Registering the tag)
-                $tag_model = TagDBModel::fetch()->insert( [ $record ] );
+                $tag_model = TagModel::fetch()->insert( [ $record ] );
 
                 if ( $tag_model === false )
                 {// (Unable to insert the record)
@@ -118,17 +118,17 @@ class Tags extends Controller
                 {// Processing each entry
                     // (Getting the values)
                     $tag_id = $id;
-                    $tag    = TagDBModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->find();
+                    $tag    = TagModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->find();
 
 
 
                     // (Getting the value)
-                    $documents = DocumentTagDBModel::fetch()->filter( [ [ 'tag' => $tag_id ] ] )->list();
+                    $documents = DocumentTagModel::fetch()->filter( [ [ 'tag' => $tag_id ] ] )->list();
 
                     foreach ( $documents as $document_id )
                     {// Processing each entry
                         // (Getting the value)
-                        $document = DocumentDBModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->find();
+                        $document = DocumentModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->find();
 
 
 
@@ -180,7 +180,7 @@ class Tags extends Controller
                         ]
                         ;
 
-                        if ( DocumentDBModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
+                        if ( DocumentModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -191,7 +191,7 @@ class Tags extends Controller
 
 
 
-                    if ( TagDBModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->delete() === false )
+                    if ( TagModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->delete() === false )
                     {// (Unable to delete the record)
                         // Returning the value
                         return
@@ -217,7 +217,7 @@ class Tags extends Controller
 
                 // (Getting the values)
                 $tag_id    = RPC::$input->id;
-                $tag       = TagDBModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->find();
+                $tag       = TagModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->find();
 
                 $old_value = $tag->value;
                 $new_value = RPC::$input->value;
@@ -225,7 +225,7 @@ class Tags extends Controller
 
 
                 // (Getting the value)
-                $documents = DocumentTagDBModel::fetch()->filter( [ [ 'tag' => $tag_id ] ] )->list();
+                $documents = DocumentTagModel::fetch()->filter( [ [ 'tag' => $tag_id ] ] )->list();
 
                 foreach ( $documents as $document_tag )
                 {// Processing each entry
@@ -235,7 +235,7 @@ class Tags extends Controller
 
 
                     // (Getting the value)
-                    $document = DocumentDBModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->find();
+                    $document = DocumentModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->find();
 
 
 
@@ -284,7 +284,7 @@ class Tags extends Controller
                     ]
                     ;
 
-                    if ( DocumentDBModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
+                    if ( DocumentModel::fetch()->filter( [ [ 'id' => $document_id ] ] )->update($record) === false )
                     {// (Unable to update the record)
                         // Returning the value
                         return
@@ -303,7 +303,7 @@ class Tags extends Controller
                 ]
                 ;
 
-                if ( TagDBModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->update($record) === false )
+                if ( TagModel::fetch()->filter( [ [ 'id' => $tag_id ] ] )->update($record) === false )
                 {// (Unable to uodate the record)
                     // Returning the value
                     return
@@ -346,7 +346,7 @@ class Tags extends Controller
 
 
                 // (Getting the value)
-                $tag = TagDBModel::fetch()->filter( [ [ $key => RPC::$input->value ] ] )->find();
+                $tag = TagModel::fetch()->filter( [ [ $key => RPC::$input->value ] ] )->find();
 
                 if ( $tag === false )
                 {// (Tag not found)

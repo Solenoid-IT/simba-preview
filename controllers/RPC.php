@@ -15,8 +15,9 @@ use \Solenoid\HTTP\Response;
 use \Solenoid\Core\App\WebApp;
 
 use \App\Middlewares\RPC\Parser as RPCParser;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
+use \App\Models\local\simba_db\User as UserModel;
 use \App\Services\Authorization as AuthorizationService;
+use \App\Services\User as UserService;
 
 
 
@@ -46,10 +47,12 @@ class RPC extends Controller
                         // (Getting the value)
                         $app = WebApp::fetch();
 
+
+
                         if ( $app->request->headers['Auth-Token'] )
                         {// (Authorization has been provided)
                             if ( $app->request->client_ip !== $app->request->server_ip )
-                            {// Match failed
+                            {// (Request is not from localhost)
                                 // Returning the value
                                 return
                                     Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
@@ -76,10 +79,30 @@ class RPC extends Controller
 
 
 
+                            if ( UserModel::fetch()->where( 'username', $authorization->data['request']['input']['username'] )->exists() )
+                            {// (Record found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => 'Username already exists (user)' ] ] ) )
+                                ;
+                            }
+
+
+
+                            if ( UserModel::fetch()->where( 'email', $authorization->data['request']['input']['email'] )->exists() )
+                            {// (Record found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => 'Email already exists (user)' ] ] ) )
+                                ;
+                            }
+
+
+
                             // (Getting the value)
                             $record = $authorization->data['request']['input'];
 
-                            if ( UserDBModel::fetch()->insert( [ $record ] ) === false )
+                            if ( UserModel::fetch()->insert( [ $record ] ) === false )
                             {// (Unable to insert the record)
                                 // Returning the value
                                 return
@@ -91,11 +114,45 @@ class RPC extends Controller
 
                             // Returning the value
                             return
-                                Server::send( new Response( new Status(200), [], UserDBModel::fetch()->fetch_ids()[0] ) )
+                                Server::send( new Response( new Status(200), [], UserModel::fetch()->fetch_ids()[0] ) )
                             ;
                         }
                         else
                         {// (Authorization has not been provided)
+                            if ( $app->request->client_ip !== $app->request->server_ip )
+                            {// (Request is not from localhost)
+                                // (Verifying the user)
+                                $response = UserService::verify( 1 );
+
+                                if ( $response->status->code !== 200 )
+                                {// (Session is not valid)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                    ;
+                                }
+                            }
+
+
+
+                            if ( UserModel::fetch()->where( 'username', RPCParser::$input['username'] )->exists() )
+                            {// (Record found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => 'Username already exists (user)' ] ] ) )
+                                ;
+                            }
+
+                            if ( UserModel::fetch()->where( 'email', RPCParser::$input['email'] )->exists() )
+                            {// (Record found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => 'Email already exists (user)' ] ] ) )
+                                ;
+                            }
+
+
+
                             // (Starting an authorization)
                             $response = AuthorizationService::start
                             (
@@ -113,7 +170,7 @@ class RPC extends Controller
                                         ]
                                     ],
 
-                                    'login' => true
+                                    'login'             => true
                                 ]
                             )
                             ;
@@ -129,7 +186,7 @@ class RPC extends Controller
 
 
                             // (Sending the authorization)
-                            $response = AuthorizationService::send( $response->body['token'], RPCParser::$input['email'], 'user.register' );
+                            $response = AuthorizationService::send( $response->body['token'], RPCParser::$input['email'], RPCParser::$subject . '.' . RPCParser::$verb );
                             
                             if ( $response->status->code !== 200 )
                             {// (Unable to send the authorization)

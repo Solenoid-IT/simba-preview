@@ -32,7 +32,7 @@ $helper =
     x make:controller <id>
 
     x mysql build <root-username>
-    x mysql import-models
+    x mysql extract-models
 
     x daemon register ?<name>
     x daemon start
@@ -1057,7 +1057,7 @@ switch ( $argv[1] )
                 }
             break;
 
-            case 'import-models':
+            case 'extract-models':
                 // (Including the file)
                 include_once( __DIR__ . '/autoload.php' );
 
@@ -1108,7 +1108,7 @@ switch ( $argv[1] )
 
 
                     // (Getting the value)
-                    $model_db_path = __DIR__ . "/models/DB/$profile/$db_name";
+                    $model_db_path = __DIR__ . "/models/$profile/$db_name";
 
                     if ( !is_dir( $model_db_path ) )
                     {// (Directory not found)
@@ -1162,7 +1162,7 @@ switch ( $argv[1] )
 
 
 
-                                namespace App\Models\DB\\$profile\\$db_name;
+                                namespace App\Models\\$profile\\$db_name;
 
 
 
@@ -1197,6 +1197,11 @@ switch ( $argv[1] )
                                             // (Getting the value)
                                             self::\$instance = new self();
                                         }
+
+
+
+                                        // (Resetting the condition)
+                                        ( self::\$instance )->reset();
 
 
 
@@ -1250,7 +1255,7 @@ switch ( $argv[1] )
 
 
                     // Printing the value
-                    echo "\n\nModels $models_csv have been imported\n\n\n";
+                    echo "\n\nModels $models_csv have been extracted\n\n\n";
                 }
             break;
         }

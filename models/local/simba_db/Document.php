@@ -2,16 +2,15 @@
 
 
 
-namespace App\Models\DB\local\simba_db;
+namespace App\Models\local\simba_db;
 
 
 
 use \Solenoid\MySQL\Model;
 
-use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Query;
 
-use \App\Stores\Connections\MySQL as MySQLConnectionsStore;
+use \App\Stores\Connections\MySQL\Store as MySQLConnectionsStore;
 
 
 
@@ -38,6 +37,11 @@ class Document extends Model
             // (Getting the value)
             self::$instance = new self();
         }
+
+
+
+        // (Resetting the condition)
+        ( self::$instance )->reset();
 
 
 

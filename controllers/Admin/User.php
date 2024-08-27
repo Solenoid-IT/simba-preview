@@ -24,9 +24,9 @@ use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Stores\Credentials as CredentialsStore;
 use \App\Middlewares\User as UserMiddleware;
 use \App\Middlewares\RPC\Parser as RPC;
-use \App\Models\DB\local\simba_db\User as UserDBModel;
-use \App\Models\DB\local\simba_db\Session as SessionDBModel;
-use \App\Models\DB\local\simba_db\Access as AccessDBModel;
+use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Session as SessionModel;
+use \App\Models\local\simba_db\Access as AccessModel;
 use \App\Services\Client as ClientService;
 use \App\Services\Login as LoginService;
 use \App\Services\Authorization as AuthorizationService;
@@ -85,7 +85,7 @@ class User extends Controller
 
 
 
-                        if ( UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
+                        if ( UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -117,7 +117,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user = UserDBModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->find();
+                        $user = UserModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->find();
 
                         if ( $user && $user->id !== $user_id )
                         {// Match failed
@@ -136,7 +136,7 @@ class User extends Controller
                         ]
                         ;
 
-                        if ( UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
+                        if ( UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -185,7 +185,7 @@ class User extends Controller
                             ]
                             ;
 
-                            if ( UserDBModel::fetch()->filter( [ [ 'id' => $authorization['data']['request']['input']['user'] ] ] )->update($record) === false )
+                            if ( UserModel::fetch()->filter( [ [ 'id' => $authorization['data']['request']['input']['user'] ] ] )->update($record) === false )
                             {// (Unable to update the record)
                                 // Returning the value
                                 return
@@ -214,7 +214,7 @@ class User extends Controller
 
 
                             // (Getting the value)
-                            $user = UserDBModel::fetch()->filter( [ [ 'email' => $new_email ] ] )->find();
+                            $user = UserModel::fetch()->filter( [ [ 'email' => $new_email ] ] )->find();
 
                             if ( $user && $user->id !== $user_id )
                             {// Match failed
@@ -227,7 +227,7 @@ class User extends Controller
 
 
                             // (Getting the value)
-                            $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
+                            $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
 
                             if ( $user === false )
                             {// Match failed
@@ -336,7 +336,7 @@ class User extends Controller
                             ;
                         }
 
-                        if ( UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
+                        if ( UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -412,7 +412,7 @@ class User extends Controller
                         ]
                         ;
 
-                        if ( UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
+                        if ( UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -451,7 +451,7 @@ class User extends Controller
 
 
                             // (Getting the value)
-                            $session = SessionDBModel::fetch()->filter( [ [ 'id' => $session_id ] ] )->find();
+                            $session = SessionModel::fetch()->filter( [ [ 'id' => $session_id ] ] )->find();
 
                             if ( $session === false )
                             {// (Session not found)
@@ -469,7 +469,7 @@ class User extends Controller
                             if ( $session_user_id !== $user_id )
                             {// Match failed
                                 // (Getting the value)
-                                $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
+                                $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->find();
 
                                 if ( $user->hierarchy !== 1 )
                                 {// Match failed
@@ -483,7 +483,7 @@ class User extends Controller
 
 
 
-                            if ( SessionDBModel::fetch()->filter( [ [ 'id' => $session_id ] ] )->delete() === false )
+                            if ( SessionModel::fetch()->filter( [ [ 'id' => $session_id ] ] )->delete() === false )
                             {// (Unable to delete the record)
                                 // Returning the value
                                 return
@@ -523,7 +523,7 @@ class User extends Controller
 
 
                         // (Getting the value)
-                        $user = UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
+                        $user = UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->get();
 
                         if ( $user === false )
                         {// (Record not found)
@@ -552,13 +552,13 @@ class User extends Controller
                             if ( $idk->user )
                             {// Value found
                                 // (Getting the value)
-                                $user = UserDBModel::fetch()->filter( [ [ 'id' => $idk->user ] ] )->find();
+                                $user = UserModel::fetch()->filter( [ [ 'id' => $idk->user ] ] )->find();
                             }
                             else
                             if ( $idk->data['username'] )
                             {// Value found
                                 // (Getting the value)
-                                $user = UserDBModel::fetch()->filter( [ [ 'username' => $idk->data['username'] ] ] )->find();
+                                $user = UserModel::fetch()->filter( [ [ 'username' => $idk->data['username'] ] ] )->find();
                             }
                             else
                             {// Match failed
@@ -676,7 +676,7 @@ class User extends Controller
                                     ]
                                     ;
 
-                                    if ( AccessDBModel::fetch()->insert( [ $record ] ) === false )
+                                    if ( AccessModel::fetch()->insert( [ $record ] ) === false )
                                     {// (Unable to insert the record)
                                         // Returning the value
                                         return
@@ -717,7 +717,7 @@ class User extends Controller
 
 
                                 // (Getting the value)
-                                $session = SessionDBModel::fetch()->filter( [ [ 'id' => $authorization->data->request->input->session ] ] )->find();
+                                $session = SessionModel::fetch()->filter( [ [ 'id' => $authorization->data->request->input->session ] ] )->find();
 
                                 if ( $session === false )
                                 {// (Session not found)
@@ -747,7 +747,7 @@ class User extends Controller
                                 ]
                                 ;
 
-                                if ( SessionDBModel::fetch()->filter( [ [ 'id' => $session->id ] ] )->update($record) === false )
+                                if ( SessionModel::fetch()->filter( [ [ 'id' => $session->id ] ] )->update($record) === false )
                                 {// (Unable to update the record)
                                     // Returning the value
                                     return
@@ -781,7 +781,7 @@ class User extends Controller
                                 ]
                                 ;
 
-                                if ( AccessDBModel::fetch()->insert( [ $record ] ) === false )
+                                if ( AccessModel::fetch()->insert( [ $record ] ) === false )
                                 {// (Unable to insert the record)
                                     // Returning the value
                                     return
@@ -799,7 +799,7 @@ class User extends Controller
                             else
                             {// Value not found
                                 // (Getting the value)
-                                $user = UserDBModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->find();
+                                $user = UserModel::fetch()->filter( [ [ 'username' => RPC::$input->username ] ] )->find();
 
                                 if ( $user === false )
                                 {// (User not found)
@@ -961,7 +961,7 @@ class User extends Controller
                                             ]
                                             ;
     
-                                            if ( AccessDBModel::fetch()->insert( [ $record ] ) === false )
+                                            if ( AccessModel::fetch()->insert( [ $record ] ) === false )
                                             {// (Unable to insert the record)
                                                 // Returning the value
                                                 return
@@ -1024,7 +1024,7 @@ class User extends Controller
                         ]
                         ;
 
-                        if ( UserDBModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
+                        if ( UserModel::fetch()->filter( [ [ 'id' => $user_id ] ] )->update($record) === false )
                         {// (Unable to update the record)
                             // Returning the value
                             return
@@ -1074,7 +1074,7 @@ class User extends Controller
                         else
                         {// Value not found
                             // (Getting the value)
-                            $user = UserDBModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
+                            $user = UserModel::fetch()->filter( [ [ 'email' => RPC::$input->email ] ] )->get();
 
                             if ( $user === false )
                             {// (User not found)

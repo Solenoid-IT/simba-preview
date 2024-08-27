@@ -2,11 +2,9 @@
 
 
 
-namespace App\Stores\Connections;
+namespace App\Stores\Connections\SMTP;
 
 
-
-use \Solenoid\Core\Store;
 
 use \Solenoid\Core\App\App;
 
@@ -14,7 +12,7 @@ use \Solenoid\SMTP\Connection;
 
 
 
-class SMTP extends Store
+class Store
 {
     private static self $instance;
 

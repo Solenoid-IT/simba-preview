@@ -18,8 +18,8 @@ use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 use \Solenoid\MySQL\DateTime;
 
-use \App\Models\DB\local\simba_db\Document as DocumentDBModel;
-use \App\Models\DB\local\simba_db\Visitor as VisitorDBModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
+use \App\Models\local\simba_db\Visitor as VisitorModel;
 use \App\Services\Client as ClientService;
 use \App\Middlewares\RPC\Parser as RPC;
 use \App\Middlewares\User as UserMiddleware;
@@ -44,7 +44,7 @@ class Docs extends Controller
 
 
         // (Getting the value)
-        $document = DocumentDBModel::fetch()->filter( [ [ 'path' => $path ] ] )->find();
+        $document = DocumentModel::fetch()->filter( [ [ 'path' => $path ] ] )->find();
 
         if ( $document )
         {// (Document found)
@@ -87,7 +87,7 @@ class Docs extends Controller
                     ;
 
                     // (Inserting the record)
-                    VisitorDBModel::fetch()->insert( [ $record ] );
+                    VisitorModel::fetch()->insert( [ $record ] );
                 }
                 catch (\Exception $e)
                 {
@@ -152,7 +152,7 @@ class Docs extends Controller
 
                         array_filter
                         (
-                            DocumentDBModel::fetch()->query()
+                            DocumentModel::fetch()->query()
                                 ->condition_start()
                                     ->where_field( null, 'datetime.option.active' )->is_not(null)
                                 ->condition_end()
@@ -301,9 +301,9 @@ class Docs extends Controller
                             return new Record($record);
                         },
 
-                        DocumentDBModel::fetch()->view
+                        DocumentModel::fetch()->view
                         (
-                            DocumentDBModel::fetch()
+                            DocumentModel::fetch()
                                 ->condition_start()
                                     ->where_field( null, 'datetime.option.active' )->is_not(null)
                                 ->condition_end()

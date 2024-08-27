@@ -13,7 +13,7 @@ use \App\Models\User as UserModel;
 $session = SessionsStore::fetch()->sessions['user'];
 
 // (Getting the value)
-$user = UserDBModel::fetch()->find( ( new Condition() )->filter( [ [ 'id' => $session->data['user'] ] ] ) );
+$user = UserModel::fetch()->find( ( new Condition() )->filter( [ [ 'id' => $session->data['user'] ] ] ) );
 
 
 
