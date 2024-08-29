@@ -65,7 +65,7 @@ $router = new Router
 
         '/admin' =>
         [
-            'GET' => Target::link( SPA::class, 'get' )
+            'GET' => Target::define( function () { header( 'Location: /admin/dashboard', true, 303 ); } )
         ],
 
         '/admin/login' =>
@@ -77,6 +77,7 @@ $router = new Router
 
         '/admin/dashboard' =>
         [
+            'GET' => Target::link( SPA::class, 'get' ),
             'RPC' => Target::link( Admin\Dashboard::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
         ],
 

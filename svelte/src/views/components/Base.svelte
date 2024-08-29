@@ -1,41 +1,60 @@
 <script>
 
-    import Header from '../components/Header.svelte';
     import Sidebar from '../components/Sidebar.svelte';
     import Footer from '../components/Footer.svelte';
-    
-    import ActivityStack from './ActivityStack.svelte';
+    import Header from '../components/Header.svelte';
 
 </script>
 
-<Header/>
+<!-- Page Wrapper -->
+<div id="wrapper">
+    <Sidebar/>
 
-<div class="sb-nav-fixed">
-    <div id="layoutSidenav">
-        <Sidebar/>
-    
-        <div id="layoutSidenav_content">
-            <main class="page-main">
-                <div class="container-fluid px-4">
-                    <slot name="body"/>
-                </div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
 
-                <ActivityStack/>
-            </main>
-    
-            <Footer/>
+        <!-- Main Content -->
+        <div id="content">
+            <Header/>
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <slot/>
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <Footer/>
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Logout Modal-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" href="login.html">Logout</a>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-
-    @media screen and (max-width: 860px)
-    {
-        :global( .row.resp )
-        {
-            flex-direction: column;
-        }
-    }
-
-</style>

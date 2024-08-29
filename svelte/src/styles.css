@@ -1,0 +1,11 @@
+.color-danger
+{
+    color: rgb(169, 20, 20);
+    font-weight: 700;
+}
+
+.color-warning
+{
+    color: rgb(169, 87, 20);
+    font-weight: 700;
+}

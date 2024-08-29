@@ -19,7 +19,7 @@ CREATE TABLE `hierarchy`
     `type`                               VARCHAR(255)                                             NOT NULL,
     `color`                              VARCHAR(255)                                                 NULL,
 
-    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
 
 
 
@@ -29,18 +29,33 @@ CREATE TABLE `hierarchy`
 )
 ;
 
+CREATE TABLE `group`
+(
+    `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
+
+    `name`                               VARCHAR(255)                                             NOT NULL,
+
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `datetime.update`                    TIMESTAMP                                                    NULL,
+
+
+
+    PRIMARY KEY (`id`),
+
+    UNIQUE  KEY (`name`)
+)
+;
+
 CREATE TABLE `user`
 (
     `id`                                  BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
-    `hierarchy`                           BIGINT UNSIGNED                                          NOT NULL,
+    `group`                               BIGINT UNSIGNED                                          NOT NULL,
+    `name`                                VARCHAR(255)                                             NOT NULL,
 
-    `username`                            VARCHAR(255)                                             NOT NULL,
     `email`                               VARCHAR(255)                                             NOT NULL,
 
-    `profile.name`                        VARCHAR(255)                                                 NULL,
-    `profile.surname`                     VARCHAR(255)                                                 NULL,
-    `profile.photo`                       MEDIUMBLOB                                                   NULL,
+    `hierarchy`                           BIGINT UNSIGNED                                          NOT NULL,
 
     `security.password`                   VARCHAR(255)                                                 NULL,
     `security.mfa`                        BOOLEAN                                    DEFAULT FALSE NOT NULL,
@@ -49,15 +64,21 @@ CREATE TABLE `user`
     `security.idk.signature`              LONGBLOB                                                     NULL,
     `security.idk.authentication`         BOOLEAN                                    DEFAULT FALSE NOT NULL,
 
-    `datetime.insert`                     TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    `datetime.changelog_mark_as_read`     TIMESTAMP                                                    NULL,
+    `datetime.insert`                     TIMESTAMP                                                NOT NULL,
+    `datetime.update`                     TIMESTAMP                                                    NULL,
+    `datetime.changelog_read`             TIMESTAMP                                                    NULL,
 
 
 
     PRIMARY KEY (`id`),
 
-    UNIQUE  KEY (`username`),
+    UNIQUE  KEY (`group`,`name`),
     UNIQUE  KEY (`email`),
+
+    FOREIGN KEY (`group`)
+    REFERENCES `group` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
 
     FOREIGN KEY (`hierarchy`)
     REFERENCES `hierarchy` (`id`)
@@ -65,8 +86,6 @@ CREATE TABLE `user`
     ON DELETE CASCADE
 )
 ;
-
-
 
 CREATE TABLE `session`
 (
@@ -76,7 +95,8 @@ CREATE TABLE `session`
 
     `user`                               BIGINT UNSIGNED                                              NULL,
 
-    `datetime.creation`                  TIMESTAMP                                                NOT NULL,
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `datetime.update`                    TIMESTAMP                                                    NULL,
     `datetime.expiration`                TIMESTAMP                                                NOT NULL,
 
 
@@ -90,9 +110,9 @@ CREATE TABLE `session`
 )
 ;
 
-CREATE TABLE `access`
+CREATE TABLE `activity`
 (
-    `login_method`                       VARCHAR(255)                                             NOT NULL,
+    `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
     `ip.address`                         VARCHAR(255)                                             NOT NULL,
     `ip.country.code`                    VARCHAR(255)                                             NOT NULL,
@@ -108,9 +128,11 @@ CREATE TABLE `access`
     `user`                               BIGINT UNSIGNED                                              NULL,
     `session`                            VARCHAR(255)                                                 NULL,
 
-    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
 
 
+
+    PRIMARY KEY (`id`),
 
     FOREIGN KEY (`user`)
     REFERENCES `user` (`id`)
@@ -124,17 +146,15 @@ CREATE TABLE `access`
 )
 ;
 
-
-
 CREATE TABLE `authorization`
 (
     `token`                              VARCHAR(255)                                             NOT NULL,
 
-    `callback_url`                       TEXT                                                         NULL,
-
     `data`                               LONGBLOB                                                     NULL,
 
-    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `callback_url`                       TEXT                                                         NULL,
+
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
     `datetime.expiration`                TIMESTAMP                                                NOT NULL,
 
 
@@ -144,6 +164,8 @@ CREATE TABLE `authorization`
 ;
 
 
+
+/*
 
 CREATE TABLE `document`
 (
@@ -194,8 +216,6 @@ CREATE TABLE `tag`
 )
 ;
 
-
-
 CREATE TABLE `document.tag`
 (
     `document`                                 BIGINT UNSIGNED                                          NOT NULL,
@@ -217,8 +237,6 @@ CREATE TABLE `document.tag`
 )
 ;
 
-
-
 CREATE TABLE `visitor`
 (
     `route`                              TEXT                                                     NOT NULL,
@@ -239,3 +257,5 @@ CREATE TABLE `visitor`
     `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL
 )
 ;
+
+*/

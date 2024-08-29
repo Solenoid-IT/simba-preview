@@ -32,143 +32,167 @@ class Authorization extends Controller
     # Returns [void]
     public function get (string $token, string $action)
     {
-        // (Getting the value)
-        $app = WebApp::fetch();
+        switch ( $action )
+        {
+            case 'decline':
+                // (Removing the authorization)
+                $response = AuthorizationService::remove( $token );
 
-
-
-        if ( $action === 'accept' )
-        {// Match OK
-            // (Getting the value)
-            $response = AuthorizationService::fetch( $token );
-
-            if ( $response->status->code !== 200 )
-            {// (Authorization is not valid)
-                // Returning the value
-                return
-                    Server::send( new Response( new Status(200), [], [ 'message' => 'Request has been processed' ] ) )
-                ;
-            }
-
-
-
-            // (Getting the value)
-            $authorization = $response->body;
-
-
-
-            if ( $authorization->data['request'] )
-            {// (Authorization contains a request to make)
-                // (Sending an http request)
-                $res = Client::send
-                (
-                    $app->request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
-                    'RPC',
-                    [
-                        'Action: ' . $authorization->data['request']['action'],
-                        'Content-Type: application/json',
-
-                        "Auth-Token: $token"
-                    ]
-                )
-                ;
-
-                if ( $res->fetch_tail()->status->code !== 200 )
-                {// (Request failed)
+                if ( $response->status->code !== 200 )
+                {// (Unable to remove the authorization)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status( $res->fetch_tail()->status->code ), [], $response->body ) )
+                        Server::send( $response )
                     ;
                 }
-            }
+            break;
 
-
-
-            if ( $authorization->data['login'] )
-            {// (Authorization contains a login to do)
+            case 'accept':
                 // (Getting the value)
-                $user = UserModel::fetch()->where( 'email', $authorization->data['request']['input']['email'] )->find();
+                $app = WebApp::fetch();
 
-                if ( $user === false )
-                {// (User not found)
+
+
+                // (Getting the value)
+                $response = AuthorizationService::fetch( $token );
+
+                if ( $response->status->code !== 200 )
+                {// (Authorization is not valid)
                     // Returning the value
                     return
-                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                        Server::send( new Response( new Status(200), [], [ 'message' => 'Request has been processed' ] ) )
                     ;
                 }
 
 
 
                 // (Getting the value)
-                $session = SessionsStore::fetch()->sessions['user'];
+                $authorization = $response->body;
 
 
 
-                if ( !$session->start() )
-                {// (Unable to start the session)
-                    // Returning the value
-                    return
-                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to start the session' ] ] ] ) )
+                if ( $authorization->data['request'] )
+                {// (Authorization contains a request to make)
+                    // (Sending an http request)
+                    $res = Client::send
+                    (
+                        $app->request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
+                        'RPC',
+                        [
+                            'Action: ' . $authorization->data['request']['action'],
+                            'Content-Type: application/json',
+
+                            "Auth-Token: $token"
+                        ]
+                    )
                     ;
+
+                    if ( $res->fetch_tail()->status->code !== 200 )
+                    {// (Request failed)
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status( $res->fetch_tail()->status->code ), [], $res->body ) )
+                        ;
+                    }
                 }
 
-                if ( !$session->regenerate_id() )
-                {// (Unable to regenerate the session id)
-                    // Returning the value
-                    return
-                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to regenerate the session id' ] ] ] ) )
-                    ;
+
+
+                if ( $authorization->data['login'] )
+                {// (Authorization contains a login to do)
+                    // (Getting the value)
+                    $user = UserModel::fetch()->where( 'email', $authorization->data['request']['input']['user']['email'] )->find();
+
+                    if ( $user === false )
+                    {// (Record not found)
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                        ;
+                    }
+
+
+
+                    // (Getting the value)
+                    $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                    if ( !$session->start() )
+                    {// (Unable to start the session)
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to start the session' ] ] ] ) )
+                        ;
+                    }
+
+                    if ( !$session->regenerate_id() )
+                    {// (Unable to regenerate the session id)
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to regenerate the session id' ] ] ] ) )
+                        ;
+                    }
+
+                    if ( !$session->set_duration() )
+                    {// (Unable to set the session duration)
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to set the session duration' ] ] ] ) )
+                        ;
+                    }
+
+
+
+                    // (Setting the value)
+                    $session->data = [];
+
+
+
+                    // (Getting the value)
+                    $session->data['user'] = $user->id;
                 }
-
-                if ( !$session->set_duration() )
-                {// (Unable to set the session duration)
-                    // Returning the value
-                    return
-                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to set the session duration' ] ] ] ) )
-                    ;
-                }
-
-
-
-                // (Setting the value)
-                $session->data = [];
 
 
 
                 // (Getting the value)
-                $session->data['user'] = $user->id;
+                $callback_url = $authorization->callback_url;
 
 
 
-                // (Setting the value)
-                $session->data['set_password'] = true;
-            }
-        }
+                // (Removing the authorization)
+                $response = AuthorizationService::remove( $token );
+
+                if ( $response->status->code !== 200 )
+                {// (Unable to remove the authorization)
+                    // Returning the value
+                    return
+                        Server::send( $response )
+                    ;
+                }
 
 
 
-        // (Removing the authorization)
-        $res = AuthorizationService::remove( $token );
+                if ( $callback_url )
+                {// Value found
+                    // Returning the value
+                    return
+                        Server::send( new Response( new Status(303), [ "Location: $callback_url" ] ) )
+                    ;
+                }
+            break;
 
-        if ( $res->status->code !== 200 )
-        {// (Unable to remove the authorization)
-            // Returning the value
-            return
-                Server::send( $res )
-            ;
-        }
+            default:
+                // (Removing the authorization)
+                $response = AuthorizationService::remove( $token );
 
-
-
-        if ( $action === 'accept' )
-        {// Match OK
-            if ( $authorization->callback_url )
-            {// Value found
-                // Returning the value
-                return
-                    Server::send( new Response( new Status(303), [ 'Location: ' . $authorization->callback_url ] ) )
-                ;
-            }
+                if ( $response->status->code !== 200 )
+                {// (Unable to remove the authorization)
+                    // Returning the value
+                    return
+                        Server::send( $response )
+                    ;
+                }
         }
 
 

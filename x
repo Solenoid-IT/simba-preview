@@ -1170,7 +1170,7 @@ switch ( $argv[1] )
 
                                 use \Solenoid\MySQL\Query;
 
-                                use \App\Stores\Connections\MySQL as MySQLConnectionsStore;
+                                use \App\Stores\Connections\MySQL\Store as MySQLConnectionsStore;
 
 
 

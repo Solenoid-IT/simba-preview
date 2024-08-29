@@ -1,14 +1,9 @@
-<footer class="py-4 bg-light mt-auto">
-    <div class="container-fluid px-4">
-        <div class="d-flex align-items-center justify-content-between small">
-            <div class="text-muted">Copyright &copy; Solenoid { new Date().getFullYear() }</div>
-            <div class="d-none">
-                <!-- svelte-ignore a11y-invalid-attribute -->
-                <a href="#">Privacy Policy</a>
-                &middot;
-                <!-- svelte-ignore a11y-invalid-attribute -->
-                <a href="#">Terms &amp; Conditions</a>
-            </div>
+<!-- Footer -->
+<footer class="sticky-footer bg-white">
+    <div class="container my-auto">
+        <div class="copyright text-center my-auto">
+            <span>Copyright &copy; Solenoid-IT { new Date().getFullYear() }</span>
         </div>
     </div>
 </footer>
+<!-- End of Footer -->

@@ -40,7 +40,7 @@ class Store
 
 
         // (Getting the value)
-        $this->sessions['user'] = Session::create
+        $this->sessions['user'] = new Session
         (
             [
                 'validate_id' => function ( $id )
@@ -58,7 +58,7 @@ class Store
                             function ($id)
                             {
                                 // Returning the value
-                                return SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->count() === 0;
+                                return !SessionModel::fetch()->where( 'id', $id )->exists();
                             },
                             function ()
                             {
@@ -72,28 +72,36 @@ class Store
                 'init' => function ( $id, $duration )
                 {
                     // (Getting the values)
-                    $creation   = time();
-                    $expiration = $creation + $duration;
+                    $current_timestamp    = time();
+                    $expiration_timestamp = $current_timestamp + $duration;
 
 
 
                     // Returning the value
-                    return SessionContent::create( $creation, $expiration, [] );
+                    return new SessionContent( $current_timestamp, $expiration_timestamp, [] );
                 },
 
                 'read' => function ( $id, $duration )
                 {
                     // (Getting the value)
-                    $session = SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->find();
+                    $session = SessionModel::fetch()->where( 'id', $id )->find();
 
-                    if ( $session !== false )
+                    if ( $session === false )
+                    {// (Record does not exist)
+                        // (Getting the values)
+                        $current_timestamp    = time();
+                        $expiration_timestamp = $current_timestamp + $duration;
+
+                        $content = [ 'creation' => $current_timestamp, 'expiration' => $expiration_timestamp, 'data' => [] ];
+                    }
+                    else
                     {// (Record exists)
                         // (Getting the value)
                         $content =
                         [
                             'data'       => json_decode( $session->data, true ),
 
-                            'creation'   => strtotime( $session->datetime->creation ),
+                            'creation'   => strtotime( $session->datetime->insert ),
                             'expiration' => strtotime( $session->datetime->expiration )
                         ]
                         ;
@@ -104,56 +112,77 @@ class Store
                             $content['data'] = [];
                         }
                     }
-                    else
-                    {// (Record does not exist)
-                        // (Getting the values)
-                        $creation   = time();
-                        $expiration = $creation + $duration;
-
-                        $content = [ 'creation' => $creation, 'expiration' => $expiration, 'data' => [] ];
-                    }
+                    
     
 
 
                     // Returning the value
-                    return SessionContent::create( $content['creation'], $content['expiration'], $content['data'] );
+                    return new SessionContent( $content['creation'], $content['expiration'], $content['data'] );
                 },
 
                 'write' => function ( $id, $content )
                 {
-                    // (Getting the value)
-                    $values =
-                    [
-                        'id'                  => $id,
+                    if ( SessionModel::fetch()->where( 'id', $id )->exists() )
+                    {// (Record found)
+                        // (Getting the value)
+                        $record =
+                        [
+                            'data'                => json_encode( $content->data ),
 
-                        'data'                => json_encode( $content->data ),
+                            'user'                => $content->data['user'],
 
-                        'user'                => $content->data['user'],
+                            'datetime.update'     => DateTime::fetch()
+                        ]
+                        ;
 
-                        'datetime.creation'   => DateTime::fetch( $content->creation ),
-                        'datetime.expiration' => DateTime::fetch( $content->expiration )
-                    ]
-                    ;
+                        if ( SessionModel::fetch()->where( 'id', $id )->update( $record ) === false )
+                        {// (Unable to update the record)
+                            // (Setting the value)
+                            $message = "Unable to update the record (session) :: " . SessionModel::fetch()->connection->get_error_text();
 
-                    if ( SessionModel::fetch()->set( $values, [ 'id' ] ) === false )
-                    {// (Unable to set the record)
-                        // (Setting the value)
-                        $message = "Unable to set the session";
+                            // Throwing an exception
+                            throw new \Exception($message);
 
-                        // Throwing an exception
-                        throw new \Exception($message);
+                            // Returning the value
+                            return;
+                        }
+                    }
+                    else
+                    {// (Record not found)
+                        // (Getting the value)
+                        $record =
+                        [
+                            'id'                  => $id,
 
-                        // Returning the value
-                        return;
+                            'data'                => json_encode( $content->data ),
+
+                            'user'                => $content->data['user'],
+
+                            'datetime.insert'     => DateTime::fetch( $content->creation ),
+                            'datetime.expiration' => DateTime::fetch( $content->expiration )
+                        ]
+                        ;
+
+                        if ( SessionModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // (Setting the value)
+                            $message = "Unable to insert the record (session) :: " . SessionModel::fetch()->connection->get_error_text();
+
+                            // Throwing an exception
+                            throw new \Exception($message);
+
+                            // Returning the value
+                            return;
+                        }
                     }
                 },
 
                 'change_id' => function ( $old, $new )
                 {
-                    if ( SessionModel::fetch()->filter( [ [ 'id' => $old ] ] )->update( [ 'id' => $new ] ) === false )
+                    if ( SessionModel::fetch()->where( 'id', $old )->update( [ 'id' => $new ] ) === false )
                     {// (Unable to update the record)
                         // (Setting the value)
-                        $message = "Unable to change the session";
+                        $message = "Unable to update the record (session) :: " . SessionModel::fetch()->connection->get_error_text();
 
                         // Throwing an exception
                         throw new \Exception($message);
@@ -171,10 +200,10 @@ class Store
 
                 'destroy' => function ( $id )
                 {
-                    if ( SessionModel::fetch()->filter( [ [ 'id' => $id ] ] )->delete() === false )
+                    if ( SessionModel::fetch()->where( 'id', $id )->delete() === false )
                     {// (Unable to delete the record)
                         // (Setting the value)
-                        $message = "Unable to remove the session";
+                        $message = "Unable to delete the record (session) :: " . SessionModel::fetch()->connection->get_error_text();
 
                         // Throwing an exception
                         throw new \Exception($message);
@@ -184,14 +213,7 @@ class Store
                     }
                 },
             ],
-            new Cookie
-            (
-                'user',
-                '.' . $app->id,
-                '/',
-                true,
-                true
-            ),
+            new Cookie( 'user', '.' . $app->id, '/', true, true),
             3600,
             true
         )

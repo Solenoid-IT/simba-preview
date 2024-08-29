@@ -17,6 +17,7 @@ use \Solenoid\HTTP\Cookie;
 
 use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Models\local\simba_db\User as UserModel;
+use \App\Models\local\simba_db\Group as GroupModel;
 
 
 
@@ -59,7 +60,7 @@ class User extends Service
             {// Value found
                 // Returning the value
                 return
-                    new Response( new Status(303), [ 'Location' => '/admin/user-activation' ] )
+                    new Response( new Status(303), [ 'Location: /admin/user-activation' ] )
                 ;
             }
             else
@@ -139,6 +140,53 @@ class User extends Service
         // Returning the value
         return
             new Response( new Status(200) )
+        ;
+    }
+
+    # Returns [Response]
+    public static function fetch_data (int $user)
+    {
+        // (Getting the value)
+        $user = UserModel::fetch()->where( 'id', $user )->find();
+
+        if ( $user === false )
+        {// (Record not found)
+            // Returning the value
+            return
+                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] )
+            ;
+        }
+
+
+
+        // (Getting the value)
+        $group = GroupModel::fetch()->where( 'id', $user->group )->find();
+
+        if ( $group === false )
+        {// (Record not found)
+            // Returning the value
+            return
+                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (group)' ] ] )
+            ;
+        }
+
+
+
+        // (Getting the value)
+        $data =
+        [
+            'user'         => $user->name,
+            'group'        => $group->name,
+
+            'password_set' => $user->password !== null
+        ]
+        ;
+
+
+
+        // Returning the value
+        return
+            new Response( new Status(200), [], $data )
         ;
     }
 }
