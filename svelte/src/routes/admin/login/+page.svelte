@@ -5,6 +5,7 @@
 <script>
 
     import App from '../../../views/App.svelte';
+    import Form from '../../../views/components/Form.svelte';
 
     import { envs } from '../../../envs.js';
 
@@ -12,6 +13,21 @@
 
     let loginErrMsg = 'error';
     let loginWrnMsg = 'warning';
+
+
+
+    let loginForm;
+
+
+
+    // Returns [Promise:bool]
+    async function onLoginFormSubmit ()
+    {
+        // (Validating the form)
+        const result = loginForm.validate();
+
+        console.debug(result);
+    }
 
 </script>
 
@@ -31,13 +47,14 @@
                                 <div class="p-5">
                                     <img class="mb-3" id="login_logo" src="{ envs.APP_URL }/assets/images/simba.jpg" alt="">
 
-                                    <form id="ahcid">
+                                    <Form id="login_form" on:submit={ onLoginFormSubmit } bind:api={ loginForm }>
                                         <div class="form-group">
-                                            <input type="text" class="form-control input" name="login" placeholder="Login">
+                                            <input type="text" class="form-control input" name="login" placeholder="Login" data-required>
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control input" name="password" placeholder="Password">
+                                            <input type="password" class="form-control input" name="password" placeholder="Password" data-required>
                                         </div>
+
                                         <div class="form-group">
                                             <div class="custom-control custom-checkbox small">
                                                 <input type="checkbox" class="custom-control-input" id="customCheck">
@@ -45,6 +62,7 @@
                                                     Me</label>
                                             </div>
                                         </div>
+
                                         <button type="submit" class="btn btn-primary btn-block">
                                             Login
                                         </button>
@@ -55,7 +73,7 @@
                                                 <span class="color-warning">{ loginWrnMsg }</span>
                                             </div>
                                         </div>
-                                    </form>
+                                    </Form>
                                     <hr>
                                     <div class="text-center">
                                         <a class="small" href="forgot-password.html">Forgot Password?</a>
