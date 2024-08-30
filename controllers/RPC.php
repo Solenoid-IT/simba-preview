@@ -8,6 +8,7 @@ namespace App\Controllers;
 
 use \Solenoid\Core\MVC\Controller;
 
+use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
@@ -19,8 +20,11 @@ use \Solenoid\Core\App\WebApp;
 use \App\Middlewares\RPC\Parser as RPCParser;
 use \App\Models\local\simba_db\User as UserModel;
 use \App\Models\local\simba_db\Group as GroupModel;
+use \App\Models\local\simba_db\Activity as ActivityModel;
+use \App\Models\local\simba_db\Session as SessionModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Services\User as UserService;
+use \App\Services\Client as ClientService;
 use \App\Stores\Sessions\Store as SessionsStore;
 
 
@@ -314,14 +318,16 @@ class RPC extends Controller
                         ;
                     break;
 
-                    /*case 'change_password':
+                    case 'change_password':
                         // (Verifying the user)
                         $response = UserService::verify();
 
                         if ( $response->status->code !== 200 )
                         {// (Verification is failed)
-                            // Closing the process
-                            exit( Server::send( $response ) );
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
                         }
 
 
@@ -332,62 +338,90 @@ class RPC extends Controller
 
 
                         // (Getting the value)
-                        $account_id = $session->data['user'];
+                        $user_id = $session->data['user'];
 
 
 
                         // (Getting the value)
-                        $entry =
+                        $record =
                         [
-                            #'password'        => ( new Password( $request->input['password'] ) )->hash( PASSWORD_BCRYPT ),
                             'password'        => password_hash( RPCParser::$input['password'], PASSWORD_BCRYPT ),
+
                             'update_datetime' => DateTime::fetch()
                         ]
                         ;
 
-                        if ( !AccountModel::where( 'id', $account_id )->update( $entry ) )
+                        if ( UserModel::fetch()->where( 'id', $user_id )->update( $record ) === false )
                         {// (Unable to update the record)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to update the record (account)" ] ] ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to update the record (user)" ] ] ) )
+                            ;
                         }
 
 
 
                         // (Getting the value)
-                        $entry =
+                        $response = ClientService::detect();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
                         [
-                            'account'         => $account_id,
-                            'action'          => str_replace( '::', '.', $request->action ),
-                            'ip'              => $_SERVER['REMOTE_ADDR'],
-                            'user_agent'      => $_SERVER['HTTP_USER_AGENT'],
-                            'insert_datetime' => DateTime::fetch()
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'session'              => $session->id,
+                            'ip'                   => $_SERVER['REMOTE_ADDR'],
+                            'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'insert_datetime'      => DateTime::fetch()
                         ]
                         ;
 
-                        if ( !ActivityModel::create( $entry ) )
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) )
                         {// (Unable to insert the record)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
                         }
 
 
 
-                        // Closing the process
-                        exit( Server::send( new Response( new Status(200) ) ) );
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
                     break;
-
+                    
                     case 'login':
                         // (Getting the value)
-                        $req = Request::fetch();
+                        $request = Request::fetch();
 
 
 
                         if ( $request->headers['Auth-Token'] )
                         {// Value found
-                            if ( $req->client_ip !== $req->server_ip )
+                            if ( $request->client_ip !== $request->server_ip )
                             {// (Request is not from localhost)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
                             }
 
 
@@ -397,8 +431,10 @@ class RPC extends Controller
 
                             if ( $res->status->code !== 200 )
                             {// (Unable to fetch the authorization)
-                                // Closing the process
-                                exit( Server::send( $res ) );
+                                // Returning the value
+                                return
+                                    Server::send( $res )
+                                ;
                             }
 
 
@@ -409,12 +445,12 @@ class RPC extends Controller
 
 
                             // (Getting the value)
-                            $entry =
+                            $record =
                             [
                                 'data'            => json_encode
                                 (
                                     [
-                                        'account' => $authorization->data['request']['input']['account']
+                                        'user'    => $authorization->data['request']['input']['user']
                                     ]
                                 ),
 
@@ -422,110 +458,110 @@ class RPC extends Controller
                             ]
                             ;
 
-                            if ( !SessionModel::where( 'id', $authorization->data['request']['input']['session'] )->update( $entry ) )
+                            if ( SessionModel::fetch()->where( 'id', $authorization->data['request']['input']['session'] )->update( $record ) === false )
                             {// (Unable to update the record)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to update the record (session)' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to update the record (session)' ] ] ) )
+                                ;
                             }
 
 
 
                             // (Getting the value)
-                            $entry =
-                            [
-                                'account'         => $authorization->data['request']['input']['account'],
-                                'action'          => str_replace( '::', '.', $authorization->data['request']['action'] ),
-                                'ip'              => $authorization->data['request']['input']['ip'],
-                                'user_agent'      => $authorization->data['request']['input']['user_agent'],
-                                'insert_datetime' => DateTime::fetch()
-                            ]
-                            ;
+                            $response = ClientService::detect( $authorization->data['request']['input']['ip'], $authorization->data['request']['input']['user_agent'] );
 
-                            if ( !ActivityModel::create( $entry ) )
-                            {// (Unable to insert the record)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) ) );
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to detect the client)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                ;
                             }
 
 
 
                             // (Getting the value)
-                            $entry =
+                            $record =
                             [
-                                'ip'              => $authorization->data['request']['input']['ip'],
-                                'user_agent'      => $authorization->data['request']['input']['user_agent'],
-                                'browser'         => '',
-                                'os'              => '',
-                                'hw'              => '',
-                                'account'         => $authorization->data['request']['input']['account'],
-                                'session'         => $authorization->data['request']['input']['session'],
-                                'login_method'    => 'MFA',
-                                'insert_datetime' => DateTime::fetch()
+                                'user'                 => $authorization->data['request']['input']['user'],
+                                'action'               => str_replace( '::', '.', $authorization->data['request']['action'] ),
+                                'session'              => $authorization->data['request']['input']['session'],
+                                'ip'                   => $authorization->data['request']['input']['ip'],
+                                'user_agent'           => $authorization->data['request']['input']['user_agent'],
+                                'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                'ip_info.isp'          => $response->body['ip']['isp'],
+                                'ua_info.browser'      => $response->body['ua']['browser'],
+                                'ua_info.os'           => $response->body['ua']['os'],
+                                'ua_info.hw'           => $response->body['ua']['hw'],
+                                'insert_datetime'      => DateTime::fetch()
                             ]
                             ;
 
-                            if ( !AccessModel::create( $entry ) )
+                            if ( !ActivityModel::fetch()->insert( [ $record ] ) )
                             {// (Unable to insert the record)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (access)" ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                ;
                             }
 
 
 
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(200) ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(200) ) )
+                            ;
                         }
                         else
                         {// Value not found
                             // (Getting the values)
-                            [ $user, $group ] = explode( '@', $request->input['login'] );
-                            $password         = $request->input['password'];
+                            [ $user, $group ] = explode( '@', RPCParser::$input['login'] );
+                            $password         = RPCParser::$input['password'];
 
 
 
                             // (Getting the value)
-                            $user = UserModel::where( 'name', $user )->first();
-
-                            if ( !$user )
-                            {// (Record not found)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
-                            }
-
-
-
-                            // (Getting the value)
-                            $group = GroupModel::where( 'name', $group )->first();
+                            $group = GroupModel::fetch()->where( 'name', $group )->find();
 
                             if ( !$group )
                             {// (Record not found)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
                             }
 
 
 
                             // (Getting the value)
-                            $account = AccountModel::where( [ [ 'user', $user->id ], [ 'group', $group->id ] ] )->first();
+                            $user = UserModel::fetch()->where( [ [ 'group', $group->id ], [ 'name', $user ] ] )->find();
 
-                            if ( !$account )
+                            if ( !$user )
                             {// (Record not found)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
                             }
 
 
 
-                            if ( $account->password === null )
+                            if ( $user->password === null )
                             {// Value not found
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
                             }
 
-                            if ( !password_verify( $password, $account->password ) )
+                            if ( !password_verify( $password, $user->password ) )
                             {// Match failed
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
                             }
 
 
@@ -535,21 +571,32 @@ class RPC extends Controller
 
                             if ( !$session->start() )
                             {// (Unable to start the session)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) )
+                                ;
                             }
 
                             if ( !$session->regenerate_id() )
                             {// (Unable to regenerate the session id)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to regenerate the session id' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to regenerate the session id' ] ] ) )
+                                ;
                             }
 
                             if ( !$session->set_duration() )
                             {// (Unable to set the session duration)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to set the session duration' ] ] ) ) );
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to set the session duration' ] ] ) )
+                                ;
                             }
+
+
+
+                            // (Setting the value)
+                            $session->data = [];
 
 
 
@@ -560,12 +607,12 @@ class RPC extends Controller
                                 [
                                     'request'            =>
                                     [
-                                        'endpoint_path'  => $req->url->path,
-                                        'action'         => $request->action,
+                                        'endpoint_path'  => $request->url->path,
+                                        'action'         => RPCParser::$subject . '.' . RPCParser::$verb,
                                         'input'          =>
                                         [
                                             'session'    => $session->id,
-                                            'account'    => $account->id,
+                                            'user'       => $user->id,
 
                                             'ip'         => $_SERVER['REMOTE_ADDR'],
                                             'user_agent' => $_SERVER['HTTP_USER_AGENT']
@@ -575,12 +622,14 @@ class RPC extends Controller
                                 ;
 
                                 // (Starting the authorization)
-                                $response = AuthorizationService::start( $data, $req->url->fetch_base() . '/admin/dashboard' );
+                                $response = AuthorizationService::start( $data );
 
                                 if ( $response->status->code !== 200 )
                                 {// (Unable to start the authorization)
-                                    // Closing the process
-                                    exit( Server::send( $response ) );
+                                    // Returning the value
+                                    return
+                                        Server::send( $response )
+                                    ;
                                 }
 
 
@@ -592,27 +641,27 @@ class RPC extends Controller
 
 
                                 // (Sending the authorization)
-                                $response = AuthorizationService::send( $token, $account->email, implode( '.', [ $request->subject, $request->verb ] ) );
+                                $response = AuthorizationService::send( $token, $user->email, implode( '.', [ RPCParser::$subject, RPCParser::$verb ] ) );
 
                                 if ( $response->status->code !== 200 )
                                 {// (Unable to send the authorization)
-                                    // Closing the process
-                                    exit( Server::send( $response ) );
+                                    // Returning the value
+                                    return
+                                        Server::send( $response )
+                                    ;
                                 }
 
 
 
-                                // (Setting the value)
-                                $session->data =
-                                [
-                                    'authorization' => $token
-                                ]
+                                // (Getting the value)
+                                $session->data['authorization'] = $token;
+
+
+
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) )
                                 ;
-
-
-
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) ) );
                             }
                         }
                     break;
@@ -623,38 +672,57 @@ class RPC extends Controller
 
                         if ( !$session->start() )
                         {// (Unable to start the session)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) )
+                            ;
                         }
 
-
+                        
 
                         // (Getting the value)
                         $token = $session->data['authorization'];
 
+                        if ( !$token )
+                        {// Value not found
+                            if ( !$session->destroy() )
+                            {// (Unable to destroy the session)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to destroy the session' ] ] ) )
+                                ;
+                            }
+
+
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                            ;
+                        }
+
 
 
                         // (Setting the time limit)
-                        set_time_limit(0);
+                        set_time_limit(120);
 
 
-
-                        // (Getting the value)
-                        $start_timestamp = time();
 
                         while (true)
                         {// Processing each clock
                             // (Getting the value)
-                            $current_timestamp = time();
+                            $response = AuthorizationService::fetch( $token );
 
-                            if ( $current_timestamp - $start_timestamp >= 2 * 60 ) break;
-
-
-
-                            if ( AuthorizationModel::where( 'token', $token )->count() === 0 )
+                            if ( $response->status->code === 404 )
                             {// (Authorization not found)
-                                // Closing the process
-                                exit( Server::send( new Response( new Status(200), [], [ 'location' => '/admin/dashboard' ] ) ) );
+                                // (Closing the session)
+                                $session->close();
+
+
+
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(200), [], [ 'location' => '/admin/dashboard' ] ) )
+                                ;
                             }
 
 
@@ -665,8 +733,10 @@ class RPC extends Controller
 
 
 
-                        // Closing the process
-                        exit( Server::send( new Response( new Status(408) ) ) );
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(408) ) )
+                        ;
                     break;
 
                     case 'logout':
@@ -675,8 +745,10 @@ class RPC extends Controller
 
                         if ( $response->status->code !== 200 )
                         {// (Verification is failed)
-                            // Closing the process
-                            exit( Server::send( $response ) );
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
                         }
 
 
@@ -693,15 +765,19 @@ class RPC extends Controller
 
                         if ( !$session->destroy() )
                         {// (Unable to destroy the session)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to destroy the session' ] ] ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to destroy the session' ] ] ) )
+                            ;
                         }
 
 
 
-                        // Closing the process
-                        exit( Server::send( new Response( new Status(200) ) ) );
-                    break;*/
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
                 }
             break;
         }

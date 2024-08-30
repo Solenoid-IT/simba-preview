@@ -114,19 +114,22 @@ CREATE TABLE `activity`
 (
     `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
-    `ip.address`                         VARCHAR(255)                                             NOT NULL,
-    `ip.country.code`                    VARCHAR(255)                                             NOT NULL,
-    `ip.country.name`                    VARCHAR(255)                                             NOT NULL,
-    `ip.isp`                             VARCHAR(255)                                             NOT NULL,
+    `user`                               BIGINT UNSIGNED                                              NULL,
+    `action`                             VARCHAR(255)                                                 NULL,
 
+    `session`                            VARCHAR(255)                                                 NULL,
+
+    `ip`                                 VARCHAR(255)                                             NOT NULL,
     `user_agent`                         LONGTEXT                                                 NOT NULL,
 
-    `browser`                            VARCHAR(255)                                             NOT NULL,
-    `os`                                 VARCHAR(255)                                             NOT NULL,
-    `hw`                                 VARCHAR(255)                                             NOT NULL,
+    `ip_info.address`                    VARCHAR(255)                                             NOT NULL,
+    `ip_info.country.code`               VARCHAR(255)                                             NOT NULL,
+    `ip_info.country.name`               VARCHAR(255)                                             NOT NULL,
+    `ip_info.isp`                        VARCHAR(255)                                             NOT NULL,
 
-    `user`                               BIGINT UNSIGNED                                              NULL,
-    `session`                            VARCHAR(255)                                                 NULL,
+    `ua_info.browser`                    VARCHAR(255)                                             NOT NULL,
+    `ua_info.os`                         VARCHAR(255)                                             NOT NULL,
+    `ua_info.hw`                         VARCHAR(255)                                             NOT NULL,
 
     `datetime.insert`                    TIMESTAMP                                                NOT NULL,
 

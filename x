@@ -254,11 +254,14 @@ switch ( $argv[1] )
 
 
         // (Getting the value)
+        $blade_cache_folder_path = explicit_path( __DIR__, $app_config->blade->cache );
+
+        // (Getting the value)
         $folder_paths =
         [
             explicit_path( __DIR__, $app_config->storage->folder_path ),
             explicit_path( __DIR__, $app_config->blade->views ),
-            explicit_path( __DIR__, $app_config->blade->cache )
+            $blade_cache_folder_path
         ]
         ;
 
@@ -267,6 +270,11 @@ switch ( $argv[1] )
             // (Executing the cmd)
             system("sudo chmod 2775 \"$folder_path\"");
         }
+
+
+
+        // (Executing the cmd)
+        system("sudo rm -rf \"$blade_cache_folder_path/*\"");
 
 
 
@@ -933,6 +941,106 @@ switch ( $argv[1] )
     case 'mysql':
         switch ( $argv[2] )
         {
+            case 'reset':
+                # Returns [string]
+                function replace_values (string $content, array $values)
+                {
+                    foreach ( $values as $k => $v )
+                    {// Processing each entry
+                        // (Getting the value)
+                        $content = str_replace( $k, $v, $content );
+                    }
+
+
+
+                    // Returning the value
+                    return $content;
+                }
+
+
+
+                // (Getting the value)
+                $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+
+
+
+                // (Getting the value)
+                $credentials = json_decode( file_get_contents( $app_config->credentials ) )->mysql;
+
+
+
+                // (Setting the value)
+                $dbs = [];
+
+                foreach ( glob( __DIR__ . '/databases/*/*' ) as $folder_path )
+                {// Processing each entry
+                    // (Getting the values)
+                    $profile = basename( dirname( $folder_path ) );
+                    $db_name = basename( $folder_path );
+
+
+
+                    // (Getting the value)
+                    $constants =
+                    [
+                        '%( DB_NAME )%' => $db_name,
+                        '%( DB_USER )%' => $credentials->profiles->{ $profile }->{ $db_name }->username,
+                        '%( DB_PASS )%' => $credentials->profiles->{ $profile }->{ $db_name }->password
+                    ]
+                    ;
+
+
+
+                    // (Setting the value)
+                    $sql_context_pad_length = 86;
+
+
+
+                    // (Getting the value)
+                    $merge_sql_file = "$folder_path/merge.sql";
+
+                    // (Writing to the file)
+                    file_put_contents( $merge_sql_file, '' );
+
+
+
+                    foreach ( [ 'reset.sql' ] as $file_name )
+                    {// Processing each entry
+                        // (Getting the value)
+                        $sql_context = str_pad( '-- ' . strtoupper( pathinfo( $file_name, PATHINFO_FILENAME ) ) . ' ', $sql_context_pad_length, '-', STR_PAD_RIGHT );
+
+
+
+                        // (Writing to the file)
+                        file_put_contents( $merge_sql_file, "$sql_context\n\n\n" . replace_values( file_get_contents( "$folder_path/$file_name" ), $constants ) . "\n\n\n", FILE_APPEND );
+                    }
+
+
+
+                    // (Executing the cmd)
+                    system("sudo mysql -u $credentials->rpu_username -p < $merge_sql_file");
+
+                    // (Removing the file)
+                    unlink( $merge_sql_file );
+
+
+
+                    // (Appending the value)
+                    $dbs[] = "$profile/$db_name";
+                }
+
+
+
+                if ( $dbs )
+                {// Value is not empty
+                    // (Getting the value)
+                    $dbs_csv = '"' . implode( '";"', $dbs ) . '"';
+
+                    // Printing the value
+                    echo "\n\nDatabases $dbs_csv have been reset\n\n\n";
+                }
+            break;
+
             case 'build':
                 # Returns [string]
                 function replace_values (string $content, array $values)
@@ -990,6 +1098,11 @@ switch ( $argv[1] )
 
                     // (Getting the value)
                     $merge_sql_file = "$folder_path/merge.sql";
+
+                    // (Writing to the file)
+                    file_put_contents( $merge_sql_file, '' );
+
+
 
                     foreach ( [ 'schema.sql', 'contents.sql', 'user.sql' ] as $file_name )
                     {// Processing each entry

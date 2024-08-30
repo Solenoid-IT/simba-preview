@@ -8,58 +8,113 @@ namespace App\Services;
 
 use \Solenoid\Core\Service;
 
-use \Solenoid\Core\App\WebApp;
+use \Solenoid\HTTP\Request;
+use \Solenoid\HTTP\Status;
+use \Solenoid\HTTP\Response;
+use \Solenoid\HTTP\Client\Client as HttpClient;
 
 
 
 class Client extends Service
 {
-    # Returns [assoc] | Throws [Exception]
-    public static function detect ()
+    # Returns [Response] | Throws [Exception]
+    public static function detect (?string $ip = null, ?string $ua = null)
     {
         // (Getting the value)
-        $app = WebApp::fetch();
+        $request = Request::fetch();
 
 
 
-        // (Getting the values)
-        $client_ip = $app->request->client_ip;
-        $b64e_ua   = base64_encode( $app->request->headers['User-Agent'] );
+        // (Sending a request)
+        $response = HttpClient::send
+        (
+            'https://api.solenoid.it/ip-info/1',
+            'RPC',
+            [
+                'Action: ip::fetch_data',
+                'Content-Type: application/json'
+            ],
+            [
+                'ip' => $ip ?? $request->client_ip
+            ]
+        )
+        ;
+
+        if ( $response->fetch_tail()->status->code !== 200 )
+        {// (Request failed)
+            // Returning the value
+            return
+                new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body )
+            ;
+        }
 
 
 
-        // (Getting the values)
-        $ip = json_decode( file_get_contents( "https://api.solenoid.it/ip-info/1/$client_ip"  ), true );
-        $ua = json_decode( file_get_contents( "https://api.solenoid.it/ua-info/1/$b64e_ua" ), true );
+        // (Getting the value)
+        $ip_info =
+        [
+            'address'     => $response->body['ip']['address'],
+            'country'     =>
+            [
+                'code'    => $response->body['geolocation']['country']['code'],
+                'name'    => $response->body['geolocation']['country']['name']
+            ],
+            'isp'         => $response->body['connection']['isp']
+        ]
+        ;
+
+
+
+        // (Sending a request)
+        $response = HttpClient::send
+        (
+            'https://api.solenoid.it/ua-info/1',
+            'RPC',
+            [
+                'Action: ua::fetch_data',
+                'Content-Type: application/json'
+            ],
+            [
+                'ua' => $ua ?? $request->headers['User-Agent']
+            ]
+        )
+        ;
+
+        if ( $response->fetch_tail()->status->code !== 200 )
+        {// (Request failed)
+            // Returning the value
+            return
+                new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body )
+            ;
+        }
+
+
+
+        // (Getting the value)
+        $ua_info =
+        [
+            'browser' => $response->body['browser']['summary'],
+            'os'      => $response->body['os']['summary'],
+            'hw'      => $response->body['hw']['summary']
+        ]
+        ;
 
 
 
         // (Getting the value)
         $data =
         [
-            'ip'              =>
-            [
-                'address'     => $ip['ip']['address'],
-                'country'     =>
-                [
-                    'code'    => $ip['geolocation']['country']['code'],
-                    'name'    => $ip['geolocation']['country']['name']
-                ],
-                'isp'         => $ip['connection']['isp'],
-            ],
-
-            'user_agent'      => $ua['user_agent'],
-
-            'browser'         => $ua['browser']['summary'],
-            'os'              => $ua['os']['summary'],
-            'hw'              => $ua['hw']['summary']
+            'ip' => $ip_info,
+            'ua' => $ua_info
         ]
         ;
 
 
 
         // Returning the value
-        return $data;
+        return
+            new Response( new Status(200), [], $data )
+        ;
     }
 }
 
