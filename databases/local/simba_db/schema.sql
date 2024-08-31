@@ -57,6 +57,9 @@ CREATE TABLE `user`
 
     `hierarchy`                           BIGINT UNSIGNED                                          NOT NULL,
 
+    `birth.name`                          VARCHAR(255)                                                 NULL,
+    `birth.surname`                       VARCHAR(255)                                                 NULL,
+
     `security.password`                   VARCHAR(255)                                                 NULL,
     `security.mfa`                        BOOLEAN                                    DEFAULT FALSE NOT NULL,
 
@@ -122,7 +125,6 @@ CREATE TABLE `activity`
     `ip`                                 VARCHAR(255)                                             NOT NULL,
     `user_agent`                         LONGTEXT                                                 NOT NULL,
 
-    `ip_info.address`                    VARCHAR(255)                                             NOT NULL,
     `ip_info.country.code`               VARCHAR(255)                                             NOT NULL,
     `ip_info.country.name`               VARCHAR(255)                                             NOT NULL,
     `ip_info.isp`                        VARCHAR(255)                                             NOT NULL,

@@ -9,3 +9,20 @@
     color: rgb(169, 87, 20);
     font-weight: 700;
 }
+
+
+
+.fieldset
+{
+	padding: 16px 10px;
+	/*border: 1px solid #e3e6f0;*/
+	border: 1px solid #d3d7e4;
+	border-radius: 4px;
+}
+
+.fieldset legend
+{
+	width: auto;
+	padding: 4px;
+	font-size: 14px;
+}

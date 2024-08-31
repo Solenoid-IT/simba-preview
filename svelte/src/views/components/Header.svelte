@@ -1,3 +1,368 @@
+<script>
+
+    import { envs } from '../../envs.js';
+    import { user } from '../../stores/user.js';
+
+    import Modal from '../../views/components/Modal.svelte';
+    import Form from '../../views/components/Form.svelte';
+    import PasswordField from './PasswordField.svelte';
+
+    import { goto } from '$app/navigation';
+
+
+
+    let profileModal;
+    let securityModal;
+
+
+
+    let changeNameForm;
+
+    // Returns [Promise:bool]
+    async function onChangeNameFormSubmit ()
+    {
+        // (Validating the form)
+        let result = changeNameForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        if ( !confirm('Are you sure to change the name ?') ) return false;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_name',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $user.user.name = result.entries['name'].value;
+
+
+
+        // (Alerting the value)
+        alert('Name has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let changeEmailForm;
+
+    // Returns [Promise:bool]
+    async function onChangeEmailFormSubmit ()
+    {
+        // (Validating the form)
+        let result = changeEmailForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        if ( !confirm('Are you sure to change the email ?') ) return false;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_email',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $user.user.email = result.entries['email'].value;
+
+
+
+        // (Alerting the value)
+        alert('Email has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let changeBirthDataForm;
+
+    // Returns [Promise:bool]
+    async function onChangeBirthDataFormSubmit ()
+    {
+        // (Validating the form)
+        let result = changeBirthDataForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        if ( !confirm('Are you sure to change the birth data ?') ) return false;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_birth_data',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the values)
+        $user.user.birth_name    = result.entries['birth.name'].value;
+        $user.user.birth_surname = result.entries['birth.surname'].value;
+
+
+
+        // (Alerting the value)
+        alert('Birth data has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let changePasswordForm;
+
+    // Returns [Promise:bool]
+    async function onChangePasswordFormSubmit ()
+    {
+        // (Validating the form)
+        let result = changePasswordForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        if ( !confirm('Are you sure to change the password ?') ) return false;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_password',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+        }
+
+
+
+        // (Resetting the form)
+        changePasswordForm.reset();
+
+
+
+        // (Alerting the value)
+        alert('Password has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let logoutModal;
+
+    // Returns [Promise:bool]
+    async function logout ()
+    {
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::logout',
+                'Content-Type: application/json'
+            ],
+            '',
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code === 200 )
+        {// (Request OK)
+            // (Moving to the URL)
+            window.location.href = '/admin/login';
+        }
+        else
+        {// (Request failed)
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    $:
+        if ( $user )
+        {// Value found
+            if ( !$user.password_set )
+            {// (Password is not set)
+                // (Showing the modal)
+                securityModal.show();
+
+
+
+                // (Resetting the form)
+                changePasswordForm.reset();
+
+                // (Validating the form)
+                changePasswordForm.validate();
+            }
+        }
+
+</script>
+
 <!-- Topbar -->
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
@@ -10,8 +375,7 @@
     <form
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
-            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                aria-label="Search" aria-describedby="basic-addon2">
+            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for...">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search fa-sm"></i>
@@ -166,38 +530,124 @@
 
         <div class="topbar-divider d-none d-sm-block"></div>
 
-        <!-- Nav Item - User Information -->
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                <img class="img-profile rounded-circle"
-                    src="img/undraw_profile.svg">
-            </a>
-            <!-- Dropdown - User Information -->
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Profile
+        { #if $user }
+            <!-- Nav Item - User Information -->
+            <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{ $user.user.name }@{ $user.group.name }</span>
+                    <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                 </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-lock fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Security
-                </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Activity Log
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Logout
-                </a>
-            </div>
-        </li>
+                <!-- Dropdown - User Information -->
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                    aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="#" on:click={ profileModal.show }>
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Profile
+                    </a>
+                    <a class="dropdown-item" href="#" on:click={ securityModal.show }>
+                        <i class="fas fa-lock fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Security
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Activity Log
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" on:click={ logoutModal.show }>
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Logout
+                    </a>
+                </div>
+            </li>
+        { /if }
 
     </ul>
 
 </nav>
 <!-- End of Topbar -->
+
+
+
+{ #if $user }
+    <Modal id="profile_modal" title="Profile" bind:api={ profileModal }>
+        <Form id="change_name_form" bind:api={ changeNameForm } on:submit={ onChangeNameFormSubmit }>
+            <fieldset class="fieldset">
+                <legend>Name</legend>
+                <div class="row">
+                    <div class="col d-flex align-items-center">
+                        <input type="text" class="form-control input" name="name" value="{ $user.user.name }" data-required>
+
+                        <button class="btn btn-primary ml-3">Save</button>
+                    </div>
+                </div>
+            </fieldset>
+        </Form>
+
+        <br>
+
+        <Form id="change_email_form" bind:api={ changeEmailForm } on:submit={ onChangeEmailFormSubmit }>
+            <fieldset class="fieldset">
+                <legend>Email</legend>
+                <div class="row">
+                    <div class="col d-flex align-items-center">
+                        <input type="text" class="form-control input" name="email" value="{ $user.user.email }" data-required>
+
+                        <button class="btn btn-primary ml-3">Save</button>
+                    </div>
+                </div>
+            </fieldset>
+        </Form>
+
+        <br>
+
+        <Form id="change_birth_data_form" bind:api={ changeBirthDataForm } on:submit={ onChangeBirthDataFormSubmit }>
+            <fieldset class="fieldset">
+                <legend>Birth Data</legend>
+                <div class="row">
+                    <div class="col d-flex align-items-end" style="justify-content: space-between;">
+                        <label class="m-0">
+                            Name
+                            <input type="text" class="form-control input" name="birth.name" value="{ $user.user.birth_name }">
+                        </label>
+                        
+                        <label class="m-0 ml-3">
+                            Surname
+                            <input type="text" class="form-control input" name="birth.surname" value="{ $user.user.birth_surname }">
+                        </label>
+
+                        <button class="btn btn-primary ml-3">Save</button>
+                    </div>
+                </div>
+            </fieldset>
+        </Form>
+    </Modal>
+
+    <Modal id="security_modal" title="Security" bind:api={ securityModal }>
+        <Form id="change_password_form" bind:api={ changePasswordForm } on:submit={ onChangePasswordFormSubmit }>
+            <div class="row">
+                <div class="col d-flex align-items-start">
+                    <PasswordField name="password" generable measurable required/>
+
+                    <button type="submit" class="btn btn-primary ml-3">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </Form>
+    </Modal>
+
+    <Modal id="logout_modal" title="Logout" bind:api={ logoutModal }>
+        <div class="row">
+            <div class="col">
+                Are you sure to terminate this session ?
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col text-right">
+                <button class="btn btn-secondary" on:click={ logoutModal.hide }>Close</button>
+                <botton class="btn btn-primary ml-3" on:click={ logout }>OK</botton>
+            </div>
+        </div>
+    </Modal>
+{ /if }

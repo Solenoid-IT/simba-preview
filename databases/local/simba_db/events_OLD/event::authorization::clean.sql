@@ -1,4 +1,4 @@
-CREATE EVENT `%( DB_NAME )%`.`authorization_cleaner`
+CREATE EVENT `%( DB_NAME )%`.`event::authorization::clean`
 ON SCHEDULE EVERY 1 HOUR
 STARTS '2023-12-12 00:00:00'
 DO
@@ -6,5 +6,5 @@ DO
     FROM
         `%( DB_NAME )%`.`authorization`
     WHERE
-        `datetime.expiration` <= CURRENT_TIMESTAMP
+        CURRENT_TIMESTAMP >= `datetime.expiration`
 ;

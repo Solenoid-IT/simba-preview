@@ -6,63 +6,41 @@
 
 
 
-    // (Setting the values)
-    const pvt = {};
-    const self = {};
+    export let id;
+    export let width = '640px';
+    export let title;
 
+    let element;
 
+    export let api;
 
-    // (Setting the values)
-    pvt.visible            = true;
-    pvt.eventListener      = {};
+    $:
+        if ( element )
+        {// Value found
+            // (Setting the value)
+            api = {};
 
-    self.element           = null;
+            // Returns [void]
+            api.show = function ()
+            {
+                // (Showing the modal)
+                jQuery(element).modal('show');
+            }
 
+            // Returns [void]
+            api.hide = function ()
+            {
+                // (Showing the modal)
+                jQuery(element).modal('hide');
+            }
 
-
-    // Returns [void]
-    self.open = function ()
-    {
-        // (Showing the modal)
-        jq(self.element).modal('show');
-    }
-
-    // Returns [void]
-    self.close = function ()
-    {
-        // (Hiding the modal)
-        jq(self.element).modal('hide');
-    }
-
-
-
-    // Returns [void]
-    self.addEventListener = function (type, callback)
-    {
-        if ( typeof pvt.eventListener[ type ] === 'undefined' ) pvt.eventListener[ type ] = [];
-
-        // (Appending the value)
-        pvt.eventListener[ type ].push( callback );
-    }
-
-    // Returns [void]
-    self.triggerEvent = function (type, data)
-    {
-        if ( typeof pvt.eventListener[ type ] === 'undefined' ) return;
-
-        for (const callback of pvt.eventListener[ type ])
-        {// Processing each entry
-            // (Calling the function)
-            callback( data );
+            // (Listening for the event)
+            jQuery(element).on('hidden.bs.modal', function () {
+                // (Triggering the event)
+                dispatch('close');
+            });
         }
-    }
-
-
-
-    export let id    = null;
-    export let width = null;
-    export let api   = null;
-
+    
 
 
     // (Listening for the event)
@@ -70,49 +48,33 @@
     (
         function ()
         {
-            // (Listening for the event)
-            jq(self.element).on('hidden.bs.modal', function () {
-                // (Triggering the event)
-                dispatch('close');
-            });
+            // (Removing the element)
+            jQuery('.modal-backdrop').remove();
         }
     )
     ;
 
-
-
-    // (Getting the value)
-    api = self;
-
 </script>
 
-{ #if api }
-    { #if pvt.visible }
-        <div class="modal fade { $$restProps.class }" id="{ id }" tabindex="-1" role="dialog" aria-hidden="true" bind:this={ self.element }>
-            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: { width };">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <slot name="title"/>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={ () => { self.close(); } }>
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <slot name="body"/>
-                </div>
+<!-- Modal -->
+<div class="modal fade" id="{ id }" tabindex="-1" role="dialog" aria-hidden="true" bind:this={ element }>
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: { width }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{ title }</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <div class="modal-body">
+                <slot/>
             </div>
+            <!--
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+            -->
         </div>
-    { /if }
-{ /if }
-
-<style>
-
-    .modal
-    {
-        
-    }
-
-</style>
+    </div>
+</div>

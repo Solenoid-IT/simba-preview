@@ -27,7 +27,7 @@ Authorization Request for <b>{{ $type }}</b>
                 Browser
             </th>
             <td style="text-align: right;">
-                {{ $client['browser'] }}
+                {{ $client['ua']['browser'] }}
             </td>
         </tr>
         <tr>
@@ -35,7 +35,7 @@ Authorization Request for <b>{{ $type }}</b>
                 OS
             </th>
             <td style="text-align: right;">
-                {{ $client['os'] }}
+                {{ $client['ua']['os'] }}
             </td>
         </tr>
         <tr>
@@ -43,7 +43,7 @@ Authorization Request for <b>{{ $type }}</b>
                 HW
             </th>
             <td style="text-align: right;">
-                {{ $client['hw'] }}
+                {{ $client['ua']['hw'] }}
             </td>
         </tr>
         <tr>

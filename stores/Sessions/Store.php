@@ -10,7 +10,6 @@ use \Solenoid\Core\App\WebApp;
 
 use \Solenoid\HTTP\Session;
 use \Solenoid\HTTP\SessionContent;
-use \Solenoid\HTTP\Cookie;
 
 use \Solenoid\KeyGen\Generator;
 use \Solenoid\KeyGen\Token;
@@ -18,6 +17,7 @@ use \Solenoid\KeyGen\Token;
 use \Solenoid\MySQL\DateTime;
 
 use \App\Models\local\simba_db\Session as SessionModel;
+use \App\Stores\Cookies\Store as CookiesStore;
 
 
 
@@ -213,7 +213,7 @@ class Store
                     }
                 },
             ],
-            new Cookie( 'user', '.' . $app->id, '/', true, true),
+            CookiesStore::fetch()->cookies['user'],
             3600,
             true
         )

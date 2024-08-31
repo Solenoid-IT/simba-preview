@@ -13,9 +13,9 @@ use \Solenoid\Core\App\WebApp;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\URL;
-use \Solenoid\HTTP\Cookie;
 
 use \App\Stores\Sessions\Store as SessionsStore;
+use \App\Stores\Cookies\Store as CookiesStore;
 use \App\Models\local\simba_db\User as UserModel;
 use \App\Models\local\simba_db\Group as GroupModel;
 
@@ -80,39 +80,42 @@ class User extends Service
 
 
 
-            // (Getting the value)
-            $fwd_route = $app->request->cookies['route'] ?? ( $_SERVER['REQUEST_URI'] ?? '/admin' );
-
-            if ( in_array( $fwd_route, [ '/admin/login', '/admin/logout' ] ) )
+            if ( $app->request->method === 'GET' )
             {// Match OK
-                // (Setting the value)
-                $fwd_route = '/admin';
-            }
-
-            if ( $fwd_route === '/user' && $app->request->headers['Action'] === 'session::validate' )
-            {// Match OK
-                // (Setting the value)
-                $fwd_route = '/admin';
-
-
-
                 // (Getting the value)
-                $referer = $app->request->headers['Referer'];
+                $fwd_route = $app->request->cookies['route'] ?? ( $_SERVER['REQUEST_URI'] ?? '/admin/dashboard' );
 
-                if ( $referer )
-                {// Value found
-                    // (Getting the value)
-                    $url = URL::parse( $referer );
-
-                    // (Getting the value)
-                    $fwd_route = $url->path . ( $url->query ? '?' . $url->query : '' );
+                if ( in_array( $fwd_route, [ '/admin/login', '/admin/logout' ] ) )
+                {// Match OK
+                    // (Setting the value)
+                    $fwd_route = '/admin/dashboard';
                 }
+
+                if ( $fwd_route === '/user' && $app->request->headers['Action'] === 'session::validate' )
+                {// Match OK
+                    // (Setting the value)
+                    $fwd_route = '/admin';
+
+
+
+                    // (Getting the value)
+                    $referer = $app->request->headers['Referer'];
+
+                    if ( $referer )
+                    {// Value found
+                        // (Getting the value)
+                        $url = URL::parse( $referer );
+
+                        // (Getting the value)
+                        $fwd_route = $url->path . ( $url->query ? '?' . $url->query : '' );
+                    }
+                }
+
+
+
+                // (Setting the cookie)
+                CookiesStore::fetch()->cookies['user']->set( $fwd_route );
             }
-
-
-
-            // (Setting the cookie)
-            ( new Cookie( 'fwd_route', '.' . $app->id, '/', true, true ) )->set( $fwd_route );
 
 
 
@@ -175,10 +178,22 @@ class User extends Service
         // (Getting the value)
         $data =
         [
-            'user'         => $user->name,
-            'group'        => $group->name,
+            'user'              =>
+            [
+                'name'          => $user->name,
 
-            'password_set' => $user->password !== null
+                'email'         => $user->email,
+
+                'birth.name'    => $user->birth->name,
+                'birth.surname' => $user->birth->surname
+            ],
+
+            'group'             =>
+            [
+                'name'          => $group->name
+            ],
+
+            'password_set'      => $user->security->password !== null
         ]
         ;
 

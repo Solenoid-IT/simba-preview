@@ -6,13 +6,16 @@
 
     import App from '../../../views/App.svelte';
     import Form from '../../../views/components/Form.svelte';
+    import PasswordField from '../../../views/components/PasswordField.svelte';
 
     import { envs } from '../../../envs.js';
 
+    import { goto } from '$app/navigation';
 
 
-    let loginErrMsg = 'error';
-    let loginWrnMsg = 'warning';
+
+    let loginErrMsg = '';
+    let loginWrnMsg = '';
 
 
 
@@ -24,9 +27,87 @@
     async function onLoginFormSubmit ()
     {
         // (Validating the form)
-        const result = loginForm.validate();
+        let result = loginForm.validate();
 
-        console.debug(result);
+        if ( !result.valid ) return false;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::login',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            // (Getting the value)
+            loginErrMsg = response.body['error']['message'];
+            loginWrnMsg = '';
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the value)
+        loginErrMsg = '';
+        loginWrnMsg = 'Confirm operation by email ...';
+
+
+
+        // (Sending the request)
+        const res = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::login_wait',
+                'Content-Type: application/json'
+            ],
+            '',
+            'json',
+            true
+        )
+        ;
+
+        if ( res.status.code !== 200 )
+        {// (Request failed)
+            // (Getting the value)
+            loginErrMsg = res.body['error']['message'];
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the value)
+        loginWrnMsg = '';
+
+
+
+        // (Moving to the URL)
+        goto( res.body['location'] );
+
+
+
+        // Returning the value
+        return true;
     }
 
 </script>
@@ -52,7 +133,7 @@
                                             <input type="text" class="form-control input" name="login" placeholder="Login" data-required>
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control input" name="password" placeholder="Password" data-required>
+                                            <PasswordField name="password" placeholder="Password" required/>
                                         </div>
 
                                         <div class="form-group">

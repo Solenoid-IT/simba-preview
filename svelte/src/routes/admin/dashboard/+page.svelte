@@ -9,6 +9,7 @@
 
     import { envs } from '../../../envs.js';
     import { appReady } from '../../../stores/appReady.js';
+    import { user } from '../../../stores/user.js';
 
 
 
@@ -54,6 +55,11 @@
             // Returning the value
             return false;
         }
+
+
+
+        // (Getting the value)
+        $user = response.body;
 
 
 

@@ -42,6 +42,13 @@
 
 
 
+            // Returns [void]
+            api.reset = function ()
+            {
+                // (Resetting the form)
+                element.reset();
+            }
+
             // Returns [object]
             api.validate = function ()
             {
@@ -56,16 +63,11 @@
                         // (Setting the value)
                         const values = {};
 
-                        // (Iterating each entry)
-                        result.entries.forEach
-                        (
-                            function (entry)
-                            {
-                                // (Getting the value)
-                                values[ entry.name ] = entry.value;
-                            }
-                        )
-                        ;
+                        for ( const name in result.entries )
+                        {// Processing each entry
+                            // (Getting the value)
+                            values[ name ] = result.entries[ name ].value;
+                        }
 
 
 

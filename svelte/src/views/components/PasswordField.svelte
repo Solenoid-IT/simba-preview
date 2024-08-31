@@ -1,42 +1,26 @@
 <script>
 
-    import { createEventDispatcher } from 'svelte';
-
-    const dispatch = createEventDispatcher();
-
-
-
     // (Setting the values)
-    const pvt = {};
-    const self = {};
+    let element = null;
+    let value   = '';
+    let visible = false;
 
 
 
-    // (Setting the values)
-    pvt.visible         = true;
-    pvt.eventListener   = {};
-    pvt.currentPassword =
-    {
-        'rank':                0,
-        'threshold':
-        {
-            'color':           'transparent',
-            'description':     ''
-        },
-        'progressDescription': ''
-    }
-    ;
+    export let name;
+    export let placeholder;
+    export let required;
 
-    self.element          = null;
-    self.passwordVisible  = false;
-    self.inputElement     = null;
-    self.generator        =
+
+
+    export let generator =
     {
         'length':     32,
         'minEntropy': 128
     }
     ;
-    self.strengthMeter    =
+
+    export let strengthMeter =
     {
         'thresholds':
         [
@@ -65,14 +49,57 @@
                 'description': 'Strong'
             }
         ],
+
         'entropy': 128
     }
     ;
 
 
 
+    export let generable  = false;
+    export let measurable = false;
+
+
+
+    export let currentMeter =
+    {
+        'rank':                0,
+        'threshold':
+        {
+            'color':           'transparent',
+            'description':     ''
+        },
+        'progressDescription': '',
+        'visible':             false
+    }
+    ;
+
+
+
+    // Returns [void]
+    function showPassword ()
+    {
+        // (Setting the property)
+        element.querySelector('input').type = 'text';
+
+        // (Setting the value)
+        visible = true;
+    }
+
+    // Returns [void]
+    function hidePassword ()
+    {
+        // (Setting the property)
+        element.querySelector('input').type = 'password';
+
+        // (Setting the value)
+        visible = false;
+    }
+
+
+
     // Returns [number]
-    pvt.random = function (min, max)
+    function random (min, max)
     {
         // Returning the value
         return Math.floor( Math.random() * ( max - min + 1 ) ) + min;
@@ -81,7 +108,7 @@
 
 
     // Returns [number]
-    self.absRank = function (password)
+    function calcAbsRank (password)
     {
         // (Setting the value)
         let numPossibleCharacters = 0;
@@ -124,26 +151,26 @@
     }
 
     // Returns [number]
-    self.rank = function (password)
+    function calcRank (password)
     {
         // (Getting the value)
-        let absRank = self.absRank( password );
+        let absRank = calcAbsRank( password );
 
-        if ( absRank > self.strengthMeter.entropy ) absRank = self.strengthMeter.entropy;
+        if ( absRank > strengthMeter.entropy ) absRank = strengthMeter.entropy;
 
 
 
         // Returning the value
-        return ( absRank / self.strengthMeter.entropy ) * 100;
+        return ( absRank / strengthMeter.entropy ) * 100;
     }
 
 
 
-    // Returns [object]
-    self.generatePassword = function (length, minEntropy)
+    // Returns [string]
+    function generatePassword (length, minEntropy)
     {
-        if ( typeof length === 'undefined' ) length = self.generator.length;
-        if ( typeof minEntropy === 'undefined' ) minEntropy = self.generator.minEntropy;
+        if ( typeof length === 'undefined' ) length = generator.length;
+        if ( typeof minEntropy === 'undefined' ) minEntropy = generator.minEntropy;
 
 
 
@@ -165,12 +192,12 @@
             for (let i = 0; i < length; i++)
             {// Iterating each index
                 // (Appending the value)
-                password += characters.at( pvt.random( 0, characters.length - 1 ) );
+                password += characters.at( random( 0, characters.length - 1 ) );
             }
 
 
 
-            if ( self.absRank( password ) >= minEntropy ) break;
+            if ( calcAbsRank( password ) >= minEntropy ) break;
         }
 
 
@@ -182,116 +209,116 @@
 
 
     // Returns [void]
-    self.addEventListener = function (type, callback)
+    function togglePasswordVisibility ()
     {
-        if ( typeof pvt.eventListener[ type ] === 'undefined' ) pvt.eventListener[ type ] = [];
-
-        // (Appending the value)
-        pvt.eventListener[ type ].push( callback );
+        if ( visible )
+        {// Match OK
+            // (Hiding the password)
+            hidePassword();
+        }
+        else
+        {// Match failed
+            // (Showing the password)
+            showPassword();
+        }
     }
+
+
 
     // Returns [void]
-    self.triggerEvent = function (type, data)
+    function drawMeter ()
     {
-        for (const callback of pvt.eventListener[ type ])
-        {// Processing each entry
-            // (Calling the function)
-            pvt.eventListener[ type ]( data );
+        if ( value.length === 0 )
+        {// Value is empty
+            // (Setting the value)
+            currentMeter.visible = false;
+        }
+        else
+        {// Value is not empty
+            // (Getting the values)
+            currentMeter.rank = calcRank( value );
+
+            let thresholdIndex = Math.floor( ( currentMeter.rank * strengthMeter.thresholds.length ) / 100 );
+            thresholdIndex     = thresholdIndex === strengthMeter.thresholds.length ? strengthMeter.thresholds.length - 1 : thresholdIndex;
+
+            currentMeter.threshold           = strengthMeter.thresholds[ thresholdIndex ];
+            currentMeter.progressDescription = `${ currentMeter.threshold.description } ( ${ Math.floor( calcAbsRank( value ) ) } bits )`;
+
+
+
+            // (Setting the value)
+            currentMeter.visible = true;
         }
     }
 
 
 
-    export let id  = null;
-    export let api = null;
-
-    export let name           = null;
-    export let placeholder    = null;
-    export let required       = null;
-    export let generateButton = false;
-    export let strengthMeter  = false;
-
-
-
     $:
-        if ( self.element )
-        {// Value found
-            // (Getting the value)
-            api = self;
+        if ( value.length === 0 )
+        {// Value is empty
+            // (Setting the value)
+            currentMeter.visible = false;
         }
-
-
-
+    
     $:
-        if ( self.inputElement )
+        if ( value )
         {// Value found
-            // (Listening for the event)
-            self.inputElement.addEventListener('input', function (event) {
-                // (Getting the values)
-                pvt.currentPassword.rank = self.rank( this.value );
-
-                let thresholdIndex = Math.floor( ( pvt.currentPassword.rank * self.strengthMeter.thresholds.length ) / 100 );
-                thresholdIndex     = thresholdIndex === self.strengthMeter.thresholds.length ? self.strengthMeter.thresholds.length - 1 : thresholdIndex;
-
-                pvt.currentPassword.threshold = self.strengthMeter.thresholds[ thresholdIndex ];
-                pvt.currentPassword.progressDescription = `${ pvt.currentPassword.threshold.description } ( ${ Math.floor( self.absRank( this.value ) ) } bits )`;
-            });
+            // (Drawing the meter)
+            drawMeter();
         }
 
 </script>
 
-{ #if pvt.visible }
-    <div class="swg swg-passwordfield { $$restProps.class }" id={ id } bind:this={ self.element }>
-        <div class="passwordfield-main input-group mb-3">
-            <input type="{ self.passwordVisible ? 'text' : 'password' }" class="form-control input" name="{ name }" placeholder="{ placeholder }" data-required={ required ? 'true' : null } bind:this={ self.inputElement }>
-            <div class="input-group-append d-flex">
-                { #if generateButton }
-                    <button type="button" class="btn btn-secondary passwordfield-button" value="generate" title="generate"
-                        on:click={ () => { self.inputElement.value = self.generatePassword(); self.inputElement.dispatchEvent( new Event('input') ); } }
-                    >
-                        <i class="fa-solid fa-dice"></i>
-                    </button>
-                { /if }
-    
-                <button type="button" class="btn btn-secondary passwordfield-button" value="toggle" title="{ self.passwordVisible ? 'hide' : 'show' }" style="width: 46px;"
-                    on:click={ () => { self.passwordVisible = !self.passwordVisible; } }
-                >
-                    { #if self.passwordVisible }
-                        <span class="passwordfield-button-state" data-value="password">
-                            <i class="fa-solid fa-eye-slash"></i>
-                        </span>
-                    { :else }
-                        <span class="passwordfield-button-state" data-value="text">
-                            <i class="fa-solid fa-eye"></i>
-                        </span>
-                    { /if }
+<div class="passwordfield">
+    <div class="input-group" bind:this={ element }>
+        <input type="password" class="form-control input" name="{ name }" placeholder="{ placeholder }" data-required={ required } bind:value={ value } on:input={ drawMeter }>
+        <div class="input-group-append">
+            { #if generable }
+                <button class="btn btn-secondary p-0" type="button" style="width: 40px;" title="generate" on:click={ () => { value = generatePassword(); } }>
+                    <i class="fas fa-fw fa-dice"></i>
                 </button>
-            </div>
-        </div>
+            { /if }
 
-        { #if strengthMeter }
-            <div class="passwordfield-strengthmeter">
-                <div class="progress-bar">
-                    <div class="progress-value" style="width: { pvt.currentPassword.rank + '%' }; background-color: { pvt.currentPassword.threshold.color };">{ Math.floor( pvt.currentPassword.rank ) + ' %' }</div>
-                </div>
-                <div class="progress-description">{ pvt.currentPassword.progressDescription }</div>
-            </div>
-        { /if }
+            <button class="btn btn-secondary p-0" type="button" style="width: 40px;" title="{ visible ? 'hide' : 'show' }" on:click={ togglePasswordVisibility }>
+                { #if !visible }
+                    <i class="fas fa-fw fa-eye"></i>
+                { /if }
+
+                { #if visible }
+                    <i class="fas fa-fw fa-eye-slash"></i>
+                { /if }
+            </button>
+        </div>
     </div>
-{ /if }
+
+    { #if measurable }
+        <div class="passwordfield-strengthmeter">
+            { #if currentMeter.visible }
+                <div class="progress-bar">
+                    <div class="progress-value" style="width: { currentMeter.rank + '%' }; background-color: { currentMeter.threshold.color };">{ Math.floor( currentMeter.rank ) + ' %' }</div>
+                </div>
+                <div class="progress-description">{ currentMeter.progressDescription }</div>
+            { /if }
+        </div>
+    { /if }
+</div>
 
 <style>
 
-    .swg.swg-passwordfield
+    .passwordfield
     {
-        
+        flex-grow: 1;
     }
-
-
 
     .passwordfield-strengthmeter
     {
+        margin-top: 10px;
+    }
 
+    .passwordfield-strengthmeter .progress-bar
+    {
+        background-color: transparent;
+        border-radius: 4px;
     }
 
     .passwordfield-strengthmeter .progress-value

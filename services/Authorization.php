@@ -105,6 +105,21 @@ class Authorization extends Service
         // (Getting the value)
         $connection = SMTPConnectionsStore::fetch()->connections['service'];
 
+
+
+        // (Getting the value)
+        $response = ClientService::detect();
+
+        if ( $response->status->code !== 200 )
+        {// (Request failed)
+            // Returning the value
+            return
+                new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to detect the client' ] ] )
+            ;
+        }
+
+
+
         // (Creating a Mail)
         $mail = new Mail
         (
@@ -129,7 +144,7 @@ class Authorization extends Service
                     [
                         'app_name'     => $app->name,
                         'type'         => $type,
-                        'client'       => ClientService::detect(),
+                        'client'       => $response->body,
                         'endpoint_url' => $app->request->url->fetch_base() . "/admin/authorization/$token"
                     ]
                 )
@@ -163,7 +178,7 @@ class Authorization extends Service
         {// (Authorization not found)
             // Returning the value
             return
-                new Response( new Status(401), [], [ 'error' => [ 'message' => 'Authorization is not valid' ] ] )
+                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Authorization not found' ] ] )
             ;
         }
 
@@ -171,7 +186,7 @@ class Authorization extends Service
         {// (Authorization is expired)
             // Returning the value
             return
-                new Response( new Status(401), [], [ 'error' => [ 'message' => 'Authorization is not valid' ] ] )
+                new Response( new Status(404), [], [ 'error' => [ 'message' => 'Authorization not found' ] ] )
             ;
         }
 
