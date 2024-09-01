@@ -22,6 +22,14 @@
 
         <!-- Solenoid/HTTP -->
         <script src="https://{{ $envs['BE_HOST'] }}/assets/lib/solenoid/solenoid.http.js"></script>
+    
+        <!-- Solenoid/File -->
+        <script src="https://{{ $envs['BE_HOST'] }}/assets/lib/solenoid/solenoid.file.js"></script>
+
+
+
+        <!-- FontAwesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 
 

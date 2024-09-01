@@ -10,6 +10,8 @@
 
     import { envs } from '../envs.js';
 
+    import { idk } from '../stores/idk.js';
+
 
 
     let activityBarVisible = false;
@@ -47,6 +49,11 @@
 
             // (Setting the value)
             $appReady = true;
+
+
+
+            // (Getting the value)
+            $idk = localStorage.getItem( 'idk' );
         }
     )
     ;

@@ -2,100 +2,85 @@
 
     import { createEventDispatcher } from 'svelte';
 
+
+
     const dispatch = createEventDispatcher();
 
 
 
-    // (Setting the values)
-    const pvt = {};
-    const self = {};
+    export let id;
+    export let name;
 
-
-
-    // (Setting the values)
-    pvt.visible         = true;
-    pvt.eventListener   = {};
-
-    self.element          = null;
+    let element;
 
 
 
     // Returns [void]
-    self.addEventListener = function (type, callback)
+    function onInputChange (event)
     {
-        if ( typeof pvt.eventListener[ type ] === 'undefined' ) pvt.eventListener[ type ] = [];
+        // (Triggering the event)
+        dispatch( 'change', event );
+    }
 
-        // (Appending the value)
-        pvt.eventListener[ type ].push( callback );
+
+
+    // Returns [void]
+    function onCheckedChange (value)
+    {
+        // (Getting the property)
+        element.querySelector('.input').checked = value;
     }
 
     // Returns [void]
-    self.triggerEvent = function (type, data)
+    function onDisabledChange (value)
     {
-        for (const callback of pvt.eventListener[ type ])
-        {// Processing each entry
-            // (Calling the function)
-            callback( data );
-        }
+        // (Getting the property)
+        element.querySelector('.input').disabled = value;
     }
 
 
 
-    export let id  = null;
-    export let api = null;
-
-    export let name    = null;
-    export let checked = false;
-
-
+    export let api;
 
     $:
-        if ( self.element )
+        if ( element )
         {// Value found
-            // (Getting the value)
-            api = self;
+            // (Setting the value)
+            api = {};
+
+            // (Setting the values)
+            api.checked  = false;
+            api.disabled = false;
         }
 
-
-
     $:
-        if ( self.inputElement )
+        if ( element )
         {// Value found
-            // (Listening for the event)
-            self.inputElement.addEventListener('input', function (event) {
-                // (Getting the values)
-                pvt.currentPassword.rank = self.rank( this.value );
-
-                let thresholdIndex = Math.floor( ( pvt.currentPassword.rank * self.strengthMeter.thresholds.length ) / 100 );
-                thresholdIndex     = thresholdIndex === self.strengthMeter.thresholds.length ? self.strengthMeter.thresholds.length - 1 : thresholdIndex;
-
-                pvt.currentPassword.threshold = self.strengthMeter.thresholds[ thresholdIndex ];
-                pvt.currentPassword.progressDescription = `${ pvt.currentPassword.threshold.description } ( ${ Math.floor( self.absRank( this.value ) ) } bits )`;
-            });
+            // (Calling the functions)
+            onCheckedChange( api.checked );
+            onDisabledChange( api.disabled );
         }
 
 </script>
 
-{ #if pvt.visible }
-    <div class="swg swg-switch { $$restProps.class }" id={ id } bind:this={ self.element }>
-        <label class="toggle">
-            <input type="checkbox" class="toggle__input input" name="{ name }" checked={ checked ? 'checked' : null } on:change={ (event) => { self.triggerEvent( 'change', { 'originalEvent': event } ); } }>
+<div class="switch { $$restProps.class }" id={ id } bind:this={ element }>
+    <label class="toggle">
+        <input type="checkbox" class="toggle__input input" name="{ name }" on:change={ (event) => { onInputChange(event); } }>
 
-            <span class="toggle-track">
-                <span class="toggle-indicator">
-                    <!-- 	This check mark is optional	 -->
-                    <span class="checkMark">
-                        <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
-                            <path d="M9.86 18a1 1 0 01-.73-.32l-4.86-5.17a1.001 1.001 0 011.46-1.37l4.12 4.39 8.41-9.2a1 1 0 111.48 1.34l-9.14 10a1 1 0 01-.73.33h-.01z"></path>
-                        </svg>
-                    </span>
+        <span class="toggle-track">
+            <span class="toggle-indicator">
+                <!-- 	This check mark is optional	 -->
+                <span class="checkMark">
+                    <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                        <path d="M9.86 18a1 1 0 01-.73-.32l-4.86-5.17a1.001 1.001 0 011.46-1.37l4.12 4.39 8.41-9.2a1 1 0 111.48 1.34l-9.14 10a1 1 0 01-.73.33h-.01z"></path>
+                    </svg>
                 </span>
             </span>
+        </span>
 
-            <slot name="body"/>
-        </label>
-    </div>
-{ /if }
+        <slot/>
+    </label>
+</div>
 
 <style>
 
@@ -175,7 +160,7 @@
 
     .toggle__input:checked + .toggle-track .toggle-indicator
     {
-        background-color: var(--company-color);
+        background-color: #4e73df;
         transform: translateX(30px);
     }
     .toggle__input:checked + .toggle-track .toggle-indicator .checkMark

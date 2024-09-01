@@ -17,6 +17,12 @@ use \Solenoid\MySQL\DateTime;
 
 use \Solenoid\Core\App\WebApp;
 
+use \Solenoid\Encryption\KeyPair;
+use \Solenoid\Encryption\RSA;
+use \Solenoid\IDK\IDK;
+
+use \Solenoid\RPC\Request as RPCRequest;
+
 use \App\Middlewares\RPC\Parser as RPCParser;
 use \App\Models\local\simba_db\User as UserModel;
 use \App\Models\local\simba_db\Group as GroupModel;
@@ -25,6 +31,7 @@ use \App\Models\local\simba_db\Session as SessionModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Services\User as UserService;
 use \App\Services\Client as ClientService;
+use \App\Services\Login as LoginService;
 use \App\Stores\Sessions\Store as SessionsStore;
 use \App\Stores\Cookies\Store as CookiesStore;
 
@@ -43,7 +50,7 @@ class RPC extends Controller
                     case 'test':
                         // Returning the value
                         return
-                            Server::send( new Response( new Status(200), [], RPCParser::$input ) )
+                            Server::send( new Response( new Status(200), [], RPCRequest::fetch()->parse_body() ) )
                         ;
                     break;
                 }
@@ -206,6 +213,11 @@ class RPC extends Controller
 
 
 
+                            // (Getting the value)
+                            $input = RPCRequest::fetch()->parse_body();
+
+
+
                             // (Starting an authorization)
                             $response = AuthorizationService::start
                             (
@@ -214,7 +226,7 @@ class RPC extends Controller
                                     [
                                         'endpoint_path' => $app->request->url->path,
                                         'action'        => $app->request->headers['Action'],
-                                        'input'         => RPCParser::$input
+                                        'input'         => $input
                                     ],
 
                                     'login'             => true
@@ -240,7 +252,7 @@ class RPC extends Controller
 
 
                             // (Sending the authorization)
-                            $response = AuthorizationService::send( $response->body['token'], RPCParser::$input['user']['email'], RPCParser::$subject . '.' . RPCParser::$verb );
+                            $response = AuthorizationService::send( $response->body['token'], $input['user']['email'], RPCParser::$subject . '.' . RPCParser::$verb );
                             
                             if ( $response->status->code !== 200 )
                             {// (Unable to send the authorization)
@@ -340,9 +352,14 @@ class RPC extends Controller
 
 
                         // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
                         $record =
                         [
-                            'security.password' => password_hash( RPCParser::$input['password'], PASSWORD_BCRYPT ),
+                            'security.password' => password_hash( $input['password'], PASSWORD_BCRYPT ),
 
                             'datetime.update'   => DateTime::fetch()
                         ]
@@ -404,7 +421,256 @@ class RPC extends Controller
                             Server::send( new Response( new Status(200) ) )
                         ;
                     break;
-                    
+
+                    case 'change_mfa':
+                        // (Verifying the user)
+                        $response = UserService::verify();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'security.mfa'    => $input['security.mfa'],
+
+                            'datetime.update' => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( UserModel::fetch()->where( 'id', $user_id )->update( $record ) === false )
+                        {// (Unable to update the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to update the record (user)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $response = ClientService::detect();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'session'              => $session->id,
+                            'ip'                   => $_SERVER['REMOTE_ADDR'],
+                            'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'datetime.insert'      => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
+
+                    case 'change_idk':
+                        // (Verifying the user)
+                        $response = UserService::verify();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
+                        $idk_authentication = $input['security.idk.authentication'];
+
+                        if ( $idk_authentication )
+                        {// Value is true
+                            // (Getting the value)
+                            $key_pair = KeyPair::generate();
+
+                            if ( $key_pair === false )
+                            {// (Unable to generate a key-pair)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to generate a key-pair' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $app = WebApp::fetch();
+
+
+
+                            // (Getting the value)
+                            $idk = ( new IDK( $user_id, $key_pair->private_key ) )->build( $app->fetch_credentials()['idk']['passphrase'], true );
+
+                            if ( $idk === false )
+                            {// (Unable to build the IDK)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to build the IDK' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $record =
+                            [
+                                'security.idk.authentication' => $idk_authentication,
+                                'security.idk.public_key'     => $key_pair->public_key,
+                                'security.idk.signature'      => base64_encode( RSA::select( 'idk' )->encrypt( $key_pair->public_key ) ),
+
+                                'datetime.update'             => DateTime::fetch()
+                            ]
+                            ;
+                        }
+                        else
+                        {// Value is false
+                            // (Setting the value)
+                            $idk = '';
+
+
+
+                            // (Getting the value)
+                            $record =
+                            [
+                                'security.idk.authentication' => $idk_authentication,
+                                'security.idk.public_key'     => null,
+                                'security.idk.signature'      => null,
+
+                                'datetime.update'             => DateTime::fetch()
+                            ]
+                            ;
+                        }
+
+
+
+                        if ( UserModel::fetch()->where( 'id', $user_id )->update( $record ) === false )
+                        {// (Unable to update the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to update the record (user)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $response = ClientService::detect();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'session'              => $session->id,
+                            'ip'                   => $_SERVER['REMOTE_ADDR'],
+                            'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'datetime.insert'      => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200), [ 'Content-Type: text/plain' ], $idk ) )
+                        ;
+                    break;
+
                     case 'login':
                         // (Getting the value)
                         $request = Request::fetch();
@@ -513,9 +779,14 @@ class RPC extends Controller
                         }
                         else
                         {// Value not found
+                            // (Getting the value)
+                            $input = RPCRequest::fetch()->parse_body();
+
+
+
                             // (Getting the values)
-                            [ $user, $group ] = explode( '@', RPCParser::$input['login'] );
-                            $password         = RPCParser::$input['password'];
+                            [ $user, $group ] = explode( '@', $input['login'] );
+                            $password         = $input['password'];
 
 
 
@@ -723,7 +994,7 @@ class RPC extends Controller
 
                                 // Returning the value
                                 return
-                                    Server::send( new Response( new Status(200), [], [ 'location' => $request->cookies['fwd_route'] ?? '/admin/dashboard' ] ) )
+                                    Server::send( new Response( new Status(200), [], [ 'location' => LoginService::extract_location() ] ) )
                                 ;
                             }
 
@@ -738,6 +1009,170 @@ class RPC extends Controller
                         // Returning the value
                         return
                             Server::send( new Response( new Status(408) ) )
+                        ;
+                    break;
+
+                    case 'login_with_idk':
+                        // (Getting the value)
+                        $app = WebApp::fetch();
+
+
+
+                        // (Getting the value)
+                        $idk = IDK::read( $app->request->body, $app->fetch_credentials()['idk']['passphrase'], true );
+
+
+
+                        if ( $idk->user )
+                        {// Value found
+                            // (Getting the value)
+                            $user = UserModel::fetch()->where( 'id', $idk->user )->find();
+                        }
+                        else
+                        if ( $idk->data['username'] )
+                        {// Value found
+                            // (Getting the value)
+                            $user = UserModel::fetch()->where( 'username', $idk->data['username'] )->find();
+                        }
+                        else
+                        {// Match failed
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(400), [], [ 'error' => [ 'message' => 'IDK is not valid' ] ] ) )
+                            ;
+                        }
+
+
+
+                        if ( $user === false )
+                        {// (User not found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                            ;
+                        }
+
+
+
+                        if ( !$user->security->idk->authentication )
+                        {// Value is false
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                            ;
+                        }
+
+
+
+                        if ( RSA::select( base64_decode( $user->security->idk->signature ) )->decrypt( $idk->key )->value !== 'idk' )
+                        {// (Key is not valid)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        if ( !$session->start() )
+                        {// (Unable to start the session)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to start the session' ] ] ] ) )
+                            ;
+                        }
+
+                        if ( !$session->regenerate_id() )
+                        {// (Unable to regenerate the session id)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to regenerate the session id' ] ] ] ) )
+                            ;
+                        }
+
+                        if ( !$session->set_duration() )
+                        {// (Unable to set the session duration)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => [ 'Unable to set the session duration' ] ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Setting the value)
+                        $session->data = [];
+
+
+
+                        // (Getting the value)
+                        $session->data['user'] = $user->id;
+
+
+
+                        // (Listening for the event)
+                        $session->add_event_listener
+                        (
+                            'save',
+                            function () use ($user, &$session)
+                            {
+                                // (Getting the value)
+                                $response = ClientService::detect();
+
+                                if ( $response->status->code !== 200 )
+                                {// (Unable to detect the client)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Getting the value)
+                                $record =
+                                [
+                                    'user'                 => $user->id,
+                                    'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                    'session'              => $session->id,
+                                    'ip'                   => $_SERVER['REMOTE_ADDR'],
+                                    'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                                    'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                    'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                    'ip_info.isp'          => $response->body['ip']['isp'],
+                                    'ua_info.browser'      => $response->body['ua']['browser'],
+                                    'ua_info.os'           => $response->body['ua']['os'],
+                                    'ua_info.hw'           => $response->body['ua']['hw'],
+                                    'datetime.insert'      => DateTime::fetch()
+                                ]
+                                ;
+
+                                if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                                {// (Unable to insert the record)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                    ;
+                                }
+                            }
+                        )
+                        ;
+
+
+
+                        // (Removing the cookie)
+                        CookiesStore::fetch()->cookies['fwd_route']->set( '', -1 );
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200), [], [ 'location' => LoginService::extract_location() ] ) )
                         ;
                     break;
 
@@ -864,7 +1299,12 @@ class RPC extends Controller
 
 
 
-                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'name', RPCParser::$input['name'] ] ] )->exists() )
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'name', $input['name'] ] ] )->exists() )
                         {// (Record found)
                             // Returning the value
                             return
@@ -877,7 +1317,7 @@ class RPC extends Controller
                         // (Getting the value)
                         $record =
                         [
-                            'name'            => RPCParser::$input['name'],
+                            'name'            => $input['name'],
 
                             'datetime.update' => DateTime::fetch()
                         ]
@@ -965,10 +1405,15 @@ class RPC extends Controller
 
 
                         // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
                         $record =
                         [
-                            'birth.name'      => RPCParser::$input['birth.name'],
-                            'birth.surname'   => RPCParser::$input['birth.surname'],
+                            'birth.name'      => $input['birth.name'],
+                            'birth.surname'   => $input['birth.surname'],
 
                             'datetime.update' => DateTime::fetch()
                         ]

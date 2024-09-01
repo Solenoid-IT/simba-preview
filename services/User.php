@@ -184,8 +184,11 @@ class User extends Service
 
                 'email'         => $user->email,
 
-                'birth.name'    => $user->birth->name,
-                'birth.surname' => $user->birth->surname
+                'birth'         =>
+                [
+                    'name'      => $user->birth->name,
+                    'surname'   => $user->birth->surname
+                ]
             ],
 
             'group'             =>
@@ -193,7 +196,11 @@ class User extends Service
                 'name'          => $group->name
             ],
 
-            'password_set'      => $user->security->password !== null
+            'password_set'      => $user->security->password !== null,
+
+            'mfa'               => $user->security->mfa === 1,
+
+            'idk'               => $user->security->idk->authentication === 1
         ]
         ;
 

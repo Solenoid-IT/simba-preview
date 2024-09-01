@@ -63,9 +63,9 @@ CREATE TABLE `user`
     `security.password`                   VARCHAR(255)                                                 NULL,
     `security.mfa`                        BOOLEAN                                    DEFAULT FALSE NOT NULL,
 
+    `security.idk.authentication`         BOOLEAN                                    DEFAULT FALSE NOT NULL,
     `security.idk.public_key`             LONGBLOB                                                     NULL,
     `security.idk.signature`              LONGBLOB                                                     NULL,
-    `security.idk.authentication`         BOOLEAN                                    DEFAULT FALSE NOT NULL,
 
     `datetime.insert`                     TIMESTAMP                                                NOT NULL,
     `datetime.update`                     TIMESTAMP                                                    NULL,

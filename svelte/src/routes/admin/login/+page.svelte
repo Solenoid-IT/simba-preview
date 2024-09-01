@@ -9,6 +9,8 @@
     import PasswordField from '../../../views/components/PasswordField.svelte';
 
     import { envs } from '../../../envs.js';
+    
+    import { idk } from '../../../stores/idk.js';
 
     import { goto } from '$app/navigation';
 
@@ -110,6 +112,87 @@
         return true;
     }
 
+
+
+    // Returns [Promise:void]
+    async function importIDK ()
+    {
+        // (Selecting the files)
+        const file = ( await Solenoid.File.select( '.idk' ) )[0];
+
+
+
+        // (Getting the value)
+        $idk = await Solenoid.File.read( file );
+
+        // (Setting the item)
+        localStorage.setItem( 'idk', $idk );
+    }
+
+    // Returns [void]
+    function ejectIDK ()
+    {
+        if ( !confirm('Are you sure to remove the IDK from the local memory ?') ) return;
+
+
+
+        // (Removing the item)
+        localStorage.removeItem( 'idk' );
+
+        // (Setting the value)
+        $idk = null;
+    }
+
+
+
+    // Returns [Promise:bool]
+    async function loginWithIDK ()
+    {
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::login_with_idk',
+                'Content-Type: text/plain'
+            ],
+            $idk,
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Moving to the URL)
+        goto( '/admin/dashboard' );
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    // Returns [Promise:bool]
+    async function recoverUser ()
+    {
+
+    }
+
 </script>
 
 <App>
@@ -156,11 +239,27 @@
                                         </div>
                                     </Form>
                                     <hr>
-                                    <div class="text-center">
-                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="register.html">Create an Account!</a>
+                                    <div class="row mt-2">
+                                        <div class="col text-center">
+                                            { #if $idk }
+                                                <button class="btn btn-danger" on:click={ ejectIDK } title="eject IDK">
+                                                    <i class="fa-solid fa-eject"></i>
+                                                </button>
+
+                                                <button class="btn btn-primary ml-2" on:click={ loginWithIDK } title="login with IDK">
+                                                    <i class="fa-solid fa-right-to-bracket"></i>
+                                                </button>
+                                            { :else }
+                                                <button class="btn btn-secondary" on:click={ importIDK } title="import IDK">
+                                                    <i class="fa-solid fa-upload"></i>
+                                                </button>
+                                            { /if }
+                                        </div>
+                                        <div class="col text-center">
+                                            <button class="btn btn-danger" on:click={ recoverUser } title="recover user">
+                                                <i class="fa-solid fa-lock-open"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

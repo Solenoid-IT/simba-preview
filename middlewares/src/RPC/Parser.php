@@ -16,7 +16,6 @@ class Parser extends Middleware
 {
     public static string $subject;
     public static string $verb;
-    public static ?array $input;
 
 
 
@@ -33,7 +32,6 @@ class Parser extends Middleware
         // (Getting the values)
         self::$subject = $request->subject;
         self::$verb    = $request->verb;
-        self::$input   = $request->input;
     }
 }
 

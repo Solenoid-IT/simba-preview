@@ -2,10 +2,12 @@
 
     import { envs } from '../../envs.js';
     import { user } from '../../stores/user.js';
+    import { idk } from '../../stores/idk.js';
 
     import Modal from '../../views/components/Modal.svelte';
     import Form from '../../views/components/Form.svelte';
     import PasswordField from './PasswordField.svelte';
+    import Switch from './Switch.svelte';
 
     import { goto } from '$app/navigation';
 
@@ -220,8 +222,8 @@
 
 
         // (Getting the values)
-        $user.user.birth_name    = result.entries['birth.name'].value;
-        $user.user.birth_surname = result.entries['birth.surname'].value;
+        $user.user.birth.name    = result.entries['birth']['name'].value;
+        $user.user.birth.surname = result.entries['birth']['surname'].value;
 
 
 
@@ -279,6 +281,16 @@
                 // Returning the value
                 return false;
             }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
         }
 
 
@@ -290,6 +302,173 @@
 
         // (Alerting the value)
         alert('Password has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let mfaSwitch;
+
+    // Returns [Promise:bool]
+    async function onSetMfa (event)
+    {
+        // (Getting the value)
+        const input =
+        {
+            'security.mfa': event.detail.target.checked
+        }
+        ;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_mfa',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( input ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let idkSwitch;
+
+    // Returns [Promise:bool]
+    async function onSetIdk (event)
+    {
+        // (Getting the value)
+        const checked = event.detail.target.checked;
+
+        if ( checked )
+        {// Value is true
+            if ( !confirm("Are you sure to enable the IDK authentication ?\n\nWhen enabled you can authenticate only by providing the generated key") )
+            {// (Confirmation is failed)
+                // (Setting the property)
+                jQuery( '#set_idk_form .input[name="idk"]' ).prop( 'checked', false );
+
+
+
+                // Returning the value
+                return false;
+            }
+        }
+
+
+
+        // (Getting the value)
+        const input =
+        {
+            'security.idk.authentication': checked
+        }
+        ;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::change_idk',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( input ),
+            '',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        if ( checked )
+        {// Value found
+            // (Downloading the file)
+            Solenoid.File.download( 'text/plain', window.location.host + '.idk', response.body );
+        }
+
+
+
+        // (Alerting the value)
+        alert( 'IDK has been ' + ( checked ? "enabled.\n\nSave the downloaded key in a safe place !" : 'disabled' ) );
+
+
+
+        // (Getting the value)
+        $user.idk = checked;
+
+
+
+        // (Getting the value)
+        $idk = response.body;
+
+        // (Setting the item)
+        localStorage.setItem( 'idk', $idk );
 
 
 
@@ -359,7 +538,54 @@
                 // (Validating the form)
                 changePasswordForm.validate();
             }
+
+
+
+            if ( mfaSwitch )
+            {// Value found
+                // (Getting the value)
+                mfaSwitch.checked = $user.mfa;
+            }
+
+
+
+            if ( idkSwitch )
+            {// Value found
+                // (Getting the value)
+                idkSwitch.checked = $user.idk;
+            }
         }
+
+
+
+    // Returns [Promise:void]
+    async function importIDK ()
+    {
+        // (Selecting the files)
+        const file = ( await Solenoid.File.select( '.idk' ) )[0];
+
+
+
+        // (Getting the value)
+        $idk = await Solenoid.File.read( file );
+
+        // (Setting the item)
+        localStorage.setItem( 'idk', $idk );
+    }
+
+    // Returns [void]
+    function ejectIDK ()
+    {
+        if ( !confirm('Are you sure to remove the IDK from the local memory ?') ) return;
+
+
+
+        // (Removing the item)
+        localStorage.removeItem( 'idk' );
+
+        // (Setting the value)
+        $idk = null;
+    }
 
 </script>
 
@@ -607,12 +833,12 @@
                     <div class="col d-flex align-items-end" style="justify-content: space-between;">
                         <label class="m-0">
                             Name
-                            <input type="text" class="form-control input" name="birth.name" value="{ $user.user.birth_name }">
+                            <input type="text" class="form-control input" name="birth.name" value="{ $user.user.birth.name }">
                         </label>
                         
                         <label class="m-0 ml-3">
                             Surname
-                            <input type="text" class="form-control input" name="birth.surname" value="{ $user.user.birth_surname }">
+                            <input type="text" class="form-control input" name="birth.surname" value="{ $user.user.birth.surname }">
                         </label>
 
                         <button class="btn btn-primary ml-3">Save</button>
@@ -624,15 +850,62 @@
 
     <Modal id="security_modal" title="Security" bind:api={ securityModal }>
         <Form id="change_password_form" bind:api={ changePasswordForm } on:submit={ onChangePasswordFormSubmit }>
-            <div class="row">
-                <div class="col d-flex align-items-start">
-                    <PasswordField name="password" generable measurable required/>
-
-                    <button type="submit" class="btn btn-primary ml-3">
-                        Save
-                    </button>
+            <fieldset class="fieldset">
+                <legend>Password</legend>
+                <div class="row">
+                    <div class="col d-flex align-items-start">
+                        <PasswordField name="password" generable measurable required/>
+    
+                        <button type="submit" class="btn btn-primary ml-3">
+                            Save
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </fieldset>
+        </Form>
+
+        <br>
+
+        <Form id="set_mfa_form">
+            <fieldset class="fieldset">
+                <legend>MFA (Multi-Factor Authentication)</legend>
+                <div class="row">
+                    <div class="col">
+                        <Switch name="mfa" on:change={ onSetMfa } } bind:api={ mfaSwitch }>
+                            Enabled
+                        </Switch>
+                    </div>
+                </div>
+            </fieldset>
+        </Form>
+
+        <br>
+
+        <Form id="set_idk_form">
+            <fieldset class="fieldset">
+                <legend>IDK (Identity Key)</legend>
+                <div class="row">
+                    <div class="col">
+                        <Switch name="idk" on:change={ onSetIdk } } bind:api={ idkSwitch }>
+                            Enabled
+                        </Switch>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col text-right">
+                        { #if $idk }
+                            <button class="btn btn-danger ml-3" on:click={ ejectIDK } title="eject IDK">
+                                <i class="fa-solid fa-eject"></i>
+                            </button>
+                        { :else }
+                            <button class="btn btn-secondary" on:click={ importIDK } title="import IDK">
+                                <i class="fa-solid fa-upload"></i>
+                            </button>
+                        { /if }
+                    </div>
+                </div>
+            </fieldset>
         </Form>
     </Modal>
 
