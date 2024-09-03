@@ -7,6 +7,7 @@
     import App from '../../../views/App.svelte';
     import Form from '../../../views/components/Form.svelte';
     import PasswordField from '../../../views/components/PasswordField.svelte';
+    import Modal from '../../../views/components/Modal.svelte';
 
     import { envs } from '../../../envs.js';
     
@@ -61,6 +62,24 @@
             // Returning the value
             return false;
         }
+
+
+
+        if ( response.body && response.body['location'] )
+        {// Value found
+            // (Moving to the URL)
+            goto( response.body['location'] );
+
+
+
+            // Returning the value
+            return true;
+        }
+
+
+
+        // (Setting the value)
+        loginForm.disabled = true;
 
 
 
@@ -187,10 +206,68 @@
 
 
 
-    // Returns [Promise:bool]
-    async function recoverUser ()
-    {
+    let userRecoveryModal;
+    let userRecoveryForm;
 
+
+
+    let userRecoveryFormMsg = '';
+
+    // Returns [Promise:bool]
+    async function onUserRecoveryFormSubmit ()
+    {
+        // (Validating the form)
+        const result = userRecoveryForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        // (Setting the value)
+        userRecoveryFormMsg = '';
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::recover',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the value)
+        userRecoveryForm.disabled = true;
+
+
+
+        // (Setting the value)
+        userRecoveryFormMsg = 'Confirm operation by email ...';
+
+
+
+        // Returning the value
+        return true;
     }
 
 </script>
@@ -217,14 +294,6 @@
                                         </div>
                                         <div class="form-group">
                                             <PasswordField name="password" placeholder="Password" required/>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <div class="custom-control custom-checkbox small">
-                                                <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                <label class="custom-control-label" for="customCheck">Remember
-                                                    Me</label>
-                                            </div>
                                         </div>
 
                                         <button type="submit" class="btn btn-primary btn-block">
@@ -256,7 +325,7 @@
                                             { /if }
                                         </div>
                                         <div class="col text-center">
-                                            <button class="btn btn-danger" on:click={ recoverUser } title="recover user">
+                                            <button class="btn btn-danger" on:click={ userRecoveryModal.show } title="recover user">
                                                 <i class="fa-solid fa-lock-open"></i>
                                             </button>
                                         </div>
@@ -272,6 +341,31 @@
         </div>
 
     </div>
+
+    <Modal id="user_recovery_modal" title="User Recovery" bind:api={ userRecoveryModal }>
+        <Form id="user_recovery_form" bind:api={ userRecoveryForm } on:submit={ onUserRecoveryFormSubmit }>
+            <div class="row">
+                <div class="col">
+                    <label class="m-0 d-block">
+                        Email
+                        <input type="text" class="form-control input" name="email" data-required>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col text-center">
+                    <span class="color-warning">{ userRecoveryFormMsg }</span>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <button type="submit" class="btn btn-primary">Recover</button>
+                </div>
+            </div>
+        </Form>
+    </Modal>
 </App>
 
 <style>

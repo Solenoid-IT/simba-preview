@@ -246,11 +246,6 @@ class RPC extends Controller
 
 
 
-                            // (Getting the value)
-                            $exp_time = $response->body['exp_time'];
-
-
-
                             // (Sending the authorization)
                             $response = AuthorizationService::send( $response->body['token'], $input['user']['email'], RPCParser::$subject . '.' . RPCParser::$verb );
                             
@@ -265,7 +260,7 @@ class RPC extends Controller
 
 
                             // Returning the value
-                            return Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) );
+                            return Server::send( new Response( new Status(200) ) );
                         }
                     break;
 
@@ -843,6 +838,16 @@ class RPC extends Controller
 
 
 
+                            if ( $user->security->idk->authentication )
+                            {// Value not found
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
+                            }
+
+
+
                             if ( $user->security->password === null )
                             {// Value not found
                                 // Returning the value
@@ -895,8 +900,8 @@ class RPC extends Controller
 
 
 
-                            if ( 'MFA' )
-                            {// Value is true
+                            if ( $user->security->mfa === 1 )
+                            {// (Login method is MFA)
                                 // (Getting the value)
                                 $data =
                                 [
@@ -929,9 +934,8 @@ class RPC extends Controller
 
 
 
-                                // (Getting the values)
-                                $token    = $response->body['token'];
-                                $exp_time = $response->body['exp_time'];
+                                // (Getting the value)
+                                $token = $response->body['token'];
 
 
 
@@ -955,7 +959,20 @@ class RPC extends Controller
 
                                 // Returning the value
                                 return
-                                    Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) )
+                                    Server::send( new Response( new Status(200) ) )
+                                ;
+                            }
+                            else
+                            {// (Login method is BASIC)
+                                // (Getting the value)
+                                $session->data['user'] = $user->id;
+
+
+
+
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(200), [], [ 'location' => LoginService::extract_location() ] ) )
                                 ;
                             }
                         }
@@ -1081,7 +1098,7 @@ class RPC extends Controller
 
 
 
-                        if ( !$user->security->idk->authentication )
+                        if ( !$user->security->idk->authentication === 1 )
                         {// Value is false
                             // Returning the value
                             return
@@ -1467,11 +1484,6 @@ class RPC extends Controller
 
 
 
-                            // (Getting the value)
-                            $exp_time = $response->body['exp_time'];
-
-
-
                             // (Sending the authorization)
                             $response = AuthorizationService::send( $response->body['token'], $authorization->data['request']['input']['new_value'], 'user.confirm_new_email' );
                             
@@ -1487,7 +1499,7 @@ class RPC extends Controller
 
                             // Returning the value
                             return
-                                Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) )
+                                Server::send( new Response( new Status(200) ) )
                             ;
                         }
                         else
@@ -1573,11 +1585,6 @@ class RPC extends Controller
 
 
 
-                            // (Getting the value)
-                            $exp_time = $response->body['exp_time'];
-
-
-
                             // (Sending the authorization)
                             $response = AuthorizationService::send( $response->body['token'], $user->email, RPCParser::$subject . '.' . RPCParser::$verb );
                             
@@ -1592,7 +1599,7 @@ class RPC extends Controller
 
 
                             // Returning the value
-                            return Server::send( new Response( new Status(200), [], [ 'exp_time' => $exp_time ] ) );
+                            return Server::send( new Response( new Status(200) ) );
                         }
                     break;
 
@@ -1751,6 +1758,395 @@ class RPC extends Controller
                             Server::send( new Response( new Status(200) ) )
                         ;
                     break;
+
+                    case 'recover':
+                        // (Getting the value)
+                        $request = Request::fetch();
+
+
+
+                        if ( $request->headers['Auth-Token'] )
+                        {// Value found
+                            if ( $request->client_ip !== $request->server_ip )
+                            {// (Request is not from localhost)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $res = AuthorizationService::fetch( $request->headers['Auth-Token'] );
+
+                            if ( $res->status->code !== 200 )
+                            {// (Unable to fetch the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( $res )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $authorization = $res->body;
+
+
+
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(200), [ 'Content-Type: application/json' ], $authorization->data['request']['input']['user'] ) )
+                            ;
+                        }
+                        else
+                        {// Value not found
+                            // (Getting the value)
+                            $input = RPCRequest::fetch()->parse_body();
+
+
+
+                            // (Getting the value)
+                            $user = UserModel::fetch()->where( 'email', $input['email'] )->find();
+
+                            if ( !$user )
+                            {// (Record not found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(200) ) )
+                                ;
+                            }
+
+                        
+
+                            // (Getting the value)
+                            $data =
+                            [
+                                'request'            =>
+                                [
+                                    'endpoint_path'  => $request->url->path,
+                                    'action'         => $request->headers['Action'],
+                                    'input'          =>
+                                    [
+                                        'user'       => $user->id,
+
+                                        'ip'         => $_SERVER['REMOTE_ADDR'],
+                                        'user_agent' => $_SERVER['HTTP_USER_AGENT']
+                                    ]
+                                ],
+
+                                'login'              => true
+                            ]
+                            ;
+
+                            // (Starting the authorization)
+                            $response = AuthorizationService::start( $data, $request->url->fetch_base() . '/admin/dashboard' );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to start the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( $response )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $token = $response->body['token'];
+
+
+
+                            // (Sending the authorization)
+                            $response = AuthorizationService::send( $token, $user->email, str_replace( '::', '.', $request->headers['Action'] ) );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to send the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( $response )
+                                ;
+                            }
+
+
+
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(200) ) )
+                            ;
+                        }
+                    break;
+
+                    case 'terminate_session':
+                        // (Verifying the user)
+                        $response = UserService::verify();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
+                        $activity = ActivityModel::fetch()->where( [ [ 'user', $user_id ], [ 'id', $input['id'] ] ] )->find();
+
+                        if ( !$activity )
+                        {// (Record not found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (activity)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        if ( !SessionModel::fetch()->where( 'id', $activity->session )->delete() )
+                        {// (Unable to delete the records)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to delete the records (session)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
+
+                    /*case 'add':
+                        // (Verifying the user)
+                        $response = UserService::verify( 1 );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Closing the process
+                            exit( Server::send( $response ) );
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $user = UserModel::where( 'id', $user_id )->first();
+
+                        if ( !$user )
+                        {// Value not found
+                            // Closing the process
+                            exit( Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) ) );
+                        }
+
+
+
+                        if ( UserModel::where( [ [ 'group', $user->group ], [ 'name', $rpc->input['name'] ] ] )->count() > 0 )
+                        {// (Record found)
+                            // Closing the process
+                            exit( Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['name'] already exists (user)" ] ] ) ) );
+                        }
+
+                        if ( UserModel::where( [ [ 'group', $user->group ], [ 'email', $rpc->input['email'] ] ] )->count() > 0 )
+                        {// (Record found)
+                            // Closing the process
+                            exit( Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['email'] already exists (user)" ] ] ) ) );
+                        }
+
+
+
+                        // (Getting the value)
+                        $app = AppStore::fetch();
+
+
+
+                        // (Sending an http request)
+                        $response = Client::send
+                        (
+                            'https://' . $app->app['id'] . '/rpc',
+                            'POST',
+                            [
+                                'Action: user::register',
+                                'Content-Type: application/json',
+
+                                'User-Agent: FEV'
+                            ],
+                            json_encode
+                            (
+                                [
+                                    'group'         =>
+                                    [
+                                        'id'        => $user->group
+                                    ],
+
+                                    'user'          =>
+                                    [
+                                        'name'      => $rpc->input['name'],
+                                        'email'     => $rpc->input['email'],
+                                        'hierarchy' => $rpc->input['hierarchy']
+                                    ]
+                                ]
+                            )
+                        )
+                        ;
+
+                        // Closing the process
+                        exit( Server::send( new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body ) ) );
+                    break;
+
+                    case 'remove':
+                        // (Getting the value)
+                        $request = Request::fetch();
+
+
+
+                        if ( $request->headers['Auth-Token'] )
+                        {// (Authorization has been provided)
+                            if ( $request->client_ip !== $request->server_ip )
+                            {// (Request is not from localhost)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                            }
+
+
+
+                            // (Getting the value)
+                            $response = AuthorizationService::fetch( $request->headers['Auth-Token'] );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to fetch the authorization)
+                                // Closing the process
+                                exit( Server::send( $response ) );
+                            }
+
+
+
+                            // (Getting the value)
+                            $authorization = $response->body;
+
+
+
+                            // (Getting the value)
+                            $user_id = $authorization->data['request']['input']['user'];
+
+                            if ( !UserModel::where( 'id', $user_id )->delete() )
+                            {// (Unable to delete the record)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to delete the record (user)' ] ] ) ) );
+                            }
+
+
+
+                            // Closing the process
+                            exit( Server::send( new Response( new Status(200) ) ) );
+                        }
+                        else
+                        {// (Authorization has not been provided)
+                            // (Verifying the user)
+                            $response = UserService::verify();
+
+                            if ( $response->status->code !== 200 )
+                            {// (Session is not valid)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) ) );
+                            }
+
+
+
+                            // (Getting the value)
+                            $session = SessionsStore::fetch()->sessions['user'];
+    
+    
+    
+                            // (Getting the value)
+                            $user_id = $session->data['user'];
+    
+    
+    
+                            // (Getting the value)
+                            $user = UserModel::where( 'id', $user_id )->first();
+    
+                            if ( !$user )
+                            {// (Record not found)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) ) );
+                            }
+
+
+
+                            // (Starting an authorization)
+                            $response = AuthorizationService::start
+                            (
+                                [
+                                    'request'           =>
+                                    [
+                                        'endpoint_path' => $request->url->path,
+                                        'action'        => $request->headers['Action'],
+                                        'input'         =>
+                                        [
+                                            'user'      => $user_id
+                                        ]
+                                    ]
+                                ]
+                            )
+                            ;
+                            
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to start the authorization)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the authorization' ] ] ) ) );
+                            }
+
+
+
+                            // (Getting the value)
+                            $exp_time = $response->body['exp_time'];
+
+
+
+                            // (Sending the authorization)
+                            $response = AuthorizationService::send( $response->body['token'], $user->email, $rpc->subject . '.' . $rpc->verb );
+                            
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to send the authorization)
+                                // Closing the process
+                                exit( Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to send the authorization' ] ] ) ) );
+                            }
+
+
+
+                            // Closing the process
+                            exit( Server::send( new Response( new Status(200) ) ) );
+                        }
+                    break;*/
                 }
             break;
         }

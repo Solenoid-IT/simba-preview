@@ -18,6 +18,10 @@
 
 
 
+    let table;
+
+
+
     // Returns [Promise:bool]
     async function fetchData ()
     {
@@ -149,6 +153,9 @@
         // (Getting the value)
         tableRecords = records;
 
+        // (Setting the value)
+        table.setKeySearch();
+
 
 
         // Returning the value
@@ -234,6 +241,9 @@
             case 'user::terminate_session':
                 // (Terminating the session)
                 result = await terminateSession( entry.id );
+
+                // (Removing the element)
+                jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').remove();
             break;
         }
 
@@ -247,6 +257,6 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }/>
+        <Table title={ title } bind:records={ tableRecords } bind:api={ table } on:record.action={ onTableRecordAction }/>
     </Base>
 </App>

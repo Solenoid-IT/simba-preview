@@ -94,6 +94,11 @@ class Authorization extends Controller
                             Server::send( new Response( new Status( $res->fetch_tail()->status->code ), [], $res->body ) )
                         ;
                     }
+
+
+
+                    // (Getting the value)
+                    $user_id = $res->body;
                 }
 
 
@@ -124,7 +129,7 @@ class Authorization extends Controller
                 if ( $authorization->data['login'] )
                 {// (Authorization contains a login to do)
                     // (Getting the value)
-                    $user = UserModel::fetch()->where( 'email', $authorization->data['request']['input']['user']['email'] )->find();
+                    $user = UserModel::fetch()->where( 'id', $user_id )->find();
 
                     if ( $user === false )
                     {// (Record not found)

@@ -37,8 +37,14 @@
             api = {};
 
 
+
             // (Getting the value)
             api.element = element;
+
+
+
+            // (Setting the value)
+            api.disabled = false;
 
 
 
@@ -158,6 +164,25 @@
 
                 // Returning the value
                 return result;
+            }
+        }
+
+    
+    
+    $:
+        if ( api )
+        {// Value found
+            if ( api.disabled )
+            {// Value is true
+                // (Setting the properties)
+                jQuery(element).find('.input').prop( 'disabled', true );
+                jQuery(element).find('.btn[type="submit"]').prop( 'disabled', true );
+            }
+            else
+            {// Value is false
+                // (Setting the properties)
+                jQuery(element).find('.input').prop( 'disabled', false );
+                jQuery(element).find('.btn[type="submit"]').prop( 'disabled', false );
             }
         }
 

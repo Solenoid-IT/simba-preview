@@ -155,6 +155,11 @@
 
 
         // (Setting the value)
+        changeEmailForm.disabled = true;
+
+
+
+        // (Setting the value)
         changeEmailFormMsg = `Confirm operation by email "${ $user.user.email }" ...`;
 
 
@@ -762,7 +767,6 @@
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
                     <span class="mr-2 d-none d-lg-inline text-gray-600 small">{ $user.user.name }@{ $user.group.name }</span>
-                    <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -804,7 +808,7 @@
                     <div class="col d-flex align-items-center">
                         <input type="text" class="form-control input" name="name" value="{ $user.user.name }" data-required>
 
-                        <button class="btn btn-primary ml-3">Save</button>
+                        <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
                 </div>
             </fieldset>
@@ -819,7 +823,7 @@
                     <div class="col d-flex align-items-center">
                         <input type="text" class="form-control input" name="email" value="{ $user.user.email }" data-required>
 
-                        <button class="btn btn-primary ml-3">Save</button>
+                        <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
                 </div>
 
@@ -848,7 +852,7 @@
                             <input type="text" class="form-control input" name="birth.surname" value="{ $user.user.birth.surname }">
                         </label>
 
-                        <button class="btn btn-primary ml-3">Save</button>
+                        <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
                 </div>
             </fieldset>
