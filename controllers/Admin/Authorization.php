@@ -98,6 +98,29 @@ class Authorization extends Controller
 
 
 
+                if ( $authorization->data['display'] )
+                {// (Authorization contains a message to display)
+                    // (Removing the authorization)
+                    $resp = AuthorizationService::remove( $token );
+
+                    if ( $resp->status->code !== 200 )
+                    {// (Unable to remove the authorization)
+                        // Returning the value
+                        return
+                            Server::send( $resp )
+                        ;
+                    }
+
+
+
+                    // Returning the value
+                    return
+                        Server::send( new Response( new Status(200), [ 'Content-Type: text/html' ], $authorization->data['display'] ) )
+                    ;
+                }
+
+
+
                 if ( $authorization->data['login'] )
                 {// (Authorization contains a login to do)
                     // (Getting the value)

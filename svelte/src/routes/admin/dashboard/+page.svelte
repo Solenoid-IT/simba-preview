@@ -24,6 +24,7 @@
             [
                 'Action: user::fetch_data',
                 'Content-Type: application/json',
+
                 'Route: ' + window.location.pathname
             ],
             '',
@@ -59,7 +60,7 @@
 
 
         // (Getting the value)
-        $user = response.body;
+        $user = response.body['user'];
 
 
 

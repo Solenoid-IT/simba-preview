@@ -92,6 +92,7 @@
 
 
     let changeEmailForm;
+    let changeEmailFormMsg = '';
 
     // Returns [Promise:bool]
     async function onChangeEmailFormSubmit ()
@@ -104,6 +105,11 @@
 
 
         if ( !confirm('Are you sure to change the email ?') ) return false;
+
+
+
+        // (Setting the value)
+        changeEmailFormMsg = '';
 
 
 
@@ -148,13 +154,8 @@
 
 
 
-        // (Getting the value)
-        $user.user.email = result.entries['email'].value;
-
-
-
-        // (Alerting the value)
-        alert('Email has been changed');
+        // (Setting the value)
+        changeEmailFormMsg = `Confirm operation by email "${ $user.user.email }" ...`;
 
 
 
@@ -774,7 +775,7 @@
                         <i class="fas fa-lock fa-sm fa-fw mr-2 text-gray-400"></i>
                         Security
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="/admin/activity_log">
                         <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                         Activity Log
                     </a>
@@ -819,6 +820,12 @@
                         <input type="text" class="form-control input" name="email" value="{ $user.user.email }" data-required>
 
                         <button class="btn btn-primary ml-3">Save</button>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <span class="color-warning">{ changeEmailFormMsg }</span>
                     </div>
                 </div>
             </fieldset>

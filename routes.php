@@ -77,9 +77,15 @@ $router = new Router
 
         '/admin/dashboard' =>
         [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Admin\Dashboard::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
+            'GET' => Target::link( SPA::class, 'get' )
         ],
+
+        '/admin/activity_log' =>
+        [
+            'GET' => Target::link( SPA::class, 'get' )
+        ],
+
+
 
         '/admin/user' =>
         [
