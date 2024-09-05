@@ -25,7 +25,7 @@ class User extends Middleware
         // (Verifying the user)
         $response = UserService::verify();
 
-        if ( $response->status->code !== 200 )
+        if ( $response->status->code === 401 )
         {// (Session is not valid)
             if ( Request::fetch()->method === 'GET' )
             {// Match OK

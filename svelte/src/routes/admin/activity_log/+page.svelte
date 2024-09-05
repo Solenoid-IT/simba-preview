@@ -18,10 +18,6 @@
 
 
 
-    let table;
-
-
-
     // Returns [Promise:bool]
     async function fetchData ()
     {
@@ -153,9 +149,6 @@
         // (Getting the value)
         tableRecords = records;
 
-        // (Setting the value)
-        table.setKeySearch();
-
 
 
         // Returning the value
@@ -257,6 +250,6 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:records={ tableRecords } bind:api={ table } on:record.action={ onTableRecordAction }/>
+        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }/>
     </Base>
 </App>

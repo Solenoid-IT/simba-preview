@@ -269,7 +269,6 @@
 
                                     if ( keys[column].length > 0 && !keys[column].includes( value.toString() ) )
                                     {// Match failed
-                                        console.debug(keys[column],value.toString());
                                         // (Setting the value)
                                         resultFound = false;
 
@@ -371,12 +370,27 @@
     function onKeySearchMenuBtnClick (column)
     {
         // (Getting the value)
+        api.setKeySearch();
+
+
+
+        // (Getting the value)
         api.keySearch[ column ].menuOpen = !api.keySearch[ column ].menuOpen;
     }
 
     // Returns [void]
     function onKeySearch (event)
     {
+        // (Getting the value)
+        const column = event.target.closest('th').getAttribute('data-column');
+
+
+
+        // (Setting the attribute)
+        event.target.closest('th').querySelector('.column-key-search-btn').setAttribute( 'data-state', api.getSearchValues().keys[column].length > 0 ? 'active' : 'idle' );
+
+
+
         // (Filtering the records)
         api.filter('SEARCH_KEYS');
     }
@@ -391,7 +405,7 @@
     </div>
 
     <div class="card-body">
-        { #if records.length > 0 && api.ready }
+        { #if records.length > 0 && api?.ready }
             <div class="table-responsive">
                 <div class="dataTables_wrapper dt-bootstrap4">
                     <div class="row">
@@ -439,17 +453,21 @@
                                                     <input type="text" class="form-control form-control-sm input" on:input={ onLocalSearch }>
                                                 </div>
 
-                                                { #if Object.keys( api.keySearch ).length > 0 }
-                                                    <div class="column-key-search-box mt-2">
-                                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                        <div class="column-key-search-btn d-flex justify-content-center align-items-center" on:click={ onKeySearchMenuBtnClick(column) }>
+                                                <div class="column-key-search-box mt-2">
+                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                                    <div class="column-key-search-btn d-flex justify-content-center align-items-center" on:click={ onKeySearchMenuBtnClick(column) } data-state="idle">
+                                                        { #if Object.keys( api.keySearch ).length > 0 }
                                                             { #if api.keySearch[ column ].menuOpen }
                                                                 <i class="fa-solid fa-caret-up"></i>
                                                             { :else }
                                                                 <i class="fa-solid fa-caret-down"></i>
                                                             { /if }
-                                                        </div>
+                                                        { :else }
+                                                            <i class="fa-solid fa-caret-down"></i>
+                                                        { /if }
+                                                    </div>
 
+                                                    { #if Object.keys( api.keySearch ).length > 0 }
                                                         <div class="column-key-search-menu" data-state={ api.keySearch[ column ].menuOpen ? 'open' : 'closed' }>
                                                             <ul>
                                                                 { #each api.getColumnValues(column) as key }
@@ -461,8 +479,8 @@
                                                                 { /each }
                                                             </ul>
                                                         </div>
-                                                    </div>
-                                                { /if }
+                                                    { /if }
+                                                </div>
                                             </th>
                                         { /each }
 
@@ -541,7 +559,7 @@
         position: relative;
     }
 
-    .column-key-search-btn
+    .column-key-search-btn[data-state="idle"]
     {
         color: #ffffff;
         background-color: #858796;
@@ -549,7 +567,7 @@
         cursor: pointer;
     }
 
-    .column-key-search-btn.filter-active
+    .column-key-search-btn[data-state="active"]
     {
         color: #ffffff;
         background-color: #4e73df;
@@ -557,11 +575,16 @@
         cursor: pointer;
     }
 
+    .column-key-search-menu
+    {
+        max-width: 400px;
+    }
+
     .column-key-search-menu[data-state="open"]
     {
         width: 100%;
         display: table;
-        position: absolute;
+        position: fixed;
         background-color: #ffffff;
         border-radius: 2px;
     }

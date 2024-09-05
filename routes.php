@@ -84,28 +84,6 @@ $router = new Router
         [
             'GET' => Target::link( SPA::class, 'get' )
         ],
-
-
-
-        '/admin/user' =>
-        [
-            'RPC' => Target::link( Admin\User::class, 'rpc' )->set_middlewares( ['RPC/Parser'] )
-        ],
-
-
-
-        '/admin/docs'  =>
-        [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Admin\Docs::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
-        ],
-
-        '/admin/tags'  =>
-        [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Admin\Tags::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
-        ]
-        ,
     
     
     
@@ -118,27 +96,6 @@ $router = new Router
     
     
     
-        '/admin/users' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Admin\Users::class, 'rpc' )->set_middlewares( ['RPC/Parser'] )
-        ]
-        ,
-    
-    
-    
-        '/admin/visitor' =>
-        [
-            'RPC' => Target::link( Admin\Visitor::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
-        ],
-
-        '/user' =>
-        [
-            'RPC' => Target::link( User::class, 'rpc' )->set_middlewares( ['RPC/Parser'] )
-        ],
-    
-    
-    
         '/admin/authorization' =>
         [
             'SSE' => Target::link( Admin\Authorization::class, 'sse' )
@@ -147,19 +104,6 @@ $router = new Router
         '/admin/authorization/[ token ]/[ action ]' =>
         [
             'GET' => Target::link( Admin\Authorization::class, 'get' )
-        ],
-    
-    
-    
-        '/docs' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Docs::class, 'rpc' )->set_middlewares( ['RPC/Parser'] )
-        ],
-    
-        '/\/docs(\/.+)/' =>
-        [
-            'GET' => Target::link( Docs::class, 'get' )
         ],
     
     
