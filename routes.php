@@ -84,6 +84,11 @@ $router = new Router
         [
             'GET' => Target::link( SPA::class, 'get' )
         ],
+
+        '/admin/users' =>
+        [
+            'GET' => Target::link( SPA::class, 'get' )
+        ],
     
     
     

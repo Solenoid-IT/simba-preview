@@ -27,6 +27,7 @@ use \App\Middlewares\RPC\Parser as RPCParser;
 use \App\Models\local\simba_db\User as UserModel;
 use \App\Models\local\simba_db\Group as GroupModel;
 use \App\Models\local\simba_db\Activity as ActivityModel;
+use App\Models\local\simba_db\Hierarchy as HierarchyModel;
 use \App\Models\local\simba_db\Session as SessionModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Services\User as UserService;
@@ -302,6 +303,7 @@ class RPC extends Controller
                         {
                             case '/admin/dashboard':
                             case '/admin/activity_log':
+                            case '/admin/users':
                                 // (Getting the value)
                                 $response = UserService::fetch_data( $user_id );
 
@@ -338,6 +340,35 @@ class RPC extends Controller
                                     // (Getting the value)
                                     $record['current_session'] = $record['session'] && $record['session'] !== $session->id;
                                 }
+                            break;
+
+                            case '/admin/users':
+                                // (Getting the value)
+                                $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                                if ( !$user )
+                                {// (Record not found)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Getting the value)
+                                $hierarchies = HierarchyModel::fetch()->list();
+
+                                foreach ( $hierarchies as $hierarchy )
+                                {// Processing each entry
+                                    // (Getting the value)
+                                    $data['hierarchies'][ $hierarchy->id ] = $hierarchy;
+                                }
+                            
+
+
+                                // (Getting the value)
+                                $data['records'] = UserModel::fetch()->where( 'group', $user->group )->list();
                             break;
                         }
 

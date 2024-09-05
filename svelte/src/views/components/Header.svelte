@@ -784,6 +784,11 @@
                         Activity Log
                     </a>
                     <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/admin/users">
+                        <i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Users
+                    </a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#" on:click={ logoutModal.show }>
                         <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                         Logout

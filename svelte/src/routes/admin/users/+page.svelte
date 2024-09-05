@@ -74,7 +74,7 @@
 
 
         // (Getting the value)
-        title = `Activity Log ( ${ response.body['records'].length } )`;
+        title = `Users ( ${ response.body['records'].length } )`;
 
 
 
@@ -167,56 +167,6 @@
             // (Fetching the data)
             fetchData();
         }
-    
-    
-    
-    // Returns [Promise:bool]
-    async function terminateSession (id)
-    {
-        // (Sending a request)
-        const response = await Solenoid.HTTP.sendRequest
-        (
-            envs.APP_URL + '/rpc',
-            'RPC',
-            [
-                'Action: user::terminate_session',
-                'Content-Type: application/json'
-            ],
-            JSON.stringify( { 'id': id } ),
-            '',
-            true
-        )
-        ;
-
-        if ( response.status.code !== 200 )
-        {// (Request failed)
-            if ( response.status.code === 401 )
-            {// (Client is not authorized)
-                // (Setting the location)
-                window.location.href = '/admin/login';
-
-
-
-                // Returning the value
-                return false;
-            }
-
-
-
-            // (Alerting the value)
-            alert( response.body['error']['message'] );
-
-
-
-            // Returning the value
-            return false;
-        }
-
-
-
-        // Returning the value
-        return true;
-    }
 
 
 

@@ -10,8 +10,7 @@
 
 
 
-    export let title   = '';
-    export let records = [];
+    export let title = '';
 
 
 
@@ -48,40 +47,207 @@
 
 
 
-    export let api = null;
-
-    $:
-        if ( element )
-        {// Value found
-            if ( !api )
-            {// Value not found
-                // (Setting the value)
-                api = {};
+    export let records = [];
 
 
 
-                // (Setting the value)
-                api.ready = false;
+    export let api = {};
 
 
 
-                // (Setting the value)
-                api.keySearch = {};
+    // (Setting the values)
+    api.useKeys       = false;
+    api.keys          = {};
+
+    api.filterEnabled = false;
+    api.activeFilter  = null;
+    api.lastFilter    = null;
 
 
 
-                // Returns [number|false]
-                api.getColumnIndex = function (column)
-                {
-                    // (Setting the value)
-                    let index = false;
+    // Returns [number|false]
+    api.getColumnIndex = function (column)
+    {
+        // (Setting the value)
+        let index = false;
 
-                    for ( const i in records[0].values )
-                    {// Iterating each index
-                        if ( records[0].values[i].column === column )
+        for ( const i in records[0].values )
+        {// Iterating each index
+            if ( records[0].values[i].column === column )
+            {// Match OK
+                // (Getting the value)
+                index = i;
+
+                // Breaking the iteration
+                break;
+            }
+        }
+
+
+
+        // Returning the value
+        return index;
+    }
+
+    // Returns [Array<string>]
+    api.getColumnValues = function (column, filtered)
+    {
+        if ( typeof filtered === 'undefined' ) filtered = false;
+
+
+
+        // Returning the value
+        return [ ...new Set( records.filter( function (record) { return filtered ? !record.hidden : true; } ).map( function (record) { return record.values[ api.getColumnIndex(column) ].value; } ) ) ];
+    }
+
+
+
+    // Returns [void]
+    api.sort = function (column, reverse)
+    {
+        if ( typeof reverse === 'undefined' ) reverse = sortReverse;
+
+
+
+        // (Getting the value)
+        const index = api.getColumnIndex(column);
+
+
+
+        // (Sorting the array)
+        records.sort
+        (
+            function (a, b)
+            {
+                if ( a.values[index].value < b.values[index].value )
+                {// (A is lesser than B)
+                    // Returning the value
+                    return reverse ? 1 : -1;
+                }
+                else
+                if ( a.values[index].value > b.values[index].value )
+                {// (A is greater than B)
+                    // Returning the value
+                    return reverse ? -1 : 1;
+                }
+
+
+
+                // Returning the value
+                return 0;
+            }
+        )
+        ;
+
+
+
+        // (Getting the value)
+        records = records;
+
+
+
+        // (Setting the value)
+        sortColumn = column;
+
+        // (Getting the value)
+        sortReverse = !sortReverse;
+    }
+
+
+
+    // Returns [object]
+    api.getSearchValues = function ()
+    {
+        // (Getting the value)
+        const result =
+        {
+            'global': element.querySelector('.search-box .input').value,
+            'local': {},
+            'keys':  {}
+        }
+        ;
+
+
+
+        // (Iterating each entry)
+        element.querySelectorAll('.jtable thead tr th[data-column]').forEach
+        (
+            function (el)
+            {
+                // (Getting the values)
+                result.local[ el.getAttribute('data-column') ] = el.querySelector('.input').value;
+                //result.keys[ el.getAttribute('data-column') ]  = Array.from( el.querySelectorAll('.column-key-search-menu .key-list .input:not(.input-all):checked') ).map( function (elem) { return elem.value; } );
+                result.keys[ el.getAttribute('data-column') ]  = api.useKeys ? api.keys[ el.getAttribute('data-column') ].entries.filter( function (entry) { return entry.checked && !entry.hidden; } ).map( function (entry) { return entry.value; } ) : [];
+            }
+        )
+        ;
+
+
+
+        // Returning the value
+        return result;
+    }
+
+    // Returns [void]
+    api.setSearchValues = function (searchValues)
+    {
+        // (Getting the value)
+        element.querySelector('.search-box .input').value = searchValues.global;
+
+
+
+        // (Iterating each entry)
+        element.querySelectorAll('.jtable thead tr th[data-column]').forEach
+        (
+            function (el)
+            {
+                // (Getting the value)
+                const column = el.getAttribute('data-column');
+
+
+
+                // (Getting the value)
+                el.querySelector('.input').value = searchValues.local[ column ];
+
+                if ( api.useKeys )
+                {// Value is true
+                    for ( const i in api.keys[ column ].entries )
+                    {// Processing each entry
+                        if ( searchValues.keys[ column ].includes( api.keys[ column ].entries[i].value ) )
                         {// Match OK
-                            // (Getting the value)
-                            index = i;
+                            // (Setting the properties)
+                            api.keys[ column ].entries[i].checked = true;
+                            api.keys[ column ].entries[i].hidden  = false;
+                        }
+                    }
+                }
+            }
+        )
+        ;
+    }
+
+
+
+    // Returns [void]
+    api.filter = function (fn)
+    {
+        switch ( fn )
+        {
+            case 'SEARCH_GLOBAL':// (OR of values)
+                // (Getting the value)
+                const searchValue = api.getSearchValues().global;
+
+                for ( const i in records )
+                {// Iterating each index
+                    // (Setting the value)
+                    let resultFound = false;
+
+                    for ( const column of records[i].values )
+                    {// Processing each entry
+                        if ( column.value.toString().toLowerCase().indexOf( searchValue.toLowerCase() ) !== -1 )
+                        {// Match OK
+                            // (Setting the value)
+                            resultFound = true;
 
                             // Breaking the iteration
                             break;
@@ -90,259 +256,359 @@
 
 
 
-                    // Returning the value
-                    return index;
-                }
-
-                // Returns [Array<string>]
-                api.getColumnValues = function (column)
-                {
-                    // Returning the value
-                    return [ ...new Set( records.map( function (record) { return record.values[ api.getColumnIndex(column) ].value; } ) ) ];
-                }
-
-
-
-                // Returns [void]
-                api.sort = function (column, reverse)
-                {
-                    if ( typeof reverse === 'undefined' ) reverse = sortReverse;
-
-
-
                     // (Getting the value)
-                    const index = api.getColumnIndex(column);
+                    records[i].hidden = !resultFound;
+                }
+            break;
 
+            case 'SEARCH_LOCAL':// (AND of values)
+                // (Getting the value)
+                const values = api.getSearchValues().local;
 
-
-                    // (Sorting the array)
-                    records.sort
-                    (
-                        function (a, b)
-                        {
-                            if ( a.values[index].value < b.values[index].value )
-                            {// (A is lesser than B)
-                                // Returning the value
-                                return reverse ? 1 : -1;
-                            }
-                            else
-                            if ( a.values[index].value > b.values[index].value )
-                            {// (A is greater than B)
-                                // Returning the value
-                                return reverse ? -1 : 1;
-                            }
-
-
-
-                            // Returning the value
-                            return 0;
-                        }
-                    )
-                    ;
-
-
-
-                    // (Getting the value)
-                    records = records;
-
-
-
+                for ( const i in records )
+                {// Processing each entry
                     // (Setting the value)
-                    sortColumn = column;
+                    let resultFound = true;
 
-                    // (Getting the value)
-                    sortReverse = !sortReverse;
-                }
-
-
-
-                // Returns [object]
-                api.getSearchValues = function ()
-                {
-                    // (Getting the value)
-                    const result =
-                    {
-                        'global': element.querySelector('.search-box .input').value,
-                        'local': {},
-                        'keys':  {}
-                    }
-                    ;
-
-
-
-                    // (Iterating each entry)
-                    element.querySelectorAll('.jtable thead tr th[data-column]').forEach
-                    (
-                        function (el)
-                        {
-                            // (Getting the values)
-                            result.local[ el.getAttribute('data-column') ] = el.querySelector('.input').value;
-                            result.keys[ el.getAttribute('data-column') ]  = Array.from( el.querySelectorAll('.column-key-search-menu .input:checked') ).map( function (elem) { return elem.value; } );
-                        }
-                    )
-                    ;
-
-
-
-                    // Returning the value
-                    return result;
-                }
-
-                // Returns [void]
-                api.filter = function (fn)
-                {
-                    switch ( fn )
-                    {
-                        case 'SEARCH_GLOBAL':// (OR of values)
-                            // (Getting the value)
-                            const searchValue = api.getSearchValues().global;
-
-                            for ( const i in records )
-                            {// Iterating each index
-                                // (Setting the value)
-                                let resultFound = false;
-
-                                for ( const column of records[i].values )
-                                {// Processing each entry
-                                    if ( column.value.toString().toLowerCase().indexOf( searchValue.toLowerCase() ) !== -1 )
-                                    {// Match OK
-                                        // (Setting the value)
-                                        resultFound = true;
-
-                                        // Breaking the iteration
-                                        break;
-                                    }
-                                }
-
-
-
-                                // (Getting the value)
-                                records[i].hidden = !resultFound;
-                            }
-                        break;
-
-                        case 'SEARCH_LOCAL':// (AND of values)
-                            // (Getting the value)
-                            const values = api.getSearchValues().local;
-
-                            for ( const i in records )
-                            {// Processing each entry
-                                // (Setting the value)
-                                let resultFound = true;
-
-                                for ( const k in values )
-                                {// Processing each entry
-                                    // (Getting the value)
-                                    const value = records[i].values[ api.getColumnIndex(k) ].value;
-
-                                    if ( value.toString().toLowerCase().indexOf( values[k].toString().toLowerCase() ) === -1 )
-                                    {// Match failed
-                                        // (Setting the value)
-                                        resultFound = false;
-
-                                        // Breaking the iteration
-                                        break;
-                                    }
-                                }
-
-
-
-                                // (Getting the value)
-                                records[i].hidden = !resultFound;
-                            }
-                        break;
-
-                        case 'SEARCH_KEYS':// (OR of keys)
-                            // (Getting the value)
-                            const keys = api.getSearchValues().keys;
-
-                            for ( const i in records )
-                            {// Processing each entry
-                                // (Setting the value)
-                                let resultFound = true;
-
-                                for ( const k in records[i].values )
-                                {// Processing each entry
-                                    // (Getting the values)
-                                    const column = records[i].values[k].column;
-                                    const value  = records[i].values[k].value;
-
-                                    if ( keys[column].length > 0 && !keys[column].includes( value.toString() ) )
-                                    {// Match failed
-                                        // (Setting the value)
-                                        resultFound = false;
-
-                                        // Breaking the iteration
-                                        break;
-                                    }
-                                }
-
-
-
-                                // (Getting the value)
-                                records[i].hidden = !resultFound;
-                            }
-                        break;
-
-                        default:
-                            // (Calling the function)
-                            fn();
-                    }
-                }
-
-
-
-                // Returns [void]
-                api.setKeySearch = function ()
-                {
-                    // (Setting the value)
-                    const keySearch = {};
-
-
-
-                    if ( records.length === 0 ) return;
-
-
-
-                    for ( const i in records[0].values )
+                    for ( const k in values )
                     {// Processing each entry
                         // (Getting the value)
-                        keySearch[ records[0].values[i].column ] =
-                        {
-                            'menuOpen': false
+                        const value = records[i].values[ api.getColumnIndex(k) ].value;
+
+                        if ( value.toString().toLowerCase().indexOf( values[k].toString().toLowerCase() ) === -1 )
+                        {// Match failed
+                            // (Setting the value)
+                            resultFound = false;
+
+                            // Breaking the iteration
+                            break;
                         }
-                        ;
                     }
 
 
 
                     // (Getting the value)
-                    api.keySearch = keySearch;
+                    records[i].hidden = !resultFound;
                 }
+            break;
+
+            case 'SEARCH_KEYS':// (OR of keys)
+                // (Getting the value)
+                const keys = api.getSearchValues().keys;
+
+                for ( const i in records )
+                {// Processing each entry
+                    // (Setting the value)
+                    let resultFound = true;
+
+                    for ( const k in records[i].values )
+                    {// Processing each entry
+                        // (Getting the values)
+                        const column = records[i].values[k].column;
+                        const value  = records[i].values[k].value;
+
+                        if ( keys[column].length > 0 && !keys[column].includes( value.toString() ) )
+                        {// Match failed
+                            // (Setting the value)
+                            resultFound = false;
+
+                            // Breaking the iteration
+                            break;
+                        }
+                    }
 
 
 
-                // (Setting the value)
-                api.ready = true;
-            }
+                    // (Getting the value)
+                    records[i].hidden = !resultFound;
+                }
+            break;
+
+            default:
+                // (Calling the function)
+                fn();
         }
-    
-    
-    
-    // Returns [void]
-    function onGlobalSearch (event)
+    }
+
+
+
+    // Returns [object]
+    api.extractKeys = function ()
     {
-        // (Filtering the records)
-        api.filter('SEARCH_GLOBAL');
+        // (Setting the value)
+        const keys = {};
+
+
+
+        if ( records.length === 0 ) return;
+
+
+
+        for ( const i in records[0].values )
+        {// Processing each entry
+            // (Getting the value)
+            const column = records[0].values[i].column;
+
+            // (Getting the value)
+            keys[ column ] =
+            {
+                'menuOpen':     false,
+                'filterActive': false,
+
+                'entries':      api.getColumnValues( column ).map( function (entry) { return { 'value': entry, 'checked': false, 'hidden': false }; } )
+            }
+            ;
+        }
+
+
+
+        // Returning the value
+        return keys;
     }
 
 
 
     // Returns [void]
+    api.resetFilter = function ()
+    {
+        for ( const i in records )
+        {// Processing each entry
+            // (Setting the value)
+            records[i].hidden = false;
+        }
+
+        for ( const column in api.keys )
+        {// Processing each entry
+            for ( const i in api.keys[column].entries )
+            {// Processing each entry
+                // (Setting the values)
+                api.keys[column].entries[i].checked = false;
+                api.keys[column].entries[i].hidden  = false;
+            }
+        }
+
+
+
+        // (Setting the value)
+        element.querySelector('.search-box .input').value = '';
+
+        // (Iterating each entry)
+        element.querySelectorAll('.column-search-box .input').forEach
+        (
+            function (el)
+            {
+                // (Setting the value)
+                el.value = '';
+            }
+        )
+        ;
+    }
+
+    // Returns [void]
+    api.applyFilter = function (filter)
+    {
+        // (Setting the search values)
+        api.setSearchValues( filter );
+    }
+
+
+
+    // Returns [void]
+    api.saveFilter = function ()
+    {
+        // (Getting the value)
+        api.lastFilter = api.getSearchValues();
+
+        // (Resetting the filter)
+        api.resetFilter();
+
+
+
+        // (Getting the value)
+        api.filterEnabled = !api.filterEnabled;
+    }
+
+    // Returns [void]
+    api.restoreFilter = function ()
+    {
+        if ( api.lastFilter )
+        {// Value found
+            // (Applying the filter)
+            api.applyFilter( api.lastFilter );
+
+            // (Filtering the table)
+            api.filter( api.activeFilter );
+        }
+
+
+
+        // (Getting the value)
+        api.filterEnabled = !api.filterEnabled;
+    }
+
+
+
+    // Returns [string]
+    api.buildCSV = function (columns, columnSeparator, rowSeparator, enclosure, escape)
+    {
+        if ( records.length === 0 ) return '';
+
+
+
+        if ( typeof columns === 'undefined' ) columns = records[0].values.map( function (entry) { return entry.column; } );
+        if ( typeof columnSeparator === 'undefined' ) columnSeparator = ';'
+        if ( typeof rowSeparator === 'undefined' ) rowSeparator = "\n";
+        if ( typeof enclosure === 'undefined' ) enclosure = '"';
+        if ( typeof escape === 'undefined' ) escape = '\\';
+
+
+
+        // (Setting the value)
+        let lines = [];
+
+
+
+        // (Setting the value)
+        let schema = [];
+
+        for ( const column of columns )
+        {// Processing each entry
+            // (Appending the value)
+            schema.push( /\s/.test( column ) ? `${ enclosure }${ column.replace( new RegExp( enclosure ), escape + enclosure ) }${ enclosure }` : column );
+        }
+
+        // (Getting the value)
+        schema = schema.join( columnSeparator );
+
+
+
+
+        // (Appending the value)
+        lines.push( schema );
+
+
+
+        for ( const i in records )
+        {// Processing each entry
+            if ( records[i].hidden ) continue;
+
+
+
+            let cols = [];
+
+            for ( const column of columns )
+            {// Processing each entry
+                for ( const j in records[i].values )
+                {// Processing each entry
+                    if ( records[i].values[j].column === column )
+                    {// Match OK
+                        // (Getting the value)
+                        const value = records[i].values[j].value;
+
+                        // (Appending the value)
+                        cols.push( /\s/.test( value ) ? `${ enclosure }${ value.replace( new RegExp( enclosure ), escape + enclosure ) }${ enclosure }` : value );
+
+                        // Breaking the iteration
+                        break;
+                    }
+                }
+            }
+
+
+
+            // (Appending the value)
+            //lines.push( records[i].values.map( function (entry) { return /\s/.test( entry.value ) ? `${ enclosure }${ entry.value.replace( new RegExp( enclosure ), escape + enclosure ) }${ enclosure }` : entry.value; } ).join( columnSeparator ) );
+            lines.push( cols.join( columnSeparator ) );
+        }
+
+
+
+        // Returning the value
+        return lines.join( rowSeparator );
+    }
+
+    // Returns [void]
+    api.downloadCSV_OLD = function (filename)
+    {
+        if ( typeof filename === 'undefined' ) filename = 'export.csv';
+
+
+
+        // (Getting the values)
+        const blob = new Blob( [ api.buildCSV() ], { 'type': 'application/csv' } );
+        const url  = window.URL.createObjectURL( blob );
+
+
+
+        // (Creating an element)
+        const a = document.createElement('a');
+
+        // (Getting the values)
+        a.href     = url;
+        a.download = filename;
+
+
+
+        // (Appending the child)
+        document.body.appendChild(a);
+
+
+
+        // (Triggering the event)
+        a.click();
+
+        // (Removing the element)
+        a.remove();
+
+
+
+        // (Revoking the url object)
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Returns [void]
+    api.downloadCSV = function (filename)
+    {
+        if ( typeof filename === 'undefined' ) filename = 'export.csv';
+
+
+
+        // (Creating an element)
+        const a = document.createElement('a');
+
+        // (Getting the values)
+        a.href     = `data:application/csv;base64,${ btoa( api.buildCSV() ) }`;
+        a.download = filename;
+
+
+
+        // (Triggering the event)
+        a.click();
+
+        // (Removing the element)
+        a.remove();
+    }
+
+    
+
+    // Returns [void]
+    function onGlobalSearch (event)
+    {
+        // (Setting the value)
+        api.activeFilter = 'SEARCH_GLOBAL';
+
+        // (Filtering the records)
+        api.filter( api.activeFilter );
+    }
+
+    // Returns [void]
     function onLocalSearch (event)
     {
+        // (Setting the value)
+        api.activeFilter = 'SEARCH_LOCAL';
+
         // (Filtering the records)
-        api.filter('SEARCH_LOCAL');
+        api.filter( api.activeFilter );
     }
 
 
@@ -370,30 +636,116 @@
     function onKeySearchMenuBtnClick (column)
     {
         // (Getting the value)
-        api.setKeySearch();
+        api.keys[ column ].menuOpen = !api.keys[ column ].menuOpen;
+    }
+
+
+
+    // Returns [void]
+    function onKeySelect (event, column, value)
+    {
+        for ( const i in api.keys[ column ].entries )
+        {// Processing each entry
+            if ( api.keys[ column ].entries[i].value === value )
+            {// Value found
+                // (Getting the value)
+                api.keys[ column ].entries[i].checked = event.target.checked;
+            }
+        }
 
 
 
         // (Getting the value)
-        api.keySearch[ column ].menuOpen = !api.keySearch[ column ].menuOpen;
+        //api.keys[ column ].filterActive = api.keys[ column ].entries.filter( function (entry) { return entry.checked; } ).length > 0;
+
+
+
+        // (Setting the value)
+        api.activeFilter = 'SEARCH_KEYS';
+
+        // (Filtering the records)
+        api.filter( api.activeFilter );
     }
 
     // Returns [void]
-    function onKeySearch (event)
+    function onKeySelectAll (event, column)
     {
+        for ( const i in api.keys[ column ].entries )
+        {// Processing each entry
+            // (Getting the value)
+            api.keys[ column ].entries[i].checked = event.target.checked;
+        }
+
+
+
         // (Getting the value)
-        const column = event.target.closest('th').getAttribute('data-column');
+        //api.keys[ column ].filterActive = api.keys[ column ].entries.filter( function (entry) { return entry.checked; } ).length > 0;
 
 
 
-        // (Setting the attribute)
-        event.target.closest('th').querySelector('.column-key-search-btn').setAttribute( 'data-state', api.getSearchValues().keys[column].length > 0 ? 'active' : 'idle' );
-
-
+        // (Setting the value)
+        api.activeFilter = 'SEARCH_KEYS';
 
         // (Filtering the records)
-        api.filter('SEARCH_KEYS');
+        api.filter( api.activeFilter );
     }
+
+
+
+    // Returns [void]
+    function extractKeys ()
+    {
+        // (Getting the value)
+        api.useKeys = !api.useKeys;
+
+        if ( api.useKeys )
+        {// Value is true
+            // (Getting the value)
+            api.keys = api.extractKeys();
+        }
+        else
+        {// Value is false
+            // (Setting the value)
+            api.keys = {};
+        }
+    }
+
+
+
+    // Returns [void]
+    function onKeySearch (event, column)
+    {
+        // (Getting the value)
+        const searchValue = event.target.value;
+
+        for ( const i in api.keys[ column ].entries )
+        {// Processing each entry
+            // (Getting the value)
+            api.keys[ column ].entries[i].hidden = api.keys[ column ].entries[i].value.toLowerCase().indexOf( searchValue.toLowerCase() ) === -1;
+        }
+
+
+
+        if ( api.keys[ column ].entries.filter( function (entry) { return entry.checked && !entry.hidden; } ).length > 0 )
+        {// (All of the keys are checked)
+            // (Filtering the records)
+            api.filter('SEARCH_KEYS');
+        }
+    }
+
+
+
+    $:
+        if ( records.filter( function (record) { return record.hidden; } ).length > 0 )
+        {// (There are hidden records)
+            // (Setting the value)
+            api.filterEnabled = true;
+        }
+        else
+        {// (There are no hidden records)
+            // (Setting the value)
+            api.filterEnabled = false;
+        }
 
 </script>
 
@@ -405,20 +757,38 @@
     </div>
 
     <div class="card-body">
-        { #if records.length > 0 && api?.ready }
+        { #if records.length > 0 }
             <div class="table-responsive">
                 <div class="dataTables_wrapper dt-bootstrap4">
                     <div class="row">
                         <div class="col d-flex align-items-center" style="justify-content: space-between;">
-                            <div class="num-results">( <b>{ records.filter( function (record) { return !record.hidden; } ).length }</b> )</div>
+                            <div class="controls-left">
+                                <div class="num-results">( <b>{ records.filter( function (record) { return !record.hidden; } ).length }</b> )</div>
+
+                                <button class="btn btn-secondary ml-3" title="download csv" on:click={ () => { api.downloadCSV(); } }>
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                            </div>
 
                             <div class="search-box">
-                                { #if records.filter( function (record) { return record.hidden; } ).length > 0 }
-                                    <button class="btn btn-danger" title="remove filter">
+                                <button class="btn btn-secondary mr-3" title="extract keys" on:click={ extractKeys }>
+                                    { #if api.useKeys }
+                                        <i class="fa-solid fa-caret-up"></i>
+                                    { :else }
+                                        <i class="fa-solid fa-caret-down"></i>
+                                    { /if }
+                                </button>
+
+                                { #if api.filterEnabled }
+                                    <button class="btn btn-danger" title="remove filter { api.activeFilter }" on:click={ api.saveFilter }>
                                         <i class="fa-solid fa-filter-circle-xmark"></i>
+
+                                        <div class="active-filter-indicator">
+                                            <span>{ api.activeFilter?.split('_')[1].charAt(0).toUpperCase() }</span>
+                                        </div>
                                     </button>
                                 { :else }
-                                    <button class="btn btn-secondary" title="apply filter">
+                                    <button class="btn btn-secondary" title="apply filter { api.activeFilter }" on:click={ api.restoreFilter }>
                                         <i class="fa-solid fa-filter"></i>
                                     </button>
                                 { /if }
@@ -453,34 +823,58 @@
                                                     <input type="text" class="form-control form-control-sm input" on:input={ onLocalSearch }>
                                                 </div>
 
-                                                <div class="column-key-search-box mt-2">
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <div class="column-key-search-btn d-flex justify-content-center align-items-center" on:click={ onKeySearchMenuBtnClick(column) } data-state="idle">
-                                                        { #if Object.keys( api.keySearch ).length > 0 }
-                                                            { #if api.keySearch[ column ].menuOpen }
-                                                                <i class="fa-solid fa-caret-up"></i>
+                                                { #if api.useKeys }
+                                                    <div class="column-key-search-box mt-2">
+                                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                                        <div class="column-key-search-btn d-flex justify-content-center align-items-center" on:click={ onKeySearchMenuBtnClick(column) } data-state="{ api.keys[ column ].entries.filter( function (entry) { return entry.checked; } ).length > 0 ? 'active' : 'idle' }">
+                                                            { #if Object.keys( api.keys ).length > 0 }
+                                                                { #if api.keys[ column ].menuOpen }
+                                                                    <i class="fa-solid fa-caret-up"></i>
+                                                                { :else }
+                                                                    <i class="fa-solid fa-caret-down"></i>
+                                                                { /if }
                                                             { :else }
                                                                 <i class="fa-solid fa-caret-down"></i>
                                                             { /if }
-                                                        { :else }
-                                                            <i class="fa-solid fa-caret-down"></i>
-                                                        { /if }
-                                                    </div>
+                                                        </div>
 
-                                                    { #if Object.keys( api.keySearch ).length > 0 }
-                                                        <div class="column-key-search-menu" data-state={ api.keySearch[ column ].menuOpen ? 'open' : 'closed' }>
-                                                            <ul>
-                                                                { #each api.getColumnValues(column) as key }
+                                                        { #if Object.keys( api.keys ).length > 0 }
+                                                            <div class="column-key-search-menu" data-state={ api.keys[ column ].menuOpen ? 'open' : 'closed' }>
+                                                                <div class="row">
+                                                                    <div class="col">
+                                                                        <input type="text" class="form-control form-control-sm input" name="search" on:input={ onKeySearch( event, column ) }>
+                                                                    </div>
+                                                                </div>
+
+                                                                <ul class="key-list">
                                                                     <li>
                                                                         <label class="m-0 d-block">
-                                                                            <input type="checkbox" class="input" value={ key } on:change={ onKeySearch }> { key }
+                                                                            <input type="checkbox" class="input input-all mb-3" value="all" on:change={ onKeySelectAll( event, column ) }> ALL [ { api.keys[ column ].entries.filter( function (entry) { return !entry.hidden; } ).length } ]
                                                                         </label>
                                                                     </li>
-                                                                { /each }
-                                                            </ul>
-                                                        </div>
-                                                    { /if }
-                                                </div>
+
+                                                                    <!--{ #each api.getColumnValues( column ) as key }
+                                                                        { #if !api.keys[ column ].entries.filter( function (entry) { return entry.value === key; } )[0].hidden }
+                                                                            <li>
+                                                                                <label class="m-0 d-block">
+                                                                                    <input type="checkbox" class="input" value={ key } on:change={ onKeySelect( event, column, key) }> { key }
+                                                                                </label>
+                                                                            </li>
+                                                                        { /if }
+                                                                    { /each }-->
+
+                                                                    { #each api.keys[ column ].entries.filter( function (entry) { return !entry.hidden; } ) as entry }
+                                                                        <li>
+                                                                            <label class="m-0 d-block">
+                                                                                <input type="checkbox" class="input" value={ entry.value } checked={ entry.checked } on:change={ onKeySelect( event, column, entry.value ) }> { entry.value }
+                                                                            </label>
+                                                                        </li>
+                                                                    { /each }
+                                                                </ul>
+                                                            </div>
+                                                        { /if }
+                                                    </div>
+                                                { /if }
                                             </th>
                                         { /each }
 
@@ -526,7 +920,6 @@
     {
         background-color: #e1e1e1;
     }
-
     .table tbody tr:hover
     {
         background-color: #d4d4d4;
@@ -540,9 +933,15 @@
         cursor: pointer;
     }
 
+    .controls-left
+    {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .search-box
     {
-        width: 350px;
         margin: 10px 4px;
         display: flex;
         justify-content: space-between;
@@ -599,6 +998,26 @@
         margin: 0;
         padding: 10px;
         list-style: none;
+    }
+
+    .column-key-search-menu .row .col
+    {
+        padding: 18px;
+    }
+
+    .active-filter-indicator
+    {
+        position: relative;
+    }
+
+    .active-filter-indicator span
+    {
+        margin-left: -4px;
+        margin-bottom: -4px;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: 10px;
     }
 
 </style>
