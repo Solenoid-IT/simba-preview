@@ -184,6 +184,8 @@ class User extends Service
 
                 'email'         => $user->email,
 
+                'hierarchy'     => $user->hierarchy,
+
                 'birth'         =>
                 [
                     'name'      => $user->birth->name,
