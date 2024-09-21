@@ -368,7 +368,38 @@ class RPC extends Controller
 
 
                                 // (Getting the value)
-                                $data['records'] = UserModel::fetch()->where( 'group', $user->group )->list();
+                                $data['records'] = UserModel::fetch()->where( 'group', $user->group )->list
+                                (
+                                    transform_record: function ($record)
+                                    {
+                                        // (Getting the value)
+                                        $record =
+                                        [
+                                            'name'        => $record->name,
+                                            'email'       => $record->email,
+
+                                            'hierarchy'   => $record->hierarchy,
+
+                                            'birth'       =>
+                                            [
+                                                'name'    => $record->birth->name,
+                                                'surname' => $record->birth->surname,
+                                            ],
+
+                                            'datetime'    =>
+                                            [
+                                                'insert'  => $record->datetime->insert
+                                            ]
+                                        ]
+                                        ;
+
+
+
+                                        // Returning the value
+                                        return $record;
+                                    }
+                                )
+                                ;
                             break;
                         }
 

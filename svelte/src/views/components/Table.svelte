@@ -887,7 +887,11 @@
                                         { #if !record.hidden }
                                             <tr data-id={ record.id }>
                                                 { #each record.values as value }
-                                                    <td>{ value.value }</td>
+                                                    { #if typeof value.content === 'undefined' }
+                                                        <td>{ value.value }</td>
+                                                    { :else }
+                                                        <td>{ @html value.content }</td>
+                                                    { /if }
                                                 { /each }
 
                                                 <td class="controls text-center">
@@ -920,9 +924,15 @@
     {
         background-color: #e1e1e1;
     }
+
     .table tbody tr:hover
     {
         background-color: #d4d4d4;
+    }
+
+    .table tbody tr td
+    {
+        vertical-align: middle;
     }
 
     .table .column-header

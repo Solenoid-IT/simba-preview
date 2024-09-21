@@ -7,6 +7,8 @@
     import App from '../../../views/App.svelte';
     import Base from '../../../views/components/Base.svelte';
     import Table from '../../../views/components/Table.svelte';
+    import Modal from '../../../views/components/Modal.svelte';
+    import Form from '../../../views/components/Form.svelte';
 
     import { envs } from '../../../envs.js';
     import { appReady } from '../../../stores/appReady.js';
@@ -14,7 +16,16 @@
 
 
 
+    let resourceType = 'User';
+    let resourceName = 'Users';
+
+
+
     let title = '';
+
+
+
+    let hierarchies = {};
 
 
 
@@ -74,7 +85,12 @@
 
 
         // (Getting the value)
-        title = `Users ( ${ response.body['records'].length } )`;
+        title = `${ resourceName } ( ${ response.body['records'].length } )`;
+
+
+
+        // (Getting the value)
+        hierarchies = response.body['hierarchies'];
 
 
 
@@ -86,38 +102,38 @@
             // (Getting the value)
             const r =
             {
-                'id':             record['id'],
+                'id':             record['email'],
 
                 'values':
                 [
                     {
-                        'column': 'id',
-                        'value':  record['id']
+                        'column':  'hierarchy',
+                        'value':   hierarchies[ record['hierarchy'] ]['type'],
+
+                        'content':
+                            `
+                                <span class="tag-label" style="background-color: ${ hierarchies[ record['hierarchy'] ]['color'] };">${ hierarchies[ record['hierarchy'] ]['type'] }</span>
+                            `
                     },
 
                     {
-                        'column': 'action',
-                        'value':  record['action']
+                        'column': 'name',
+                        'value':  record['name']
                     },
 
                     {
-                        'column': 'ip',
-                        'value':  [ record['ip'], record['ip_info']['country']['code'], record['ip_info']['isp'] ].join(' - ')
+                        'column': 'email',
+                        'value':  record['email']
                     },
 
                     {
-                        'column': 'browser',
-                        'value':  record['ua_info']['browser']
+                        'column': 'birth.name',
+                        'value':  record['birth']['name']
                     },
 
                     {
-                        'column': 'os',
-                        'value':  record['ua_info']['os']
-                    },
-
-                    {
-                        'column': 'hw',
-                        'value':  record['ua_info']['hw']
+                        'column': 'birth.surname',
+                        'value':  record['birth']['surname']
                     },
 
                     {
@@ -127,15 +143,11 @@
                 ],
 
                 'controls':
-                    record['session'] && !record['current_session']
-                        ?
                     `
-                        <button class="btn btn-sm btn-danger" value="user::terminate_session" title="terminate session">
-                            <i class="fa-solid fa-right-from-bracket"></i>
+                        <button class="btn btn-sm btn-danger" value="user::remove" title="remove">
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     `
-                        :
-                    ''
                 ,
 
                 'hidden': false
@@ -198,10 +210,26 @@
         return result;
     }
 
+
+
+    let userModal;
+
 </script>
 
 <App>
     <Base>
-        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }/>
+        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }>
+            <div slot="controls">
+                <button class="btn btn-primary" title="add" on:click={ userModal.show }>
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </Table>
+
+        <Modal title="{ resourceType }" bind:api={ userModal }>
+            <Form>
+                
+            </Form>
+        </Modal>
     </Base>
 </App>

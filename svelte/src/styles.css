@@ -26,3 +26,14 @@
 	padding: 4px;
 	font-size: 14px;
 }
+
+
+
+.tag-label
+{
+	padding: 4px 14px;
+	color: #ffffff;
+	background-color: rgb(100, 100, 52);
+
+	border-radius: 4px;
+}
