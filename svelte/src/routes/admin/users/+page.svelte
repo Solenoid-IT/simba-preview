@@ -283,9 +283,11 @@
     <Base>
         <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }>
             <div slot="controls">
-                <button class="btn btn-primary" title="add" on:click={ userModal.show }>
-                    <i class="fa-solid fa-plus"></i>
-                </button>
+                { #if $user.user.hierarchy === 1 }
+                    <button class="btn btn-primary" title="add" on:click={ userModal.show }>
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                { /if }
             </div>
         </Table>
 
