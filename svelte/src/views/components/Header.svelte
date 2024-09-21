@@ -533,16 +533,19 @@
         {// Value found
             if ( !$user.password_set )
             {// (Password is not set)
-                // (Showing the modal)
-                securityModal.show();
+                if ( securityModal && changePasswordForm )
+                {// Values found
+                    // (Showing the modal)
+                    securityModal.show();   
 
 
 
-                // (Resetting the form)
-                changePasswordForm.reset();
+                    // (Resetting the form)
+                    changePasswordForm.reset();
 
-                // (Validating the form)
-                changePasswordForm.validate();
+                    // (Validating the form)
+                    changePasswordForm.validate();
+                }
             }
 
 
@@ -950,7 +953,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 9999;
+        z-index: 1000;
     }
 
 </style>

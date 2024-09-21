@@ -213,6 +213,69 @@
 
 
     let userModal;
+    
+
+
+    let userForm;
+
+    let userFormMsg = '';
+
+    // Returns [Promise:bool]
+    async function onUserFormSubmit ()
+    {
+        // (Validating the form)
+        const result = userForm.validate();
+
+        if ( !result.valid ) return false;
+
+
+
+        // (Setting the value)
+        userFormMsg = '';
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::add',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify( result.fetch() ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the value)
+        userForm.disabled = true;
+
+
+
+        // (Setting the value)
+        userFormMsg = `Confirm operation by email '${ result.entries['email'].value }' ...`;
+
+
+
+        // Returning the value
+        return true;
+    }
 
 </script>
 
@@ -227,8 +290,51 @@
         </Table>
 
         <Modal title="{ resourceType }" bind:api={ userModal }>
-            <Form>
-                
+            <Form bind:api={ userForm } on:submit={ onUserFormSubmit }>
+                <div class="row">
+                    <div class="col">
+                        <label class="d-block m-0">
+                            Name
+                            <input type="text" class="form-control input" name="name" data-required>
+                        </label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col">
+                        <label class="d-block m-0">
+                            Email
+                            <input type="text" class="form-control input" name="email" data-required>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <label class="d-block m-0">
+                            Hierarchy
+                            <select class="form-control input" name="hierarchy" data-required>
+                                <option value=""></option>
+                                <option disabled></option>
+
+                                { #each Object.values( hierarchies ) as hierarchy }
+                                    <option value="{ hierarchy.id }">{ hierarchy.type }</option>
+                                { /each }
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col text-center">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col">
+                        <span class="color-warning">{ userFormMsg }</span>
+                    </div>
+                </div>
             </Form>
         </Modal>
     </Base>

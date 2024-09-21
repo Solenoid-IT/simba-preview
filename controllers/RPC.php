@@ -12,6 +12,7 @@ use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
+use \Solenoid\HTTP\Client\Client as HttpClient;
 
 use \Solenoid\MySQL\DateTime;
 
@@ -1998,14 +1999,16 @@ class RPC extends Controller
                         ;
                     break;
 
-                    /*case 'add':
+                    case 'add':
                         // (Verifying the user)
                         $response = UserService::verify( 1 );
 
                         if ( $response->status->code !== 200 )
                         {// (Verification is failed)
-                            // Closing the process
-                            exit( Server::send( $response ) );
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
                         }
 
 
@@ -2021,45 +2024,56 @@ class RPC extends Controller
 
 
                         // (Getting the value)
-                        $user = UserModel::where( 'id', $user_id )->first();
+                        $user = UserModel::fetch()->where( 'id', $user_id )->find();
 
                         if ( !$user )
                         {// Value not found
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) ) );
-                        }
-
-
-
-                        if ( UserModel::where( [ [ 'group', $user->group ], [ 'name', $rpc->input['name'] ] ] )->count() > 0 )
-                        {// (Record found)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['name'] already exists (user)" ] ] ) ) );
-                        }
-
-                        if ( UserModel::where( [ [ 'group', $user->group ], [ 'email', $rpc->input['email'] ] ] )->count() > 0 )
-                        {// (Record found)
-                            // Closing the process
-                            exit( Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['email'] already exists (user)" ] ] ) ) );
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                            ;
                         }
 
 
 
                         // (Getting the value)
-                        $app = AppStore::fetch();
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'name', $input['name'] ] ] )->exists() )
+                        {// (Record found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['name'] already exists (user)" ] ] ) )
+                            ;
+                        }
+
+                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'email', $input['email'] ] ] )->exists() )
+                        {// (Record found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['email'] already exists (user)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $app = WebApp::fetch();
 
 
 
                         // (Sending an http request)
-                        $response = Client::send
+                        $response = HttpClient::send
                         (
-                            'https://' . $app->app['id'] . '/rpc',
-                            'POST',
+                            'https://' . $app->id . '/rpc',
+                            'RPC',
                             [
                                 'Action: user::register',
                                 'Content-Type: application/json',
 
-                                'User-Agent: FEV'
+                                'User-Agent: Simba'
                             ],
                             json_encode
                             (
@@ -2071,20 +2085,22 @@ class RPC extends Controller
 
                                     'user'          =>
                                     [
-                                        'name'      => $rpc->input['name'],
-                                        'email'     => $rpc->input['email'],
-                                        'hierarchy' => $rpc->input['hierarchy']
+                                        'name'      => $input['name'],
+                                        'email'     => $input['email'],
+                                        'hierarchy' => $input['hierarchy']
                                     ]
                                 ]
                             )
                         )
                         ;
 
-                        // Closing the process
-                        exit( Server::send( new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body ) ) );
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body ) )
+                        ;
                     break;
 
-                    case 'remove':
+                    /*case 'remove':
                         // (Getting the value)
                         $request = Request::fetch();
 

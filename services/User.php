@@ -129,7 +129,7 @@ class User extends Service
 
         if ( $hierarchy )
         {// Value found
-            if ( !UserModel::fetch()->where( [ 'id', $session->data['user'] ], [ 'hierarchy', $hierarchy ] )->exists() )
+            if ( !UserModel::fetch()->where( [ [ 'id', $session->data['user'] ], [ 'hierarchy', $hierarchy ] ] )->exists() )
             {// (Record not found)
                 // Returning the value
                 return
