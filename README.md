@@ -76,7 +76,7 @@ Restart: `sudo service { name } restart`
 # Development
 To start the dev-server you have to digit :
 <br>
-`sudo php x dev`
+`php x dev`
 <br><br>
 Access to `https://front-dev.{ app-id }`
 <br><br>

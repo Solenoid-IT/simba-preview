@@ -46,6 +46,7 @@ $helper =
     x scheduler disable
     x scheduler task <id> <action=enable|disable>
 
+    x set-envs
     x dev
     x build
     x release
@@ -54,6 +55,35 @@ $helper =
 
     EOD
 ;
+
+
+
+// Returns [assoc]
+function get_envs ()
+{
+    // (Getting the value)
+    $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+
+
+
+    // (Getting the value)
+    $envs =
+    [
+        'APP_ID'         => $app_config->id,
+        'APP_NAME'       => $app_config->name,
+        'APP_VERSION'    => array_keys( json_decode( file_get_contents( preg_replace( '/^\./', __DIR__, $app_config->history ) ), true ) )[0],
+        'APP_BUILD_TIME' => array_values( json_decode( file_get_contents( preg_replace( '/^\./', __DIR__, $app_config->history ) ), true ) )[0]['buildTime'],
+        'APP_URL'        => 'https://' . $app_config->id,
+
+        'BE_HOST'        => $app_config->id
+    ]
+    ;
+
+
+
+    // Returning the value
+    return $envs;
+}
 
 
 
@@ -273,8 +303,11 @@ switch ( $argv[1] )
 
 
 
-        // (Executing the cmd)
-        system("sudo rm -rf \"$blade_cache_folder_path/*\"");
+        if ( $blade_cache_folder_path )
+        {// Value found
+            // (Executing the cmd)
+            system("sudo rm -rf \"$blade_cache_folder_path\"/*");
+        }
 
 
 
@@ -1561,80 +1594,10 @@ switch ( $argv[1] )
 
 
 
-    case 'dev':
-        // (Including the file)
-        include_once( __DIR__ . '/autoload.php' );
-
-
-
+    case 'set-envs':
         // (Getting the value)
-        $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+        $envs = get_envs();
 
-
-
-        // (Getting the values)
-        $app_id          = $app_config->id;
-        $app_name        = $app_config->name;
-        $app_version     = array_keys( json_decode( file_get_contents( $app_config->history ), true ) )[0];
-        $app_build_time  = array_values( json_decode( file_get_contents( $app_config->history ), true ) )[0]['buildTime'];
-        $dev_sid         = bin2hex( random_bytes( 64 / 2 ) );
-        $be_host         = $app_id;
-        #$dev_server_fqdn = $app_id;
-        $dev_server_fqdn = "front-dev.{$app_id}";
-
-
-
-        // (Getting the values)
-        $hosts_file_path    = '/etc/hosts';
-        $hosts_file_content = file_get_contents( $hosts_file_path );
-        $localhost_entry    = "127.0.0.1 $dev_server_fqdn";
-
-        if ( strpos( $hosts_file_content, $localhost_entry ) === false )
-        {// Value not found
-            if ( file_put_contents( $hosts_file_path, "\n\n# Simba [$app_id]\n$localhost_entry", FILE_APPEND ) === false )
-            {// (Unable to write to the file)
-                // (Setting the value)
-                $message = "Unable to write to the file '$hosts_file_path'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( readline( "Have you added the localhost-entry '$localhost_entry' to your hosts file (ex. /etc/hosts) to access the web-app from your browser ? [Y/n]\n" ) === 'n' )
-        {// (Confirmation is failed)
-            // Printing the value
-            echo "\n\nDev-Server has not been started\n\n\n";
-
-            // Closing the process
-            exit;
-        }
-
-
-
-        // (Setting the cwd)
-        chdir( __DIR__ . '/svelte' );
-
-
-
-        // (Getting the value)
-        $envs =
-        [
-            'P_APP_ID'         => $app_id,
-            'P_APP_NAME'       => $app_name,
-            'P_APP_VERSION'    => $app_version,
-            'P_APP_BUILD_TIME' => $app_build_time,
-            'P_DEV_SID'        => $dev_sid,
-            'P_BE_HOST'        => $be_host,
-            'P_BE_TYPE'        => 'dev'
-        ]
-        ;
-        
 
 
         // (Setting the value)
@@ -1643,22 +1606,25 @@ switch ( $argv[1] )
         foreach ( $envs as $k => $v )
         {// Processing each entry
             // (Getting the value)
-            $envs_s[] = "$k=\"$v\"";
+            $envs_s[] = "'$k': " . ( is_string( $v ) ? "'$v'" : $v );
         }
 
 
 
         // (Getting the value)
-        $envs_s = implode( "\n", $envs_s );
+        $envs_s = implode( ",\n\t", $envs_s );
 
 
 
         // (Getting the values)
-        $env_file_path    = __DIR__ . '/svelte/.env';
+        $env_file_path    = __DIR__ . '/svelte/src/envs.js';
         $env_file_content =
             <<<EOD
-            # Core
-            $envs_s
+            export const envs =
+            {
+                $envs_s
+            }
+            ;
             EOD
         ;
 
@@ -1676,64 +1642,17 @@ switch ( $argv[1] )
 
 
 
-        // (Creating a Blade)
-        $blade = new \eftec\bladeone\BladeOne( __DIR__ . '/svelte/src', __DIR__ . '/svelte/src/_cache' );
-
-
-
-        // (Setting the value)
-        $envs_n = [];
-
-        foreach ( $envs as $k => $v )
-        {// Processing each entry
-            // (Getting the value)
-            $envs_n[ preg_replace( '/^P\_/', '', $k ) ] = $v;
-        }
-
-
-
-        // (Getting the value)
-        $html_file_content = $blade->run( '/app.blade.php', [ 'envs' => $envs_n ] );
-
-
-
-        // (Getting the value)
-        $app_file_path = __DIR__ . '/svelte/src/app.html';
-
-        if ( file_put_contents( $app_file_path, $html_file_content ) === false )
-        {// (Unable to write to the file)
-            // (Setting the value)
-            $message = "Unable to write to the file '$app_file_path'";
-
-            // Throwing an exception
-            throw new \Exception($message);
-
-            // Closing the process
-            exit;
-        }
-
-
-
-        // (Getting the values)
-        $cert_file_path = __DIR__ . '/svelte/cert/cert.pem';
-        $key_file_path  = __DIR__ . '/svelte/cert/key.pem';
-
-        // (Executing the command)
-        echo shell_exec( "openssl req -x509 -newkey rsa:4096 -keyout $key_file_path -out $cert_file_path -sha256 -days 3650 -nodes -subj \"/C=IT/ST=Italy/L=Turin/O=Solenoid-IT/OU=Solenoid-IT/CN=Solenoid-IT\"" );
-
-
-
         // (Getting the value)
         $core_file_path    = __DIR__ . '/svelte/.core';
         $core_file_content =
         [
             'dev_server'   =>
             [
-                'host'     => $dev_server_fqdn,
+                'host'     => 'front-dev.' . $envs['APP_ID'],
                 'https'    =>
                 [
-                    'key'  => $key_file_path,
-                    'cert' => $cert_file_path
+                    'key'  => __DIR__ . '/svelte/cert/key.pem',
+                    'cert' => __DIR__ . '/svelte/cert/cert.pem'
                 ]
             ],
 
@@ -1755,88 +1674,8 @@ switch ( $argv[1] )
 
 
 
-        // (Executing the cmd)
-        #system("npm run dev -- --open --port 3000");
-        #system("npm run dev -- --open");
-        system("npm run dev");
-    break;
-
-    case 'build':
-        // (Including the files)
+        // (Including the file)
         include_once( __DIR__ . '/autoload.php' );
-        include_once( __DIR__ . '/envs.php' );
-
-
-
-        // (Getting the value)
-        $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
-
-
-
-        // (Getting the values)
-        $app_id         = $app_config->id;
-        $app_name       = $app_config->name;
-        $app_version    = array_keys( json_decode( file_get_contents( $app_config->history ), true ) )[0];
-        $app_build_time = array_values( json_decode( file_get_contents( $app_config->history ), true ) )[0]['buildTime'];
-        $be_host        = $app_id;
-        $env            = array_values( array_filter( $envs['http'], function ($env) use ($app_config) { return in_array( $app_config->id, $env->hosts ); } ) )[0];
-        $be_type        = $env->type;
-
-
-
-        // (Setting the cwd)
-        chdir( __DIR__ . '/svelte' );
-
-
-
-        // (Getting the value)
-        $envs =
-        [
-            'P_APP_ID'         => $app_id,
-            'P_APP_NAME'       => $app_name,
-            'P_APP_VERSION'    => $app_version,
-            'P_APP_BUILD_TIME' => $app_build_time,
-            'P_DEV_SID'        => null,
-            'P_BE_HOST'        => $be_host,
-            'P_BE_TYPE'        => $be_type
-        ]
-        ;
-        
-
-
-        // (Setting the value)
-        $envs_s = [];
-
-        foreach ( $envs as $k => $v )
-        {// Processing each entry
-            // (Getting the value)
-            $envs_s[] = "$k=\"$v\"";
-        }
-
-
-
-        // (Getting the value)
-        $envs_s = implode( "\n", $envs_s );
-
-
-
-        // (Getting the values)
-        $env_file_path    = __DIR__ . '/svelte/.env';
-        $env_file_content =
-            <<<EOD
-            # Core
-            $envs_s
-            EOD
-        ;
-
-        if ( file_put_contents( $env_file_path, $env_file_content ) === false )
-        {// (Unable to write to the file)
-            // (Setting the value)
-            $message = "Unable to write to the file '$env_file_path'";
-
-            // Throwing an exception
-            throw new \Exception($message);
-        }
 
 
 
@@ -1845,19 +1684,8 @@ switch ( $argv[1] )
 
 
 
-        // (Setting the value)
-        $envs_n = [];
-
-        foreach ( $envs as $k => $v )
-        {// Processing each entry
-            // (Getting the value)
-            $envs_n[ preg_replace( '/^P\_/', '', $k ) ] = $v;
-        }
-
-
-
         // (Getting the value)
-        $html_file_content = $blade->run( '/app.blade.php', [ 'envs' => $envs_n ] );
+        $html_file_content = $blade->run( '/app.blade.php', [ 'envs' => $envs ] );
 
 
 
@@ -1871,41 +1699,89 @@ switch ( $argv[1] )
 
             // Throwing an exception
             throw new \Exception($message);
+
+            // Closing the process
+            exit;
         }
+    break;
+
+    case 'set-ldns':
+        // (Getting the value)
+        $envs = get_envs();
 
 
 
         // (Getting the value)
-        $build_folder_path = __DIR__ . '/web/build';
+        $app_id = $envs['APP_ID'];
 
 
 
-        // (Getting the value)
-        $core_file_path    = __DIR__ . '/svelte/.core';
-        $core_file_content =
-        [
-            'dev_server'   =>
-            [
-                'host'     => "front-dev.{$app_id}",
-                'https'    =>
-                [
-                    'key'  => __DIR__ . '/svelte/cert/key.pem',
-                    'cert' => __DIR__ . '/svelte/cert/cert.pem'
-                ]
-            ],
+        // (Getting the values)
+        $hosts_file_path    = '/etc/hosts';
+        $hosts_file_content = file_get_contents( $hosts_file_path );
 
-            'build_path'   => $build_folder_path
-        ]
-        ;
+        $core_config        = json_decode( file_get_contents( __DIR__ . '/svelte/.core' ), true );
 
-        if ( file_put_contents( $core_file_path, json_encode( $core_file_content, JSON_PRETTY_PRINT ) ) === false )
-        {// (Unable to write to the file)
-            // (Setting the value)
-            $message = "Unable to write to the file '$core_file_path'";
+        $dev_server_fqdn    = $core_config['dev_server']['host'];
+        $localhost_entry    = "127.0.0.1 $dev_server_fqdn";
 
-            // Throwing an exception
-            throw new \Exception($message);
+        if ( strpos( $hosts_file_content, $localhost_entry ) === false )
+        {// Value not found
+            if ( file_put_contents( $hosts_file_path, "\n\n# Simba [$app_id]\n$localhost_entry", FILE_APPEND ) === false )
+            {// (Unable to write to the file)
+                // (Setting the value)
+                $message = "Unable to write to the file '$hosts_file_path'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
         }
+    break;
+
+    case 'dev':
+        // (Executing the cmd)
+        system('php x set-envs');
+
+
+
+        // (Executing the cmd)
+        system('sudo php x set-ldns');
+
+
+
+        // (Getting the values)
+        $core_config    = json_decode( file_get_contents( __DIR__ . '/svelte/.core' ), true );
+
+        $key_file_path  = $core_config['dev_server']['https']['key'];
+        $cert_file_path = $core_config['dev_server']['https']['cert'];
+
+
+
+        // (Setting the cwd)
+        chdir( __DIR__ . '/svelte' );
+
+        // (Executing the cmd)
+        system( "openssl req -x509 -newkey rsa:4096 -keyout $key_file_path -out $cert_file_path -sha256 -days 3650 -nodes -subj \"/C=IT/ST=Italy/L=Turin/O=Solenoid-IT/OU=Solenoid-IT/CN=Solenoid-IT\"" );
+
+
+
+        // (Executing the cmd)
+        #system("npm run dev -- --open --port 3000");
+        #system("npm run dev -- --open");
+        system("npm run dev");
+    break;
+
+    case 'build':
+        // (Executing the cmd)
+        system('php x set-envs');
+
+
+
+        // (Setting the cwd)
+        chdir( __DIR__ . '/svelte' );
 
 
 
@@ -1914,14 +1790,8 @@ switch ( $argv[1] )
 
 
 
-        if ( !is_dir( $core_file_content['build_path'] ) )
-        {// (Directory not found)
-            // Printing the value
-            echo "\n\nUnable to build the app :: Vite build is failed\n\n\n";
-
-            // Closing the process
-            exit;
-        }
+        // (Getting the value)
+        $build_folder_path = json_decode( file_get_contents( __DIR__ . '/svelte/.core' ), true )['build_path'];
 
 
 
@@ -1958,6 +1828,16 @@ switch ( $argv[1] )
 
 
         // (Getting the value)
+        $envs = get_envs();
+
+
+
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Getting the value)
         $file_path_list = \Solenoid\System\Directory::select( $build_folder_path )->list( 0, '/\.html$/' );
 
         foreach ( $file_path_list as $file_path )
@@ -1968,7 +1848,7 @@ switch ( $argv[1] )
 
 
             // (Replacing the text)
-            $file_content = preg_replace( '/\.?\/_svelte/', "https://$be_host/build/_svelte", $file_content );
+            $file_content = preg_replace( '/\.?\/_svelte/', 'https://' . $envs['APP_ID'] . '/build/_svelte', $file_content );
 
 
 
@@ -2000,7 +1880,7 @@ switch ( $argv[1] )
 
 
         // (Printing the value)
-        echo "\n\nApp -> https://$be_host\n\n\n";
+        echo "\n\nApp -> https://{$envs['APP_ID']}\n\n\n";
     break;
 
     case 'release':
