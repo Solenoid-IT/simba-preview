@@ -1,3 +1,5 @@
+<svelte:window on:keydown={ onKeyDown }/>
+
 <script>
 
     import { envs } from '../../envs.js';
@@ -596,6 +598,44 @@
         $idk = null;
     }
 
+
+
+    // Returns [void]
+    function toggleFullscreen ()
+    {
+        if ( document.fullscreenElement )
+        {// Value is true
+            // (Disabling the fullscreen)
+            document.exitFullscreen();
+        }
+        else
+        {// Value is false
+            // (Enabling the fullscreen)
+            document.body.requestFullscreen();
+        }
+    }
+
+
+
+    // Returns [void]
+    function onKeyDown (event)
+    {
+        if ( document.activeElement.classList.contains('input') ) return;
+
+        switch ( event.key )
+        {
+            case 'f':// (Fullscreen controls)
+                // (Calling the function)
+                toggleFullscreen();
+            break;
+
+            case 'o':// (Logout controls)
+                // (Showing the modal)
+                logoutModal.show();
+            break;
+        }
+    }
+
 </script>
 
 <!-- Topbar -->
@@ -610,7 +650,7 @@
     <form
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
-            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for...">
+            <input type="text" class="form-control input bg-light border-0 small" placeholder="Search for...">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search fa-sm"></i>
@@ -705,6 +745,7 @@
                 <!-- Counter - Messages -->
                 <span class="badge badge-danger badge-counter">7</span>
             </a>
+
             <!-- Dropdown - Messages -->
             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                 aria-labelledby="messagesDropdown">
@@ -761,6 +802,13 @@
                 </a>
                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
             </div>
+        </li>
+
+        <!-- Nav Item - Messages -->
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="#" role="button" title="Fullscreen ON/OFF (F)" on:click={ toggleFullscreen }>
+                <i class="fa-solid fa-expand"></i>
+            </a>
         </li>
 
         <div class="topbar-divider d-none d-sm-block"></div>
