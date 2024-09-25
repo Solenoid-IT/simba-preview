@@ -22,7 +22,7 @@ use \App\Models\local\simba_db\Document as DocumentModel;
 class Fallback extends Controller
 {
     # Returns [void]
-    public function view ()
+    public function view_OLD ()
     {
         // (Getting the value)
         $app = WebApp::fetch();
@@ -182,6 +182,18 @@ class Fallback extends Controller
                 )
             )
         ;
+    }
+
+    # Returns [void]
+    public function view ()
+    {
+        // (Getting the value)
+        $app = WebApp::fetch();
+
+
+
+        // (Printing the value)
+        echo $app->blade->build_html( '../web/build/index.blade.php' );
     }
 }
 
