@@ -10,6 +10,7 @@
     import Form from '../../views/components/Form.svelte';
     import PasswordField from './PasswordField.svelte';
     import Switch from './Switch.svelte';
+    import Helper from './Helper.svelte';
 
     import { goto } from '$app/navigation';
 
@@ -935,7 +936,15 @@
 
         <Form id="set_mfa_form">
             <fieldset class="fieldset">
-                <legend>MFA (Multi-Factor Authentication)</legend>
+                <legend class="d-flex">
+                    <span class="mr-2">MFA (Multi-Factor Authentication)</span>
+
+                    <Helper>
+                        1) Login with your username and password
+                        <br>
+                        2) Confirm operation by email
+                    </Helper>
+                </legend>
                 <div class="row">
                     <div class="col">
                         <Switch name="mfa" on:change={ onSetMfa } } bind:api={ mfaSwitch }>
@@ -950,7 +959,17 @@
 
         <Form id="set_idk_form">
             <fieldset class="fieldset">
-                <legend>IDK (Identity Key)</legend>
+                <legend>
+                    <span class="mr-2">IDK (Identity Key)</span>
+
+                    <Helper>
+                        <div style="position: relative;">
+                            1) Import the IDK file
+                            <br>
+                            2) Login with IDK
+                        </div>
+                    </Helper>
+                </legend>
                 <div class="row">
                     <div class="col">
                         <Switch name="idk" on:change={ onSetIdk } } bind:api={ idkSwitch }>

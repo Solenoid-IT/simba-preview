@@ -2,6 +2,10 @@
 
 <script>
 
+    import { onMount } from 'svelte';
+    import { envs } from '../../envs.js';
+
+
     let closed = false;
 
 
@@ -11,6 +15,9 @@
     {
         // (Getting the value)
         closed = !closed;
+
+        // (Setting the value)
+        localStorage.setItem( 'sidebarClosed', JSON.stringify( closed ) );
     }
 
     // Returns [void]
@@ -27,6 +34,19 @@
         }
     }
 
+
+
+    // (Listening for the event)
+    onMount
+    (
+        function ()
+        {
+            // (Getting the value)
+            closed = JSON.parse( localStorage.getItem('sidebarClosed') ?? false );
+        }
+    )
+    ;
+
 </script>
 
 <!-- Sidebar -->
@@ -34,9 +54,7 @@
 
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
-        </div>
+        <img src="{ envs.APP_URL }/assets/images/simba.jpg" alt="" class="app-logo">
         <div class="sidebar-brand-text mx-3">SIMBA</div>
     </a>
 
@@ -45,7 +63,7 @@
 
     <!-- Nav Item - Dashboard -->
     <li class="nav-item active">
-        <a class="nav-link" href="/">
+        <a class="nav-link" href="/admin/dashboard">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
     </li>
@@ -55,7 +73,7 @@
 
     <!-- Heading -->
     <div class="sidebar-heading">
-        Addons
+        Modules
     </div>
 
     <!-- Nav Item - Pages Collapse Menu -->
@@ -68,27 +86,27 @@
         <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Login Screens:</h6>
-                <a class="collapse-item" href="login.html">Login</a>
-                <a class="collapse-item" href="register.html">Register</a>
-                <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
+                <a class="collapse-item" href="/admin/login">Login</a>
+                <a class="collapse-item" href="#">Register</a>
+                <a class="collapse-item" href="/admin/login">Forgot Password</a>
                 <div class="collapse-divider"></div>
                 <h6 class="collapse-header">Other Pages:</h6>
-                <a class="collapse-item" href="404.html">404 Page</a>
-                <a class="collapse-item" href="blank.html">Blank Page</a>
+                <a class="collapse-item" href="/404">404 Page</a>
+                <a class="collapse-item" href="#">Blank Page</a>
             </div>
         </div>
     </li>
 
     <!-- Nav Item - Charts -->
     <li class="nav-item">
-        <a class="nav-link" href="charts.html">
+        <a class="nav-link" href="#">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>Charts</span></a>
     </li>
 
     <!-- Nav Item - Tables -->
     <li class="nav-item">
-        <a class="nav-link" href="tables.html">
+        <a class="nav-link" href="#">
             <i class="fas fa-fw fa-table"></i>
             <span>Tables</span></a>
     </li>
@@ -105,6 +123,13 @@
 <!-- End of Sidebar -->
 
 <style>
+
+    .app-logo
+    {
+        display: table;
+        height: 50px;
+        border-radius: 4px;
+    }
 
     .sidebar.closed
     {
