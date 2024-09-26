@@ -160,7 +160,7 @@
 
     .toggle__input:checked + .toggle-track .toggle-indicator
     {
-        background-color: #4e73df;
+        background-color: var( --simba-primary );
         transform: translateX(30px);
     }
     .toggle__input:checked + .toggle-track .toggle-indicator .checkMark

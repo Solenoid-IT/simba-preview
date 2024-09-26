@@ -244,6 +244,8 @@
 
                     for ( const column of records[i].values )
                     {// Processing each entry
+                        if ( column.value === null ) break;
+
                         if ( column.value.toString().toLowerCase().indexOf( searchValue.toLowerCase() ) !== -1 )
                         {// Match OK
                             // (Setting the value)
@@ -273,7 +275,7 @@
                     for ( const k in values )
                     {// Processing each entry
                         // (Getting the value)
-                        const value = records[i].values[ api.getColumnIndex(k) ].value;
+                        const value = records[i].values[ api.getColumnIndex(k) ].value ?? '';
 
                         if ( value.toString().toLowerCase().indexOf( values[k].toString().toLowerCase() ) === -1 )
                         {// Match failed
@@ -305,7 +307,7 @@
                     {// Processing each entry
                         // (Getting the values)
                         const column = records[i].values[k].column;
-                        const value  = records[i].values[k].value;
+                        const value  = records[i].values[k].value ?? '';
 
                         if ( keys[column].length > 0 && !keys[column].includes( value.toString() ) )
                         {// Match failed
@@ -979,7 +981,7 @@
     .column-key-search-btn[data-state="active"]
     {
         color: #ffffff;
-        background-color: #4e73df;
+        background-color: var( --simba-primary );
         border-radius: 2px;
         cursor: pointer;
     }

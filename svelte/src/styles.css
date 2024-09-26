@@ -1,3 +1,137 @@
+:root
+{
+	--simba-dark: #2a2831;
+
+	--simba-primary: #078e8d;
+	--simba-primary-hover: #017574;
+	--simba-primary-active: #016a68;
+	--simba-primary-focus: #005e5d;
+	--simba-primary-focus-border: #005e5d57;
+	--simba-primary-focus-tf: #005e5d8f;
+	--simba-primary-focus-tf-border: #005e5d42;
+}
+
+.btn-primary
+{
+	background-color: var( --simba-primary );
+	border-color: var( --simba-primary );
+}
+
+.btn-primary:hover
+{
+	background-color: var( --simba-primary-hover );
+	border-color: var( --simba-primary-hover );
+}
+
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show > .btn-primary.dropdown-toggle
+{
+	background-color: var( --simba-primary-active );
+	border-color: var( --simba-primary-active );
+}
+
+.btn-primary.focus,
+.btn-primary:focus
+{
+	background-color: var( --simba-primary-focus );
+	border-color: var( --simba-primary-focus-border );
+	box-shadow: 0 0 0 .2rem var( --simba-primary-focus-border );
+}
+
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.show > .btn-primary.dropdown-toggle:focus
+{
+	box-shadow: 0 0 0 .2rem var( --simba-primary-focus-border );
+}
+
+.form-control:focus
+{
+	border-color: var( --simba-primary-focus-tf );
+	box-shadow: 0 0 0 .2rem var( --simba-primary-focus-tf-border );
+}
+
+.input
+{
+	accent-color: var( --simba-primary );
+}
+
+.text-primary
+{
+	color: var( --simba-primary ) !important;
+}
+
+footer.sticky-footer
+{
+	padding: 20px 0;
+}
+
+.dropdown-item.active,
+.dropdown-item:active
+{
+	background-color: var( --simba-primary );
+}
+
+.topbar .navbar-search
+{
+	width: 350px;
+}
+
+.btn-link
+{
+	color: var( --simba-primary );
+}
+
+.btn-link:hover
+{
+	color: #ffffff;
+	background-color: var( --simba-primary-hover ) !important;
+}
+
+.btn.focus,
+.btn:focus
+{
+	border-color: var( --simba-primary-focus-tf );
+	box-shadow: 0 0 0 .2rem var( --simba-primary-focus-tf-border );
+}
+
+.topbar .dropdown-list .dropdown-header
+{
+	background-color: var( --simba-primary );
+	border: 1px solid var( --simba-primary-focus-border );
+}
+
+.border-left-primary
+{
+	border-left: .25rem solid var( --simba-primary ) !important;
+}
+
+a
+{
+	color: var( --simba-primary );
+}
+
+a:hover
+{
+	color: var( --simba-primary-hover );
+}
+
+.bg-primary
+{
+	background-color: var( --simba-primary ) !important;
+}
+
+@media screen and ( max-width: 576px )
+{
+	.container
+	{
+		width: 100% !important;
+	}
+}
+
+
+
 .color-danger
 {
     color: rgb(169, 20, 20);

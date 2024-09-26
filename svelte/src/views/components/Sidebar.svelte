@@ -50,13 +50,13 @@
 </script>
 
 <!-- Sidebar -->
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion { closed ? 'closed' : '' }" id="accordionSidebar">
+<ul class="navbar-nav sidebar sidebar-dark accordion { closed ? 'closed' : '' }" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+    <!--<a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
         <img src="{ envs.APP_URL }/assets/images/simba.jpg" alt="" class="app-logo">
         <div class="sidebar-brand-text mx-3">SIMBA</div>
-    </a>
+    </a>-->
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
@@ -65,7 +65,8 @@
     <li class="nav-item active">
         <a class="nav-link" href="/admin/dashboard">
             <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span></a>
+            <span>Dashboard</span>
+        </a>
     </li>
 
     <!-- Divider -->
@@ -124,11 +125,11 @@
 
 <style>
 
-    .app-logo
+    .sidebar
     {
-        display: table;
-        height: 50px;
-        border-radius: 4px;
+        padding-top: 70px;
+        /*background-color: #212529;*/
+        background-color: var( --simba-dark );
     }
 
     .sidebar.closed
@@ -143,7 +144,7 @@
         position: fixed;
         left: 0;
         z-index: 9999;
-        background-color: #365dcd;
+        background-color: var( --simba-dark );
         color: #ffffff;
         border-radius: 4px !important;
     }

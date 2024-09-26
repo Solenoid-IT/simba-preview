@@ -640,18 +640,24 @@
 </script>
 
 <!-- Topbar -->
-<nav class="navbar navbar-expand navbar-light bg-white topbar static-top shadow">
+<nav class="navbar navbar-expand topbar static-top shadow">
 
     <!-- Sidebar Toggle (Topbar) -->
     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
         <i class="fa fa-bars"></i>
     </button>
 
+    <!-- Brand -->
+    <a class="brand-box nav-link d-flex align-items-center justify-content-center" href="/">
+        <img src="{ envs.APP_URL }/assets/images/simba.jpg" alt="" class="app-logo">
+        <div class="mx-3">SIMBA</div>
+    </a>
+
     <!-- Topbar Search -->
     <form
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
-            <input type="text" class="form-control input bg-light border-0 small" placeholder="Search for...">
+            <input type="text" class="form-control input bg-light border-0 small" placeholder="Search ...">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search fa-sm"></i>
@@ -818,7 +824,7 @@
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{ $user.user.name }@{ $user.group.name }</span>
+                    <span class="mr-2 d-none d-lg-inline small">{ $user.user.name }@{ $user.group.name }</span>
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -1013,14 +1019,32 @@
 
 <style>
 
+    .brand-box
+    {
+        width: 208px;
+    }
+
+    .app-logo
+    {
+        display: table;
+        height: 50px;
+        border-radius: 4px;
+    }
+
     .navbar
     {
-        margin-left: 224px;
+        /*margin-left: 224px;*/
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1000;
+        background-color: var( --simba-dark );
+    }
+
+    .navbar .nav-link
+    {
+        color: #ffffff;
     }
 
 </style>

@@ -276,63 +276,61 @@
     <div class="container">
 
         <!-- Outer Row -->
-        <div class="row justify-content-center">
+        <div class="row justify-content-center m-0">
 
-            <div class="col-xl-10 col-lg-12 col-md-9">
+            <!--<div class="col-xl-10 col-lg-12 col-md-9">-->
+            <div class="col">
 
                 <div class="card o-hidden border-0 shadow-lg my-5">
                     <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="p-5">
-                                    <img class="mb-3" id="login_logo" src="{ envs.APP_URL }/assets/images/simba.jpg" alt="">
+                        
+                        <div class="p-5">
+                            <img class="mb-3" id="login_logo" src="{ envs.APP_URL }/assets/images/simba.jpg" alt="">
 
-                                    <Form id="login_form" on:submit={ onLoginFormSubmit } bind:api={ loginForm }>
-                                        <div class="form-group">
-                                            <input type="text" class="form-control input" name="login" placeholder="Login" data-required>
-                                        </div>
-                                        <div class="form-group">
-                                            <PasswordField name="password" placeholder="Password" required/>
-                                        </div>
+                            <Form id="login_form" on:submit={ onLoginFormSubmit } bind:api={ loginForm }>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input" name="login" placeholder="Login" data-required>
+                                </div>
+                                <div class="form-group">
+                                    <PasswordField name="password" placeholder="Password" required/>
+                                </div>
 
-                                        <button type="submit" class="btn btn-primary btn-block">
-                                            Login
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa-solid fa-right-to-bracket"></i>
+                                </button>
+
+                                <div class="row mt-3">
+                                    <div class="col text-center">
+                                        <span class="color-danger">{ loginErrMsg }</span>
+                                        <span class="color-warning">{ loginWrnMsg }</span>
+                                    </div>
+                                </div>
+                            </Form>
+                            <hr>
+                            <div class="row mt-2">
+                                <div class="col text-center">
+                                    { #if $idk }
+                                        <button class="btn btn-danger" on:click={ ejectIDK } title="eject IDK">
+                                            <i class="fa-solid fa-eject"></i>
                                         </button>
 
-                                        <div class="row mt-3">
-                                            <div class="col text-center">
-                                                <span class="color-danger">{ loginErrMsg }</span>
-                                                <span class="color-warning">{ loginWrnMsg }</span>
-                                            </div>
-                                        </div>
-                                    </Form>
-                                    <hr>
-                                    <div class="row mt-2">
-                                        <div class="col text-center">
-                                            { #if $idk }
-                                                <button class="btn btn-danger" on:click={ ejectIDK } title="eject IDK">
-                                                    <i class="fa-solid fa-eject"></i>
-                                                </button>
-
-                                                <button class="btn btn-primary ml-2" on:click={ loginWithIDK } title="login with IDK">
-                                                    <i class="fa-solid fa-right-to-bracket"></i>
-                                                </button>
-                                            { :else }
-                                                <button class="btn btn-secondary" on:click={ importIDK } title="import IDK">
-                                                    <i class="fa-solid fa-upload"></i>
-                                                </button>
-                                            { /if }
-                                        </div>
-                                        <div class="col text-center">
-                                            <button class="btn btn-danger" on:click={ userRecoveryModal.show } title="recover user">
-                                                <i class="fa-solid fa-lock-open"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                                        <button class="btn btn-primary ml-2" on:click={ loginWithIDK } title="login with IDK">
+                                            <i class="fa-solid fa-right-to-bracket"></i>
+                                        </button>
+                                    { :else }
+                                        <button class="btn btn-secondary" on:click={ importIDK } title="import IDK">
+                                            <i class="fa-solid fa-upload"></i>
+                                        </button>
+                                    { /if }
+                                </div>
+                                <div class="col text-center">
+                                    <button class="btn btn-danger" on:click={ userRecoveryModal.show } title="recover user">
+                                        <i class="fa-solid fa-lock-open"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -377,8 +375,9 @@
 
     .container
     {
-        width: 768px;
+        /*width: 768px;*/
         height: 100vh;
+        /*max-width: 768px !important;*/
         display: flex;
         align-items: center;
     }
@@ -386,6 +385,17 @@
     .container > .row
     {
         width: 100%;
+    }
+
+    .container > .row > .col
+    {
+        display: flex;
+        justify-content: center;
+    }
+
+    .card
+    {
+        width: 576px !important;
     }
 
     #login_logo
