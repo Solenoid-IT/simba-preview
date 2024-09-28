@@ -1110,7 +1110,7 @@
         </Form>
     </Modal>
 
-    <Modal id="logout_modal" title="Logout" bind:api={ logoutModal }>
+    <Modal id="logout_modal" title="Logout" width="480px" bind:api={ logoutModal }>
         <div class="row">
             <div class="col">
                 Are you sure to terminate this session ?

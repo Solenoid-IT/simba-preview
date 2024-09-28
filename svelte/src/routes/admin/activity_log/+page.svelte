@@ -101,6 +101,11 @@
                     },
 
                     {
+                        'column': 'description',
+                        'value':  record['description']
+                    },
+
+                    {
                         'column': 'ip',
                         'value':  [ record['ip'], record['ip_info']['country']['code'], record['ip_info']['isp'] ].join(' - ')
                     },

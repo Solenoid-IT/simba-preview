@@ -28,7 +28,7 @@
 
     .helper:hover i
     {
-        color: #4e73df;
+        color: var( --simba-primary );
     }
 
     .helper .tooltip-text

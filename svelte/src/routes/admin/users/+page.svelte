@@ -102,7 +102,7 @@
             // (Getting the value)
             const r =
             {
-                'id':             record['email'],
+                'id':             record['id'],
 
                 'values':
                 [
@@ -143,11 +143,15 @@
                 ],
 
                 'controls':
+                    $user.user.hierarchy === 1
+                        ?
                     `
                         <button class="btn btn-sm btn-danger" value="user::remove" title="remove">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     `
+                        :
+                    ''
                 ,
 
                 'hidden': false
@@ -183,8 +187,12 @@
 
 
     // Returns [Promise:bool]
-    async function removeUser (id)
+    async function removeUser (ids)
     {
+        if ( !confirm('Are you sure to remove the selected users ?') ) return;
+
+
+
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
@@ -194,12 +202,7 @@
                 'Action: user::remove',
                 'Content-Type: application/json'
             ],
-            JSON.stringify
-            (
-                {
-                    'id': id
-                }
-            ),
+            JSON.stringify( ids ),
             '',
             true
         )
@@ -231,6 +234,11 @@
 
 
 
+        // (Alerting the value)
+        alert(`Confirm operation by email (for each user) ...`);
+
+
+
         // Returning the value
         return true;
     }
@@ -254,7 +262,7 @@
         {
             case 'user::remove':
                 // (Removing the user)
-                result = await removeUser( entry.id );
+                result = await removeUser( [ entry.id ] );
 
                 if ( result )
                 {// (User has been removed)
@@ -276,7 +284,31 @@
         // (Getting the value)
         const ids = table.fetchSelectedRecords();
 
-        console.debug(ids);
+        // (Consoling the value)
+        console.debug(ids);// ahcid
+    }
+
+    // Returns [Promise:bool]
+    async function onBulkRemove ()
+    {
+        // (Setting the value)
+        const ids = [];
+
+        for ( const id of table.fetchSelectedRecords() )
+        {// Processing each entry
+            // (Appending the value)
+            ids.push( tableRecords[id].id );
+        }
+
+
+
+        // (Removing the users)
+        const result = await removeUser( ids );
+
+
+
+        // Returning the value
+        return result;
     }
 
 
@@ -384,7 +416,7 @@
 
 
             // (Alerting the value)
-            alert( response.body['error']['message'] );
+            alert( res.body['error']['message'] );
 
 
 
@@ -410,15 +442,17 @@
         <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
             <div slot="fixed-controls">
                 { #if $user.user.hierarchy === 1 }
-                    <button class="btn btn-primary" title="add" on:click={ userModal.show }>
+                    <button class="btn btn-primary btn-sm" title="add" on:click={ userModal.show }>
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 { /if }
             </div>
             <div slot="selection-controls">
-                <button class="btn btn-danger btn-sm" on:click={ () => {} } title="remove">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                { #if $user.user.hierarchy === 1 }
+                    <button class="btn btn-danger btn-sm" on:click={ onBulkRemove } title="remove">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                { /if }
             </div>
         </Table>
 

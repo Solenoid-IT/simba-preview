@@ -10,6 +10,8 @@
     export let width = '640px';
     export let title;
 
+    export let urlkey = '';
+
     let element;
 
     export let api;
@@ -25,6 +27,21 @@
             {
                 // (Showing the modal)
                 jQuery(element).modal('show');
+
+
+
+                if ( !urlkey ) return;
+
+
+
+                // (Getting the value)
+                const urlParams = new URLSearchParams( window.location.search );
+
+                // (Setting the param)
+                urlParams.set( 'modal', urlkey );
+
+                // (Pushing the state)
+                history.pushState( {}, null, '?' + urlParams );
             }
 
             // Returns [void]
@@ -32,13 +49,57 @@
             {
                 // (Showing the modal)
                 jQuery(element).modal('hide');
+
+
+
+                if ( !urlkey ) return;
+
+
+
+                // (Getting the value)
+                const urlParams = new URLSearchParams( window.location.search );
+
+                // (Setting the param)
+                urlParams.delete( 'modal' );
+
+                // (Pushing the state)
+                history.pushState( {}, null, '?' + urlParams );
             }
 
             // (Listening for the event)
             jQuery(element).on('hidden.bs.modal', function () {
                 // (Triggering the event)
                 dispatch('close');
+
+
+
+                if ( !urlkey ) return;
+
+
+
+                // (Getting the value)
+                const urlParams = new URLSearchParams( window.location.search );
+
+                // (Setting the param)
+                urlParams.delete( 'modal' );
+
+                // (Pushing the state)
+                history.pushState( {}, null, '?' + urlParams );
             });
+
+
+
+            if ( urlkey )
+            {// Value found
+                // (Getting the value)
+                const urlParams = new URLSearchParams( window.location.search );
+
+                if ( urlParams.has( 'modal' ) && urlParams.get( 'modal' ) === urlkey )
+                {// Match OK
+                    // (Showing the modal)
+                    api.show();
+                }
+            }
         }
     
 

@@ -547,6 +547,8 @@ class RPC extends Controller
                                         // (Getting the value)
                                         $record =
                                         [
+                                            'id'          => $record->id,
+
                                             'name'        => $record->name,
                                             'email'       => $record->email,
 
@@ -649,6 +651,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => $session->id,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -744,6 +747,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => $session->id,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -898,6 +902,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => $session->id,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -1005,6 +1010,7 @@ class RPC extends Controller
                             [
                                 'user'                 => $authorization->data['request']['input']['user'],
                                 'action'               => str_replace( '::', '.', $authorization->data['request']['action'] ),
+                                'description'          => null,
                                 'session'              => $authorization->data['request']['input']['session'],
                                 'ip'                   => $authorization->data['request']['input']['ip'],
                                 'user_agent'           => $authorization->data['request']['input']['user_agent'],
@@ -1092,6 +1098,48 @@ class RPC extends Controller
 
                             if ( !password_verify( $password, $user->security->password ) )
                             {// Match failed
+                                // (Getting the value)
+                                $response = ClientService::detect();
+
+                                if ( $response->status->code !== 200 )
+                                {// (Unable to detect the client)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Getting the value)
+                                $record =
+                                [
+                                    'user'                 => $user->id,
+                                    'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                    'description'          => 'Wrong password',
+                                    'session'              => null,
+                                    'ip'                   => $_SERVER['REMOTE_ADDR'],
+                                    'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                                    'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                    'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                    'ip_info.isp'          => $response->body['ip']['isp'],
+                                    'ua_info.browser'      => $response->body['ua']['browser'],
+                                    'ua_info.os'           => $response->body['ua']['os'],
+                                    'ua_info.hw'           => $response->body['ua']['hw'],
+                                    'datetime.insert'      => DateTime::fetch()
+                                ]
+                                ;
+
+                                if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                                {// (Unable to insert the record)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                    ;
+                                }
+
+
+
                                 // Returning the value
                                 return
                                     Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
@@ -1201,6 +1249,56 @@ class RPC extends Controller
                                 // (Getting the value)
                                 $session->data['user'] = $user->id;
 
+
+
+                                // (Listening for the event)
+                                $session->add_event_listener
+                                (
+                                    'save',
+                                    function () use ($user, &$session)
+                                    {
+                                        // (Getting the value)
+                                        $response = ClientService::detect();
+
+                                        if ( $response->status->code !== 200 )
+                                        {// (Unable to detect the client)
+                                            // Returning the value
+                                            return
+                                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                            ;
+                                        }
+
+
+
+                                        // (Getting the value)
+                                        $record =
+                                        [
+                                            'user'                 => $user->id,
+                                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                            'description'          => null,
+                                            'session'              => $session->id,
+                                            'ip'                   => $_SERVER['REMOTE_ADDR'],
+                                            'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                            'ip_info.isp'          => $response->body['ip']['isp'],
+                                            'ua_info.browser'      => $response->body['ua']['browser'],
+                                            'ua_info.os'           => $response->body['ua']['os'],
+                                            'ua_info.hw'           => $response->body['ua']['hw'],
+                                            'datetime.insert'      => DateTime::fetch()
+                                        ]
+                                        ;
+
+                                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                                        {// (Unable to insert the record)
+                                            // Returning the value
+                                            return
+                                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                            ;
+                                        }
+                                    }
+                                )
+                                ;
 
 
 
@@ -1349,6 +1447,48 @@ class RPC extends Controller
 
                         if ( RSA::select( base64_decode( $user->security->idk->signature ) )->decrypt( $idk->key )->value !== 'idk' )
                         {// (Key is not valid)
+                            // (Getting the value)
+                            $response = ClientService::detect();
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to detect the client)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $record =
+                            [
+                                'user'                 => $user->id,
+                                'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                'description'          => 'Wrong key',
+                                'session'              => null,
+                                'ip'                   => $_SERVER['REMOTE_ADDR'],
+                                'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
+                                'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                'ip_info.isp'          => $response->body['ip']['isp'],
+                                'ua_info.browser'      => $response->body['ua']['browser'],
+                                'ua_info.os'           => $response->body['ua']['os'],
+                                'ua_info.hw'           => $response->body['ua']['hw'],
+                                'datetime.insert'      => DateTime::fetch()
+                            ]
+                            ;
+
+                            if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                            {// (Unable to insert the record)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                ;
+                            }
+
+
+
                             // Returning the value
                             return
                                 Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
@@ -1422,6 +1562,7 @@ class RPC extends Controller
                                 [
                                     'user'                 => $user->id,
                                     'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                    'description'          => null,
                                     'session'              => $session->id,
                                     'ip'                   => $_SERVER['REMOTE_ADDR'],
                                     'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -1516,6 +1657,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => null,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -1634,6 +1776,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => null,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -2067,6 +2210,7 @@ class RPC extends Controller
                         [
                             'user'                 => $user_id,
                             'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => null,
                             'session'              => null,
                             'ip'                   => $_SERVER['REMOTE_ADDR'],
                             'user_agent'           => $_SERVER['HTTP_USER_AGENT'],
@@ -2416,6 +2560,174 @@ class RPC extends Controller
                         return
                             Server::send( new Response( new Status( $response->fetch_tail()->status->code ), [], $response->body ) )
                         ;
+                    break;
+
+                    case 'remove':
+                        // (Getting the value)
+                        $request = Request::fetch();
+
+
+
+                        if ( $request->headers['Auth-Token'] )
+                        {// (Authorization has been provided)
+                            if ( $request->client_ip !== $request->server_ip )
+                            {// (Request is not from localhost)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(401), [], [ 'error' => [ 'message' => 'Client not authorized' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $response = AuthorizationService::fetch( $request->headers['Auth-Token'] );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to fetch the authorization)
+                                // Returning the value
+                                return
+                                    Server::send( $response )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $authorization = $response->body;
+
+
+
+                            // (Getting the value)
+                            $user_id = $authorization->data['request']['input']['user'];
+
+                            if ( !UserModel::fetch()->where( 'id', $user_id )->delete() )
+                            {// (Unable to delete the record)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to delete the record (user)' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(200) ) )
+                            ;
+                        }
+                        else
+                        {// (Authorization has not been provided)
+                            // (Verifying the user)
+                            $response = UserService::verify( 1 );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Session is not valid)
+                                // Returning the value
+                                return
+                                    Server::send( $response )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                            // (Getting the value)
+                            $user_id = $session->data['user'];
+
+
+
+                            // (Getting the value)
+                            $current_user = UserModel::fetch()->where( 'id', $user_id )->find();
+        
+                            if ( !$current_user )
+                            {// (Record not found)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $input = RPCRequest::fetch()->parse_body();
+
+
+
+                            foreach ( $input as $id )
+                            {// Processing each entry
+                                // (Getting the value)
+                                $user = UserModel::fetch()->where( 'id', $id )->find();
+        
+                                if ( !$user )
+                                {// (Record not found)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                                    ;
+                                }
+
+                                if ( $user->group !== $current_user->group )
+                                {// Match failed
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(403), [], [ 'error' => [ 'message' => 'Operation not permitted' ] ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Starting an authorization)
+                                $response = AuthorizationService::start
+                                (
+                                    [
+                                        'request'           =>
+                                        [
+                                            'endpoint_path' => $request->url->path,
+                                            'action'        => $request->headers['Action'],
+                                            'input'         =>
+                                            [
+                                                'user'      => $user->id
+                                            ]
+                                        ]
+                                    ]
+                                )
+                                ;
+                                
+                                if ( $response->status->code !== 200 )
+                                {// (Unable to start the authorization)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the authorization' ] ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Sending the authorization)
+                                $response = AuthorizationService::send( $response->body['token'], $user->email, RPCParser::$subject . '.' . RPCParser::$verb );
+                                
+                                if ( $response->status->code !== 200 )
+                                {// (Unable to send the authorization)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to send the authorization' ] ] ) )
+                                    ;
+                                }
+                            }
+
+
+
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(200) ) )
+                            ;
+                        }
                     break;
                 }
             break;

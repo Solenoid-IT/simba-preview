@@ -270,6 +270,21 @@
         return true;
     }
 
+
+
+    $:
+        if ( userRecoveryModal )
+        {// Value found
+            // (Getting the value)
+            const urlParams = new URLSearchParams( window.location.search );
+
+            if ( urlParams.has( 'user_recovery' ) )
+            {// Value found
+                // (Showing the modal)
+                userRecoveryModal.show();
+            }
+        }
+
 </script>
 
 <App>
@@ -340,7 +355,7 @@
 
     </div>
 
-    <Modal id="user_recovery_modal" title="User Recovery" bind:api={ userRecoveryModal }>
+    <Modal id="user_recovery_modal" title="User Recovery" urlkey="user_recovery" bind:api={ userRecoveryModal }>
         <Form id="user_recovery_form" bind:api={ userRecoveryForm } on:submit={ onUserRecoveryFormSubmit }>
             <div class="row">
                 <div class="col">

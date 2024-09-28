@@ -120,6 +120,8 @@ CREATE TABLE `activity`
     `user`                               BIGINT UNSIGNED                                              NULL,
     `action`                             VARCHAR(255)                                                 NULL,
 
+    `description`                        TEXT                                                         NULL,
+
     `session`                            VARCHAR(255)                                                 NULL,
 
     `ip`                                 VARCHAR(255)                                             NOT NULL,

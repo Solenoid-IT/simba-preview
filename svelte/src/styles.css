@@ -96,6 +96,14 @@ footer.sticky-footer
 	box-shadow: 0 0 0 .2rem var( --simba-primary-focus-tf-border );
 }
 
+.btn-primary.disabled,
+.btn-primary:disabled
+{
+	color: #ffffff;
+	background-color: var( --simba-primary-hover ) !important;
+	border-color: var( --simba-primary-focus-tf );
+}
+
 .topbar .dropdown-list .dropdown-header
 {
 	background-color: var( --simba-primary );
