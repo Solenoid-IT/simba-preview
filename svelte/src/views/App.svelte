@@ -23,6 +23,10 @@
     (
         function ()
         {
+            if ( $appReady ) return;
+
+
+
             // (Listening for the event)
             Solenoid.HTTP.addEventListener('start', function (event) {
                 // (Setting the value)

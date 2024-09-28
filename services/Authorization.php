@@ -95,7 +95,7 @@ class Authorization extends Service
     }
 
     # Returns [Response]
-    public static function send (string $token, string $receiver, string $type)
+    public static function send (string $token, string $receiver, string $type, ?string $ip = null, ?string $ua = null)
     {
         // (Getting the value)
         $app = WebApp::fetch();
@@ -108,7 +108,7 @@ class Authorization extends Service
 
 
         // (Getting the value)
-        $response = ClientService::detect();
+        $response = ClientService::detect( $ip, $ua );
 
         if ( $response->status->code !== 200 )
         {// (Request failed)

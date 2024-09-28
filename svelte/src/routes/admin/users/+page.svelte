@@ -182,6 +182,63 @@
 
 
 
+    // Returns [Promise:bool]
+    async function removeUser (id)
+    {
+        // (Sending a request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::remove',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify
+            (
+                {
+                    'id': id
+                }
+            ),
+            '',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client is not authorized)
+                // (Setting the location)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let table;
+
     // Returns [Promise:void]
     async function onTableRecordAction (event)
     {
@@ -195,12 +252,15 @@
 
         switch ( entry.action )
         {
-            case 'user::terminate_session':
-                // (Terminating the session)
-                result = await terminateSession( entry.id );
+            case 'user::remove':
+                // (Removing the user)
+                result = await removeUser( entry.id );
 
-                // (Removing the element)
-                jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').remove();
+                if ( result )
+                {// (User has been removed)
+                    // (Removing the element)
+                    jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').remove();
+                }
             break;
         }
 
@@ -208,6 +268,15 @@
 
         // Returning the value
         return result;
+    }
+
+    // Returns [void]
+    function onTableSelectionChange (event)
+    {
+        // (Getting the value)
+        const ids = table.fetchSelectedRecords();
+
+        console.debug(ids);
     }
 
 
@@ -252,6 +321,19 @@
 
         if ( response.status.code !== 200 )
         {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client is not authorized)
+                // (Setting the location)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
             // (Alerting the value)
             alert( response.body['error']['message'] );
 
@@ -266,10 +348,54 @@
         // (Setting the value)
         userForm.disabled = true;
 
-
-
         // (Setting the value)
         userFormMsg = `Confirm operation by email '${ result.entries['email'].value }' ...`;
+
+
+
+        // (Sending the request)
+        const res = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::wait_authorization',
+                'Content-Type: application/json'
+            ],
+            '',
+            'json',
+            true
+        )
+        ;
+
+        if ( res.status.code !== 200 )
+        {// (Request failed)
+            if ( res.status.code === 401 )
+            {// (Client is not authorized)
+                // (Setting the location)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the location)
+        window.location.href = '';
 
 
 
@@ -281,13 +407,18 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }>
-            <div slot="controls">
+        <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
+            <div slot="fixed-controls">
                 { #if $user.user.hierarchy === 1 }
                     <button class="btn btn-primary" title="add" on:click={ userModal.show }>
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 { /if }
+            </div>
+            <div slot="selection-controls">
+                <button class="btn btn-danger btn-sm" on:click={ () => {} } title="remove">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
         </Table>
 
@@ -333,7 +464,7 @@
                 </div>
 
                 <div class="row mt-4">
-                    <div class="col">
+                    <div class="col text-center">
                         <span class="color-warning">{ userFormMsg }</span>
                     </div>
                 </div>

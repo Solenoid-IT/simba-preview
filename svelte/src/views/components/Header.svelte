@@ -157,13 +157,11 @@
 
 
 
-        // (Setting the value)
-        changeEmailForm.disabled = true;
+        // (Alerting the value)
+        alert(`Confirm operation by email "${ $user.user.email }" ...\n\nClick on "OK" after you have confirmed`);
 
-
-
-        // (Setting the value)
-        changeEmailFormMsg = `Confirm operation by email "${ $user.user.email }" ...`;
+        // (Setting the location)
+        window.location.href = '';
 
 
 
@@ -238,6 +236,118 @@
 
         // (Alerting the value)
         alert('Birth data has been changed');
+
+
+
+        // Returning the value
+        return true;
+    }
+
+
+
+    let userDestroyMsg = '';
+
+    // Returns [Promise:bool]
+    async function destroyUser ()
+    {
+        if ( !confirm('Are you sure to destroy the current user ?') ) return false;
+
+
+
+        // (Setting the value)
+        userDestroyMsg = '';
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::destroy',
+                'Content-Type: application/json'
+            ],
+            '',
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request failed)
+            if ( response.status.code === 401 )
+            {// (Client not authorized)
+                // (Moving to the URL)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        userDestroyMsg = `Confirm operation by email '${ $user.user.email }' ...`;
+
+
+
+        // (Sending the request)
+        const res = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::wait_authorization',
+                'Content-Type: application/json'
+            ],
+            '',
+            'json',
+            true
+        )
+        ;
+
+        if ( res.status.code !== 200 )
+        {// (Request failed)
+            if ( res.status.code === 401 )
+            {// (Client is not authorized)
+                // (Setting the location)
+                window.location.href = '/admin/login';
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the location)
+        window.location.href = '';
 
 
 
@@ -761,8 +871,7 @@
                 </h6>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
-                        <img class="rounded-circle" src="img/undraw_profile_1.svg"
-                            alt="...">
+                        <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_1.svg" alt="...">
                         <div class="status-indicator bg-success"></div>
                     </div>
                     <div class="font-weight-bold">
@@ -773,8 +882,7 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
-                        <img class="rounded-circle" src="img/undraw_profile_2.svg"
-                            alt="...">
+                        <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_2.svg" alt="...">
                         <div class="status-indicator"></div>
                     </div>
                     <div>
@@ -785,26 +893,13 @@
                 </a>
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
-                        <img class="rounded-circle" src="img/undraw_profile_3.svg"
-                            alt="...">
+                        <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_3.svg" alt="...">
                         <div class="status-indicator bg-warning"></div>
                     </div>
                     <div>
                         <div class="text-truncate">Last month's report looks great, I am very happy with
                             the progress so far, keep up the good work!</div>
                         <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                    </div>
-                </a>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="dropdown-list-image mr-3">
-                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                            alt="...">
-                        <div class="status-indicator bg-success"></div>
-                    </div>
-                    <div>
-                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                            told me that people say this to all dogs, even if they aren't good...</div>
-                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
                     </div>
                 </a>
                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
@@ -920,6 +1015,20 @@
                 </div>
             </fieldset>
         </Form>
+
+        <br>
+
+        <div class="row">
+            <div class="col text-center">
+                <button class="btn btn-danger" on:click={ destroyUser }>Destroy</button>
+            </div>
+        </div>
+        
+        <div class="row mt-2">
+            <div class="col text-center">
+                <span class="color-warning">{ userDestroyMsg }</span>
+            </div>
+        </div>
     </Modal>
 
     <Modal id="security_modal" title="Security" bind:api={ securityModal }>

@@ -70,13 +70,15 @@ class User extends Task
 
 
 
-        // (Getting the value)
-        $seconds_left = $response->body['exp_time'] - time();
-
-
-
         // Printing the value
-        echo "\n\nConfirm operation by email ( $seconds_left s ) !\n\n\n";
+        echo "\n\nConfirm operation by email \"$email\" ...\n\n\n";
+    }
+
+    # Returns [void]
+    public function create_test (string $email)
+    {
+        // (Creating the user)
+        $this->create( 'simba', 'admin', $email );
     }
 }
 

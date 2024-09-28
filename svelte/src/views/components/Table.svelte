@@ -2,6 +2,8 @@
 
     import { browser } from '$app/environment';
 
+    import { onMount } from 'svelte';
+
     import { createEventDispatcher } from 'svelte';
 
 
@@ -14,11 +16,12 @@
 
 
 
-    $:
-        if ( browser )
-        {// Value found
+    onMount
+    (
+        function ()
+        {
             // (Listening for the event)
-            jQuery('body').delegate('.jtable table tbody tr .controls .btn', 'click', function (event) {
+            jQuery(element).delegate('table tbody tr .controls .btn', 'click', function (event) {
                 // (Getting the value)
                 const rowElement = this.closest('tr');
 
@@ -35,6 +38,8 @@
                 ;
             });
         }
+    )
+    ;
 
 
 
@@ -49,6 +54,8 @@
 
     export let records = [];
 
+    export let selectable = false;
+
 
 
     export let api = {};
@@ -56,12 +63,13 @@
 
 
     // (Setting the values)
-    api.useKeys       = false;
-    api.keys          = {};
+    api.useKeys            = false;
+    api.keys               = {};
 
-    api.filterEnabled = false;
-    api.activeFilter  = null;
-    api.lastFilter    = null;
+    api.filterEnabled      = false;
+    api.activeFilter       = null;
+    api.lastFilter         = null;
+    api.numSelectedRecords = 0;
 
 
 
@@ -244,9 +252,10 @@
 
                     for ( const column of records[i].values )
                     {// Processing each entry
-                        if ( column.value === null ) break;
+                        // (Getting the value)
+                        const value = column.value ?? '';
 
-                        if ( column.value.toString().toLowerCase().indexOf( searchValue.toLowerCase() ) !== -1 )
+                        if ( value.toString().toLowerCase().indexOf( searchValue.toLowerCase() ) !== -1 )
                         {// Match OK
                             // (Setting the value)
                             resultFound = true;
@@ -404,6 +413,17 @@
             }
         )
         ;
+
+        // (Iterating each entry)
+        element.querySelectorAll('.column-key-search-box .key-list .input[value="all"]').forEach
+        (
+            function (el)
+            {
+                // (Setting the value)
+                el.checked = false;
+            }
+        )
+        ;
     }
 
     // Returns [void]
@@ -433,14 +453,15 @@
     // Returns [void]
     api.restoreFilter = function ()
     {
-        if ( api.lastFilter )
-        {// Value found
-            // (Applying the filter)
-            api.applyFilter( api.lastFilter );
+        if ( !api.lastFilter ) return;
 
-            // (Filtering the table)
-            api.filter( api.activeFilter );
-        }
+
+
+        // (Applying the filter)
+        api.applyFilter( api.lastFilter );
+
+        // (Filtering the table)
+        api.filter( api.activeFilter );
 
 
 
@@ -591,13 +612,46 @@
         a.remove();
     }
 
-    
+
+
+    // Returns [Array<number>]
+    api.fetchSelectedRecords = function ()
+    {
+        // (Setting the value)
+        let recordsIds = [];
+
+        // (Iterating each entry)
+        element.querySelectorAll('.table tbody .selectable .input').forEach
+        (
+            function (el)
+            {
+                if ( el.checked )
+                {// Value is true
+                    // (Appending the value)
+                    recordsIds.push( parseInt( el.closest('tr').getAttribute('data-index') ) );
+                }
+            }
+        )
+        ;
+
+
+
+        // Returning the value
+        return recordsIds;
+    }
+
+
 
     // Returns [void]
     function onGlobalSearch (event)
     {
         // (Setting the value)
         api.activeFilter = 'SEARCH_GLOBAL';
+
+        // (Getting the value)
+        api.filterEnabled = event.target.value.length > 0;
+
+
 
         // (Filtering the records)
         api.filter( api.activeFilter );
@@ -608,6 +662,11 @@
     {
         // (Setting the value)
         api.activeFilter = 'SEARCH_LOCAL';
+
+        // (Getting the value)
+        api.filterEnabled = Object.values( api.getSearchValues().local ).filter( function (value) { return value.length > 0; } ).length > 0;
+
+
 
         // (Filtering the records)
         api.filter( api.activeFilter );
@@ -657,6 +716,26 @@
 
 
 
+        // (Setting the value)
+        let filterEnabled = false;
+
+        loop: for ( const column in api.keys )
+        {// Processing each entry
+            for ( const i in api.keys[ column ].entries )
+            {// Processing each entry
+                if ( api.keys[ column ].entries[i].checked )
+                {// Value is true
+                    // (Setting the value)
+                    filterEnabled = true;
+
+                    // Breaking the iteration
+                    break loop;
+                }
+            }
+        }
+
+
+
         // (Getting the value)
         //api.keys[ column ].filterActive = api.keys[ column ].entries.filter( function (entry) { return entry.checked; } ).length > 0;
 
@@ -664,6 +743,11 @@
 
         // (Setting the value)
         api.activeFilter = 'SEARCH_KEYS';
+
+        // (Getting the value)
+        api.filterEnabled = filterEnabled;
+
+
 
         // (Filtering the records)
         api.filter( api.activeFilter );
@@ -680,6 +764,26 @@
 
 
 
+        // (Setting the value)
+        let filterEnabled = false;
+
+        loop: for ( const column in api.keys )
+        {// Processing each entry
+            for ( const i in api.keys[ column ].entries )
+            {// Processing each entry
+                if ( api.keys[ column ].entries[i].checked )
+                {// Value is true
+                    // (Setting the value)
+                    filterEnabled = true;
+
+                    // Breaking the iteration
+                    break loop;
+                }
+            }
+        }
+
+
+
         // (Getting the value)
         //api.keys[ column ].filterActive = api.keys[ column ].entries.filter( function (entry) { return entry.checked; } ).length > 0;
 
@@ -687,6 +791,11 @@
 
         // (Setting the value)
         api.activeFilter = 'SEARCH_KEYS';
+
+        // (Getting the value)
+        api.filterEnabled = filterEnabled;
+
+
 
         // (Filtering the records)
         api.filter( api.activeFilter );
@@ -737,8 +846,10 @@
 
 
 
+    /*
+    
     $:
-        if ( records.filter( function (record) { return record.hidden; } ).length > 0 )
+        if ( records.length - records.filter( function (record) { return record.hidden; } ).length > 0 )
         {// (There are hidden records)
             // (Setting the value)
             api.filterEnabled = true;
@@ -749,13 +860,62 @@
             api.filterEnabled = false;
         }
 
+    */
+
+
+
+    // Returns [void]
+    function toggleSelectAllRecords (event)
+    {
+        // (Getting the value)
+        const checked = event.target.checked;
+
+        // (Iterating each entry)
+        element.querySelectorAll('.table tbody .selectable .input').forEach
+        (
+            function (el)
+            {
+                // (Setting the property)
+                el.checked = checked;
+            }
+        )
+        ;
+
+
+
+        // (Getting the value)
+        api.numSelectedRecords = api.fetchSelectedRecords().length;
+
+
+
+        // (Triggering the event)
+        dispatch( 'selection.change' );
+    }
+
+    // Returns [void]
+    function onSelectionChange (event)
+    {
+        // (Getting the value)
+        api.numSelectedRecords = api.fetchSelectedRecords().length;
+
+        // (Triggering the event)
+        dispatch
+        (
+            'selection.change',
+            {
+                'element': event.target.closest('tr')
+            }
+        )
+        ;
+    }
+
 </script>
 
 <div class="card shadow mb-4 jtable" bind:this={ element }>
     <div class="card-header py-3 d-flex align-items-center" style="justify-content: space-between;">
         <h6 class="m-0 font-weight-bold text-primary">{ title }</h6>
 
-        <slot name="controls"/>
+        <slot name="fixed-controls"/>
     </div>
 
     <div class="card-body">
@@ -767,13 +927,20 @@
                             <div class="controls-left">
                                 <div class="num-results">( <b>{ records.filter( function (record) { return !record.hidden; } ).length }</b> )</div>
 
-                                <button class="btn btn-secondary ml-3" title="download csv" on:click={ () => { api.downloadCSV(); } }>
+                                <button class="btn btn-secondary btn-sm ml-3" title="download csv" on:click={ () => { api.downloadCSV(); } }>
                                     <i class="fa-solid fa-download"></i>
                                 </button>
+
+                                <div class="selection-controls-box d-flex align-items-center ml-5">
+                                    { #if element && api.numSelectedRecords > 0 }
+                                            <span class="num-results mr-3" style="color: var( --simba-primary );">( <b>{ api.numSelectedRecords }</b> )</span>
+                                            <slot name="selection-controls"/>
+                                    { /if }
+                                </div>
                             </div>
 
                             <div class="search-box">
-                                <button class="btn btn-secondary mr-3" title="extract keys" on:click={ extractKeys }>
+                                <button class="btn btn-secondary btn-sm mr-3" title="extract keys" on:click={ extractKeys }>
                                     { #if api.useKeys }
                                         <i class="fa-solid fa-caret-up"></i>
                                     { :else }
@@ -782,7 +949,7 @@
                                 </button>
 
                                 { #if api.filterEnabled }
-                                    <button class="btn btn-danger" title="remove filter { api.activeFilter }" on:click={ api.saveFilter }>
+                                    <button class="btn btn-danger btn-sm" title="remove filter { api.activeFilter }" on:click={ api.saveFilter }>
                                         <i class="fa-solid fa-filter-circle-xmark"></i>
 
                                         <div class="active-filter-indicator">
@@ -790,12 +957,12 @@
                                         </div>
                                     </button>
                                 { :else }
-                                    <button class="btn btn-secondary" title="apply filter { api.activeFilter }" on:click={ api.restoreFilter }>
+                                    <button class="btn btn-secondary btn-sm" title="apply filter { api.activeFilter }" on:click={ api.restoreFilter }>
                                         <i class="fa-solid fa-filter"></i>
                                     </button>
                                 { /if }
 
-                                <input type="text" class="form-control input ml-3" placeholder="Search ..." style="width: 250px;" on:input={ onGlobalSearch }>
+                                <input type="text" class="form-control form-control-sm input ml-3" placeholder="Search ..." style="width: 250px;" on:input={ onGlobalSearch }>
                             </div>
                         </div>
                     </div>
@@ -805,6 +972,12 @@
                             <table class="table table-bordered dataTable" width="100%" cellspacing="0" role="grid" style="width: 100%;">
                                 <thead>
                                     <tr>
+                                        { #if selectable }
+                                            <th class="selection text-center">
+                                                <input type="checkbox" class="input" value="all" on:change={ toggleSelectAllRecords }>
+                                            </th>
+                                        { /if }
+
                                         { #each records[0].values.map( function (record) { return record.column; } ) as column }
                                             <th data-column={ column }>
                                                 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -885,9 +1058,15 @@
                                 </thead>
 
                                 <tbody>
-                                    { #each records as record }
+                                    { #each records as record, i }
                                         { #if !record.hidden }
-                                            <tr data-id={ record.id }>
+                                            <tr data-index={ i } data-id={ record.id }>
+                                                { #if selectable }
+                                                    <td class="selectable text-center">
+                                                        <input type="checkbox" class="input" value="select" on:change={ onSelectionChange }>
+                                                    </td>
+                                                { /if }
+
                                                 { #each record.values as value }
                                                     { #if typeof value.content === 'undefined' }
                                                         <td>{ value.value }</td>
@@ -921,6 +1100,12 @@
 </div>
 
 <style>
+
+    .jtable
+    {
+        font-size: 12px;
+        font-weight: 700;
+    }
 
     .table tbody tr:nth-child(even)
     {

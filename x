@@ -1763,8 +1763,27 @@ switch ( $argv[1] )
         // (Setting the cwd)
         chdir( __DIR__ . '/svelte' );
 
-        // (Executing the cmd)
-        system( "openssl req -x509 -newkey rsa:4096 -keyout $key_file_path -out $cert_file_path -sha256 -days 3650 -nodes -subj \"/C=IT/ST=Italy/L=Turin/O=Solenoid-IT/OU=Solenoid-IT/CN=Solenoid-IT\"" );
+
+
+        if ( file_exists( $cert_file_path ) )
+        {// (File found)
+            // (Getting the value)
+            $cert_info = openssl_x509_parse( file_get_contents( $cert_file_path ) );
+        }
+        else
+        {// (File not found)
+            // (Getting the value)
+            $cert_info = false;
+        }
+
+        if ( $cert_info === false || time() >= $cert_info['validTo_time_t'] )
+        {// (Certificate not found or is expired)
+            // Printing the value
+            echo "\n\n" . ( $cert_info === false ? 'Creating' : 'Renewing' ) . " the certificate ...\n\n\n";
+
+            // (Executing the cmd)
+            system( "openssl req -x509 -newkey rsa:4096 -keyout $key_file_path -out $cert_file_path -sha256 -days 3650 -nodes -subj \"/C=IT/ST=Italy/L=Turin/O=Solenoid-IT/OU=Solenoid-IT/CN=Solenoid-IT\"" );
+        }
 
 
 
