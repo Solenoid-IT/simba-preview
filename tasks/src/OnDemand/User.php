@@ -35,7 +35,9 @@ class User extends Task
             'RPC',
             [
                 'Action: user::register',
-                'Content-Type: application/json'
+                'Content-Type: application/json',
+
+                'User-Agent: Simba'
             ],
             json_encode
             (

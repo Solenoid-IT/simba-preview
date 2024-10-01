@@ -8,13 +8,11 @@ namespace App\Models\local\simba_db;
 
 use \Solenoid\MySQL\Model;
 
-use \Solenoid\MySQL\Query;
-
 use \App\Stores\Connections\MySQL\Store as MySQLConnectionsStore;
 
 
 
-class DocumentTag extends Model
+class ActivityView extends Model
 {
     private static self $instance;
 
@@ -24,7 +22,7 @@ class DocumentTag extends Model
     private function __construct ()
     {
         // (Calling the function)
-        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'document.tag' );
+        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'view::activity::all' );
     }
 
 
@@ -47,15 +45,6 @@ class DocumentTag extends Model
 
         // Returning the value
         return self::$instance;
-    }
-
-
-
-    # Returns [Cursor|false]
-    public function view ()
-    {
-        // Returning the value
-        return ( new Query( $this->connection ) )->from( $this->database, "view::$this->table::all" )->select_all()->run();
     }
 }
 

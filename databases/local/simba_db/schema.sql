@@ -50,7 +50,8 @@ CREATE TABLE `user`
 (
     `id`                                  BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
-    `tenant`                               BIGINT UNSIGNED                                          NOT NULL,
+    `tenant`                              BIGINT UNSIGNED                                          NOT NULL,
+
     `name`                                VARCHAR(255)                                             NOT NULL,
 
     `email`                               VARCHAR(255)                                             NOT NULL,
@@ -150,7 +151,7 @@ CREATE TABLE `activity`
     FOREIGN KEY (`user`)
     REFERENCES `user` (`id`)
     ON UPDATE CASCADE
-    ON DELETE SET NULL,
+    ON DELETE CASCADE,
 
     FOREIGN KEY (`session`)
     REFERENCES `session` (`id`)

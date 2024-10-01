@@ -18,6 +18,7 @@
 
 
 
+    let table;
     let tableRecords = [];
 
 
@@ -126,6 +127,21 @@
                     },
 
                     {
+                        'column': 'resource.action',
+                        'value':  record['resource']['action']
+                    },
+
+                    {
+                        'column': 'resource.type',
+                        'value':  record['resource']['type']
+                    },
+
+                    {
+                        'column': 'resource.id',
+                        'value':  record['resource']['id']
+                    },
+
+                    {
                         'column': 'datetime.insert',
                         'value':  record['datetime']['insert']
                     },
@@ -146,6 +162,23 @@
                 'hidden': false
             }
             ;
+
+
+
+            if ( $appData.user.user.hierarchy === 1 )
+            {// (User is an admin)
+                // (Inserting an element)
+                r.values.splice
+                (
+                    1,
+                    0,
+                    {
+                        'column': 'user',
+                        'value':  record['user']['name']
+                    },
+                )
+                ;
+            }
 
 
 
@@ -174,8 +207,12 @@
     
     
     // Returns [Promise:bool]
-    async function terminateSession (id)
+    async function terminateSession (ids)
     {
+        if ( !confirm('Are you sure to terminate the selected sessions ?') ) return false;
+
+
+
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
@@ -185,7 +222,7 @@
                 'Action: user::terminate_session',
                 'Content-Type: application/json'
             ],
-            JSON.stringify( { 'id': id } ),
+            JSON.stringify( ids ),
             '',
             true
         )
@@ -238,7 +275,7 @@
         {
             case 'user::terminate_session':
                 // (Terminating the session)
-                result = await terminateSession( entry.id );
+                result = await terminateSession( [ entry.id ] );
 
                 // (Removing the element)
                 jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').remove();
@@ -255,6 +292,12 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:records={ tableRecords } on:record.action={ onTableRecordAction }/>
+        <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable>
+            <div slot="selection-controls">
+                <button class="btn btn-sm btn-danger" title="terminate session" on:click={ () => { terminateSession( table.fetchSelectedRecords().map( function (index) { return tableRecords[index].id; } ) ); } }>
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </Table>
     </Base>
 </App>

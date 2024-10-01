@@ -870,6 +870,7 @@
 
         <!-- Nav Item - Search Dropdown (Visible Only XS) -->
         <li class="nav-item dropdown no-arrow d-sm-none">
+            <!-- svelte-ignore a11y-invalid-attribute -->
             <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-search fa-fw"></i>
@@ -894,6 +895,7 @@
 
         <!-- Nav Item - Alerts -->
         <li class="nav-item dropdown no-arrow mx-1">
+            <!-- svelte-ignore a11y-invalid-attribute -->
             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-bell fa-fw"></i>
@@ -938,6 +940,7 @@
                 { #each $appData.alerts as alert, i }
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <!-- svelte-ignore a11y-missing-attribute -->
+                    <!-- svelte-ignore a11y-invalid-attribute -->
                     <a class="dropdown-item d-flex align-items-center" href="#" on:click={ () => { viewAlert(i); } }>
                         <div class="mr-3">
                             <div class="icon-circle bg-danger">
@@ -958,7 +961,8 @@
         </li>
 
         <!-- Nav Item - Messages -->
-        <li class="nav-item dropdown no-arrow mx-1">
+        <li class="nav-item dropdown no-arrow mx-1" style="display: none !important;">
+            <!-- svelte-ignore a11y-invalid-attribute -->
             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-envelope fa-fw"></i>
@@ -972,6 +976,7 @@
                 <h6 class="dropdown-header">
                     Message Center
                 </h6>
+                <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
                         <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_1.svg" alt="...">
@@ -983,6 +988,8 @@
                         <div class="small text-gray-500">Emily Fowler · 58m</div>
                     </div>
                 </a>
+                <!-- svelte-ignore a11y-invalid-attribute -->
+                <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
                         <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_2.svg" alt="...">
@@ -994,6 +1001,7 @@
                         <div class="small text-gray-500">Jae Chun · 1d</div>
                     </div>
                 </a>
+                <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="dropdown-list-image mr-3">
                         <img class="rounded-circle" src="{ envs.APP_URL }/assets/tpl/sb-admin-2/img/undraw_profile_3.svg" alt="...">
@@ -1005,12 +1013,14 @@
                         <div class="small text-gray-500">Morgan Alvarez · 2d</div>
                     </div>
                 </a>
+                <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
             </div>
         </li>
 
-        <!-- Nav Item - Messages -->
+        <!-- Nav Item - Fullscreen -->
         <li class="nav-item dropdown no-arrow mx-1">
+            <!-- svelte-ignore a11y-invalid-attribute -->
             <a class="nav-link dropdown-toggle" href="#" role="button" title="Fullscreen ON/OFF (F)" on:click={ toggleFullscreen }>
                 <i class="fa-solid fa-expand"></i>
             </a>
@@ -1021,16 +1031,19 @@
         { #if $appData }
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
+                <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
                     <span class="mr-2 d-none d-lg-inline small">{ $appData.user.user.name }@{ $appData.user.tenant.name }</span>
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                     aria-labelledby="userDropdown">
+                    <!-- svelte-ignore a11y-invalid-attribute -->
                     <a class="dropdown-item" href="#" on:click={ profileModal.show }>
                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                         Profile
                     </a>
+                    <!-- svelte-ignore a11y-invalid-attribute -->
                     <a class="dropdown-item" href="#" on:click={ securityModal.show }>
                         <i class="fas fa-lock fa-sm fa-fw mr-2 text-gray-400"></i>
                         Security
@@ -1045,6 +1058,7 @@
                         Users
                     </a>
                     <div class="dropdown-divider"></div>
+                    <!-- svelte-ignore a11y-invalid-attribute -->
                     <a class="dropdown-item" href="#" on:click={ logoutModal.show }>
                         <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                         Logout
@@ -1223,6 +1237,7 @@
         <div class="row mt-2">
             <div class="col text-right">
                 <button class="btn btn-secondary" on:click={ logoutModal.hide }>Close</button>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <botton class="btn btn-primary ml-3" on:click={ logout }>OK</botton>
             </div>
         </div>

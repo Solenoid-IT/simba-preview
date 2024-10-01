@@ -39,7 +39,7 @@
             });
 
             // (Listening for the event)
-            jQuery(element).delegate('.selection-controls-box .btn', 'click', function (event) {console.debug(jQuery(element).find('.table .selection .input[value="all"]'));
+            jQuery(element).delegate('.selection-controls-box .btn', 'click', function (event) {
                 // (Setting the property)
                 jQuery(element).find('.table .selection .input[value="all"]').prop( 'checked', false );
 
@@ -1093,9 +1093,9 @@
 
                                                 { #each record.values as value }
                                                     { #if typeof value.content === 'undefined' }
-                                                        <td>{ value.value }</td>
+                                                        <td>{ value.value ?? '' }</td>
                                                     { :else }
-                                                        <td>{ @html value.content }</td>
+                                                        <td>{ @html value.content ?? '' }</td>
                                                     { /if }
                                                 { /each }
 

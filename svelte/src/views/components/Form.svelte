@@ -165,6 +165,29 @@
                 // Returning the value
                 return result;
             }
+
+            // Returns [void]
+            api.setValues = function (values)
+            {
+                for ( const k in values )
+                {// Processing each entry
+                    // (Getting the value)
+                    const el = element.querySelector(`.input[name="${ k }"]`);
+
+                    if ( el === null ) continue;
+
+
+
+                    // (Setting the property)
+                    el.value = values[k];
+
+                    if ( el.tagName === 'INPUT' && el.getAttribute('type') === 'checkbox' )
+                    {// Match OK
+                        // (Setting the property)
+                        el.checked = values[k];
+                    }
+                }
+            }
         }
 
     
