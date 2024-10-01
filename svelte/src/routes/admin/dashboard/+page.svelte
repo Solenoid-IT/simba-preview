@@ -8,8 +8,9 @@
     import Base from '../../../views/components/Base.svelte';
 
     import { envs } from '../../../envs.js';
+
     import { appReady } from '../../../stores/appReady.js';
-    import { user } from '../../../stores/user.js';
+    import { appData } from '../../../stores/appData.js';
 
 
 
@@ -60,15 +61,13 @@
 
 
         // (Getting the value)
-        $user = response.body['user'];
+        $appData = response.body;
 
 
 
         // Returning the value
         return true;
     }
-
-
 
     $:
         if ( $appReady )

@@ -491,6 +491,11 @@ class RPC extends Controller
 
                                 // (Getting the value)
                                 $data['user'] = $response->body;
+
+
+
+                                // (Getting the value)
+                                $data['alerts'] = ActivityModel::fetch()->where( [ [ 'user', $user_id ], [ 'alert_severity', 'IS NOT', null ], [ 'datetime.alert.read', 'IS', null ] ] )->list();
                             break;
                         }
 
@@ -1126,6 +1131,7 @@ class RPC extends Controller
                                     'ua_info.browser'      => $response->body['ua']['browser'],
                                     'ua_info.os'           => $response->body['ua']['os'],
                                     'ua_info.hw'           => $response->body['ua']['hw'],
+                                    'alert_severity'       => 0,
                                     'datetime.insert'      => DateTime::fetch()
                                 ]
                                 ;
@@ -1475,6 +1481,7 @@ class RPC extends Controller
                                 'ua_info.browser'      => $response->body['ua']['browser'],
                                 'ua_info.os'           => $response->body['ua']['os'],
                                 'ua_info.hw'           => $response->body['ua']['hw'],
+                                'alert_severity'       => 0,
                                 'datetime.insert'      => DateTime::fetch()
                             ]
                             ;
@@ -2728,6 +2735,58 @@ class RPC extends Controller
                                 Server::send( new Response( new Status(200) ) )
                             ;
                         }
+                    break;
+
+                    case 'mark_alert_as_read':
+                        // (Verifying the user)
+                        $response = UserService::verify();
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'datetime.alert.read' => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( !ActivityModel::fetch()->where( [ [ 'user', $user_id ], [ 'id', $input['id'] ] ] )->update( $record ) )
+                        {// (Unable to update the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => "Unable to update the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
                     break;
                 }
             break;

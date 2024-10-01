@@ -11,8 +11,9 @@
     import Form from '../../../views/components/Form.svelte';
 
     import { envs } from '../../../envs.js';
+
     import { appReady } from '../../../stores/appReady.js';
-    import { user } from '../../../stores/user.js';
+    import { appData } from '../../../stores/appData.js';
 
 
 
@@ -80,24 +81,24 @@
 
 
         // (Getting the value)
-        $user = response.body['user'];
+        $appData = response.body;
 
 
 
         // (Getting the value)
-        title = `${ resourceName } ( ${ response.body['records'].length } )`;
+        title = `${ resourceName } ( ${ $appData.records.length } )`;
 
 
 
         // (Getting the value)
-        hierarchies = response.body['hierarchies'];
+        hierarchies = $appData.hierarchies;
 
 
 
         // (Setting the value)
         const records = [];
 
-        for ( const record of response.body['records'] )
+        for ( const record of $appData.records )
         {// Processing each entry
             // (Getting the value)
             const r =
@@ -143,7 +144,7 @@
                 ],
 
                 'controls':
-                    $user.user.hierarchy === 1
+                    $appData.user.user.hierarchy === 1
                         ?
                     `
                         <button class="btn btn-sm btn-danger" value="user::remove" title="remove">
@@ -174,8 +175,6 @@
         // Returning the value
         return true;
     }
-
-
 
     $:
         if ( $appReady )
@@ -441,14 +440,14 @@
     <Base>
         <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
             <div slot="fixed-controls">
-                { #if $user.user.hierarchy === 1 }
+                { #if $appData.user.user.hierarchy === 1 }
                     <button class="btn btn-primary btn-sm" title="add" on:click={ userModal.show }>
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 { /if }
             </div>
             <div slot="selection-controls">
-                { #if $user.user.hierarchy === 1 }
+                { #if $appData.user.user.hierarchy === 1 }
                     <button class="btn btn-danger btn-sm" on:click={ onBulkRemove } title="remove">
                         <i class="fa-solid fa-trash"></i>
                     </button>

@@ -1,14 +1,19 @@
 <script>
 
+    import { navigating } from '$app/stores';
+    import { page } from '$app/stores';
+
     import Sidebar from '../components/Sidebar.svelte';
     import Footer from '../components/Footer.svelte';
     import Header from '../components/Header.svelte';
 
-    import { user } from '../../stores/user.js';
+    import { envs } from '../../envs.js';
+
+    import { appData } from '../../stores/appData.js';
 
 </script>
 
-{ #if $user }
+{ #if $appData?.user }
     <!-- Page Wrapper -->
     <div id="wrapper">
         <Sidebar/>

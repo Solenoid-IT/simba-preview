@@ -10,7 +10,7 @@
 
     import { envs } from '../../../envs.js';
     import { appReady } from '../../../stores/appReady.js';
-    import { user } from '../../../stores/user.js';
+    import { appData } from '../../../stores/appData.js';
 
 
 
@@ -69,19 +69,19 @@
 
 
         // (Getting the value)
-        $user = response.body['user'];
+        $appData = response.body;
 
 
 
         // (Getting the value)
-        title = `Activity Log ( ${ response.body['records'].length } )`;
+        title = `Activity Log ( ${ $appData.records.length } )`;
 
 
 
         // (Setting the value)
         const records = [];
 
-        for ( const record of response.body['records'] )
+        for ( const record of $appData.records )
         {// Processing each entry
             // (Getting the value)
             const r =
@@ -163,8 +163,6 @@
         // Returning the value
         return true;
     }
-
-
 
     $:
         if ( $appReady )

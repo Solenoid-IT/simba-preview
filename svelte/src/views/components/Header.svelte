@@ -3,7 +3,7 @@
 <script>
 
     import { envs } from '../../envs.js';
-    import { user } from '../../stores/user.js';
+    import { appData } from '../../stores/appData.js';
     import { idk } from '../../stores/idk.js';
 
     import Modal from '../../views/components/Modal.svelte';
@@ -11,6 +11,7 @@
     import PasswordField from './PasswordField.svelte';
     import Switch from './Switch.svelte';
     import Helper from './Helper.svelte';
+    import PropTable from './PropTable.svelte';
 
     import { goto } from '$app/navigation';
 
@@ -79,7 +80,7 @@
 
 
         // (Getting the value)
-        $user.user.name = result.entries['name'].value;
+        $appData.user.user.name = result.entries['name'].value;
 
 
 
@@ -158,7 +159,7 @@
 
 
         // (Alerting the value)
-        alert(`Confirm operation by email "${ $user.user.email }" ...\n\nClick on "OK" after you have confirmed`);
+        alert(`Confirm operation by email "${ $appData.user.user.email }" ...\n\nClick on "OK" after you have confirmed`);
 
         // (Setting the location)
         window.location.href = '';
@@ -229,8 +230,8 @@
 
 
         // (Getting the values)
-        $user.user.birth.name    = result.entries['birth']['name'].value;
-        $user.user.birth.surname = result.entries['birth']['surname'].value;
+        $appData.user.user.birth.name    = result.entries['birth']['name'].value;
+        $appData.user.user.birth.surname = result.entries['birth']['surname'].value;
 
 
 
@@ -301,7 +302,7 @@
 
 
         // (Getting the value)
-        userDestroyMsg = `Confirm operation by email '${ $user.user.email }' ...`;
+        userDestroyMsg = `Confirm operation by email '${ $appData.user.user.email }' ...`;
 
 
 
@@ -579,7 +580,7 @@
 
 
         // (Getting the value)
-        $user.idk = checked;
+        $appData.user.idk = checked;
 
 
 
@@ -642,9 +643,9 @@
 
 
     $:
-        if ( $user )
+        if ( $appData )
         {// Value found
-            if ( !$user.password_set )
+            if ( !$appData.user.password_set )
             {// (Password is not set)
                 if ( securityModal && changePasswordForm )
                 {// Values found
@@ -666,7 +667,7 @@
             if ( mfaSwitch )
             {// Value found
                 // (Getting the value)
-                mfaSwitch.checked = $user.mfa;
+                mfaSwitch.checked = $appData.user.mfa;
             }
 
 
@@ -674,7 +675,7 @@
             if ( idkSwitch )
             {// Value found
                 // (Getting the value)
-                idkSwitch.checked = $user.idk;
+                idkSwitch.checked = $appData.user.idk;
             }
         }
 
@@ -747,6 +748,94 @@
         }
     }
 
+
+
+    let alertModal;
+
+    let alertIndex = null;
+    let alertData  = {};
+
+    // Returns [void]
+    function viewAlert (index)
+    {
+        // (Getting the values)
+        alertIndex = index;
+        alertData  =
+        {
+            'datetime.insert': $appData.alerts[index]['datetime']['insert'],
+
+            'action':          $appData.alerts[index]['action'],
+            'description':     $appData.alerts[index]['description'],
+            'ip':              `${ $appData.alerts[index]['ip'] } - ${ $appData.alerts[index]['ip_info']['country']['code'] } - ${ $appData.alerts[index]['ip_info']['isp'] }`,
+            'browser':         $appData.alerts[index]['ua_info']['browser'],
+            'os':              $appData.alerts[index]['ua_info']['os'],
+            'hardware':        $appData.alerts[index]['ua_info']['hw'],
+
+            'severity':        $appData.alerts[index]['alert_severity']
+        }
+        ;
+
+
+
+        // (Showing the modal)
+        alertModal.show();
+    }
+
+    // Returns [Promise:bool]
+    async function markAlertAsRead (index)
+    {
+        // (Getting the value)
+        const id = $appData.alerts[index].id;
+
+
+
+        // (Sending the request)
+        const response = await Solenoid.HTTP.sendRequest
+        (
+            envs.APP_URL + '/rpc',
+            'RPC',
+            [
+                'Action: user::mark_alert_as_read',
+                'Content-Type: application/json'
+            ],
+            JSON.stringify
+            (
+                {
+                    'id': id
+                }
+            ),
+            'json',
+            true
+        )
+        ;
+
+        if ( response.status.code !== 200 )
+        {// (Request OK)
+            // (Alerting the value)
+            alert( response.body['error']['message'] );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $appData.alerts = $appData.alerts.filter( function (entry) { return entry.id !== id } );
+
+
+
+        // (Hiding the modal)
+        alertModal.hide();
+
+
+
+        // Returning the value
+        return true;
+    }
+
 </script>
 
 <!-- Topbar -->
@@ -808,8 +897,11 @@
             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-bell fa-fw"></i>
-                <!-- Counter - Alerts -->
-                <span class="badge badge-danger badge-counter">3+</span>
+
+                { #if $appData.alerts.length > 0 }
+                    <!-- Counter - Alerts -->
+                    <span class="badge badge-danger badge-counter">{ $appData.alerts.length }</span>
+                { /if }
             </a>
             <!-- Dropdown - Alerts -->
             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -817,40 +909,51 @@
                 <h6 class="dropdown-header">
                     Alerts Center
                 </h6>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-primary">
-                            <i class="fas fa-file-alt text-white"></i>
+
+                <!--
+                    <a class="dropdown-item d-flex align-items-center" href="#">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-primary">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">December 12, 2019</div>
-                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                    </div>
-                </a>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-success">
-                            <i class="fas fa-donate text-white"></i>
+                        <div>
+                            <div class="small text-gray-500">December 12, 2019</div>
+                            <span class="font-weight-bold">A new monthly report is ready to download!</span>
                         </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">December 7, 2019</div>
-                        $290.29 has been deposited into your account!
-                    </div>
-                </a>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-warning">
-                            <i class="fas fa-exclamation-triangle text-white"></i>
+                    </a>
+                    <a class="dropdown-item d-flex align-items-center" href="#">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-success">
+                                <i class="fas fa-donate text-white"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">December 2, 2019</div>
-                        Spending Alert: We've noticed unusually high spending for your account.
-                    </div>
-                </a>
-                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                        <div>
+                            <div class="small text-gray-500">December 7, 2019</div>
+                            $290.29 has been deposited into your account!
+                        </div>
+                    </a>
+                -->
+
+                { #each $appData.alerts as alert, i }
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!-- svelte-ignore a11y-missing-attribute -->
+                    <a class="dropdown-item d-flex align-items-center" href="#" on:click={ () => { viewAlert(i); } }>
+                        <div class="mr-3">
+                            <div class="icon-circle bg-danger">
+                                <i class="fas fa-exclamation-triangle text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">{ alert['datetime']['insert'] }</div>
+                            { alert['description'] }
+                            <div class="small text-gray-500" style="font-size: 8px;">{ alert['ua_info']['browser'] } - { alert['ua_info']['os'] }</div>
+                            <div class="small text-gray-500" style="font-size: 8px;">{ alert['ip'] } - { alert['ip_info']['country']['code'] }</div>
+                        </div>
+                    </a>
+                { /each }
+
+                <!--<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>-->
             </div>
         </li>
 
@@ -915,11 +1018,11 @@
 
         <div class="topbar-divider d-none d-sm-block"></div>
 
-        { #if $user }
+        { #if $appData }
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                    <span class="mr-2 d-none d-lg-inline small">{ $user.user.name }@{ $user.tenant.name }</span>
+                    <span class="mr-2 d-none d-lg-inline small">{ $appData.user.user.name }@{ $appData.user.tenant.name }</span>
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -957,14 +1060,14 @@
 
 
 
-{ #if $user }
+{ #if $appData }
     <Modal id="profile_modal" title="Profile" bind:api={ profileModal }>
         <Form id="change_name_form" bind:api={ changeNameForm } on:submit={ onChangeNameFormSubmit }>
             <fieldset class="fieldset">
                 <legend>Name</legend>
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <input type="text" class="form-control input" name="name" value="{ $user.user.name }" data-required>
+                        <input type="text" class="form-control input" name="name" value="{ $appData.user.user.name }" data-required>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
@@ -979,7 +1082,7 @@
                 <legend>Email</legend>
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <input type="text" class="form-control input" name="email" value="{ $user.user.email }" data-required>
+                        <input type="text" class="form-control input" name="email" value="{ $appData.user.user.email }" data-required>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
@@ -1002,12 +1105,12 @@
                     <div class="col d-flex align-items-end" style="justify-content: space-between;">
                         <label class="m-0">
                             Name
-                            <input type="text" class="form-control input" name="birth.name" value="{ $user.user.birth.name }">
+                            <input type="text" class="form-control input" name="birth.name" value="{ $appData.user.user.birth.name }">
                         </label>
                         
                         <label class="m-0 ml-3">
                             Surname
-                            <input type="text" class="form-control input" name="birth.surname" value="{ $user.user.birth.surname }">
+                            <input type="text" class="form-control input" name="birth.surname" value="{ $appData.user.user.birth.surname }">
                         </label>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>
@@ -1121,6 +1224,18 @@
             <div class="col text-right">
                 <button class="btn btn-secondary" on:click={ logoutModal.hide }>Close</button>
                 <botton class="btn btn-primary ml-3" on:click={ logout }>OK</botton>
+            </div>
+        </div>
+    </Modal>
+
+
+
+    <Modal id="alert_modal" title="Alert Info" bind:api={ alertModal }>
+        <PropTable bind:data={ alertData }/>
+
+        <div class="row mt-2">
+            <div class="col text-center">
+                <button class="btn btn-primary" on:click={ () => { markAlertAsRead( alertIndex ); } }>Mark as read</button>
             </div>
         </div>
     </Modal>

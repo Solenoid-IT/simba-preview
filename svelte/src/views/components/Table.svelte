@@ -37,6 +37,30 @@
                 )
                 ;
             });
+
+            // (Listening for the event)
+            jQuery(element).delegate('.selection-controls-box .btn', 'click', function (event) {console.debug(jQuery(element).find('.table .selection .input[value="all"]'));
+                // (Setting the property)
+                jQuery(element).find('.table .selection .input[value="all"]').prop( 'checked', false );
+
+
+
+                // (Iterating each entry)
+                element.querySelectorAll('.table tbody .selectable .input').forEach
+                (
+                    function (el)
+                    {
+                        // (Setting the property)
+                        el.checked = false;
+                    }
+                )
+                ;
+
+
+
+                // (Getting the value)
+                api.numSelectedRecords = api.fetchSelectedRecords().length;
+            });
         }
     )
     ;

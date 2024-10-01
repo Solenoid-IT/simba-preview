@@ -139,8 +139,10 @@ CREATE TABLE `activity`
     `resource.type`                      VARCHAR(255)                                                 NULL,
     `resource.id`                        BIGINT UNSIGNED                                              NULL,
 
-    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `alert_severity`                     TINYINT UNSIGNED                                             NULL,
 
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `datetime.alert.read`                TIMESTAMP                                                    NULL,
 
 
     PRIMARY KEY (`id`),

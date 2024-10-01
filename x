@@ -1787,6 +1787,22 @@ switch ( $argv[1] )
 
 
 
+        // (Registering the shutdown function)
+        register_shutdown_function
+        (
+            function ()
+            {
+                // (Setting the cwd)
+                chdir( __DIR__ );
+
+                // (Executing the cmd)
+                system('php x build');
+            }
+        )
+        ;
+
+
+
         // (Executing the cmd)
         #system("npm run dev -- --open --port 3000");
         #system("npm run dev -- --open");
