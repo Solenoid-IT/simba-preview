@@ -14,7 +14,7 @@ use \App\Stores\Connections\MySQL\Store as MySQLConnectionsStore;
 
 
 
-class Group extends Model
+class Tenant extends Model
 {
     private static self $instance;
 
@@ -24,7 +24,7 @@ class Group extends Model
     private function __construct ()
     {
         // (Calling the function)
-        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'group' );
+        parent::__construct( MySQLConnectionsStore::fetch()->connections['local/simba_db'], 'simba_db', 'tenant' );
     }
 
 

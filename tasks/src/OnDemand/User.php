@@ -21,7 +21,7 @@ class User extends Task
 
 
     # Returns [void]
-    public function create (string $group, string $user, string $email)
+    public function create (string $tenant, string $user, string $email)
     {
         // (Getting the value)
         $app = App::get();
@@ -40,9 +40,9 @@ class User extends Task
             json_encode
             (
                 [
-                    'group'         =>
+                    'tenant'        =>
                     [
-                        'name'      => $group
+                        'name'      => $tenant
                     ],
 
                     'user'          =>

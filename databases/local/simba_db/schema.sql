@@ -29,7 +29,7 @@ CREATE TABLE `hierarchy`
 )
 ;
 
-CREATE TABLE `group`
+CREATE TABLE `tenant`
 (
     `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
@@ -50,7 +50,7 @@ CREATE TABLE `user`
 (
     `id`                                  BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
-    `group`                               BIGINT UNSIGNED                                          NOT NULL,
+    `tenant`                               BIGINT UNSIGNED                                          NOT NULL,
     `name`                                VARCHAR(255)                                             NOT NULL,
 
     `email`                               VARCHAR(255)                                             NOT NULL,
@@ -75,11 +75,11 @@ CREATE TABLE `user`
 
     PRIMARY KEY (`id`),
 
-    UNIQUE  KEY (`group`,`name`),
+    UNIQUE  KEY (`tenant`,`name`),
     UNIQUE  KEY (`email`),
 
-    FOREIGN KEY (`group`)
-    REFERENCES `group` (`id`)
+    FOREIGN KEY (`tenant`)
+    REFERENCES `tenant` (`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE,
 
@@ -134,6 +134,10 @@ CREATE TABLE `activity`
     `ua_info.browser`                    VARCHAR(255)                                             NOT NULL,
     `ua_info.os`                         VARCHAR(255)                                             NOT NULL,
     `ua_info.hw`                         VARCHAR(255)                                             NOT NULL,
+
+    `resource.action`                    VARCHAR(255)                                                 NULL,
+    `resource.type`                      VARCHAR(255)                                                 NULL,
+    `resource.id`                        BIGINT UNSIGNED                                              NULL,
 
     `datetime.insert`                    TIMESTAMP                                                NOT NULL,
 

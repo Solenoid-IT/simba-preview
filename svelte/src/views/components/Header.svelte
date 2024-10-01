@@ -919,7 +919,7 @@
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                    <span class="mr-2 d-none d-lg-inline small">{ $user.user.name }@{ $user.group.name }</span>
+                    <span class="mr-2 d-none d-lg-inline small">{ $user.user.name }@{ $user.tenant.name }</span>
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

@@ -3,7 +3,7 @@ Simba is a complete solution for building professional web-apps.
 <br>
 It uses <a href="https://github.com/Solenoid-IT/php-core-lib" target="_blank"><b>php-core</b></a> for backend, <a href="https://kit.svelte.dev" target="_blank"><b>sveltekit</b></a> for frontend and <a href="https://capacitorjs.com" target="_blank"><b>capacitor</b></a> for building the mobile-app with the same codebase.
 <br>
-This app is an <b>SPA</b> (single-page application).
+This app is an <b>SPA</b> (single-page application) with a multi-tenant users system.
 <p align="center">
   <img alt="" src="https://dev.simba.solenoid.it/assets/images/simba.png">
 </p>
@@ -67,7 +67,7 @@ Restart: `sudo service { name } restart`
 6.  Moving to the directory -> `cd <app-dir>`<br>
 7.  Configuring databases   -> `php x mysql build`<br>
 8.  Importing the DB models -> `php x mysql import-models`<br>
-9.  Creating the user       -> `php bootstrap.php OnDemand/User create <group> <user> <email>`
+9.  Creating the user       -> `php bootstrap.php OnDemand/User create <tenant> <user> <email>`
 10. Building the app        -> `php x build`<br>
 <br><br><br>
 

@@ -26,7 +26,7 @@ use \Solenoid\RPC\Request as RPCRequest;
 
 use \App\Middlewares\RPC\Parser as RPCParser;
 use \App\Models\local\simba_db\User as UserModel;
-use \App\Models\local\simba_db\Group as GroupModel;
+use \App\Models\local\simba_db\Tenant as TenantModel;
 use \App\Models\local\simba_db\Activity as ActivityModel;
 use App\Models\local\simba_db\Hierarchy as HierarchyModel;
 use \App\Models\local\simba_db\Session as SessionModel;
@@ -95,57 +95,57 @@ class RPC extends Controller
 
 
 
-                            if ( $authorization->data['request']['input']['group']['id'] )
+                            if ( $authorization->data['request']['input']['tenant']['id'] )
                             {// Value found
                                 // (Getting the value)
-                                $group_id = $authorization->data['request']['input']['group']['id'];
+                                $tenant_id = $authorization->data['request']['input']['tenant']['id'];
                             }
                             else
                             {// Value not found
                                 // (Getting the value)
-                                $group = GroupModel::fetch()->where( 'name', $authorization->data['request']['input']['group']['name'] )->find();
+                                $tenant = TenantModel::fetch()->where( 'name', $authorization->data['request']['input']['tenant']['name'] )->find();
 
-                                if ( $group === false )
+                                if ( $tenant === false )
                                 {// (Record not found)
                                     // (Getting the value)
                                     $record =
                                     [
-                                        'name'            => $authorization->data['request']['input']['group']['name'],
+                                        'name'            => $authorization->data['request']['input']['tenant']['name'],
 
                                         'datetime.insert' => DateTime::fetch(),
                                         'datetime.update' => null
                                     ]
                                     ;
 
-                                    if ( GroupModel::fetch()->insert( [ $record ] ) === false )
+                                    if ( TenantModel::fetch()->insert( [ $record ] ) === false )
                                     {// (Unable to insert the record)
                                         // Returning the value
                                         return
-                                            Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to insert the record (group)' ] ] ) )
+                                            Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to insert the record (tenant)' ] ] ) )
                                         ;
                                     }
 
 
 
                                     // (Getting the value)
-                                    $group_id = GroupModel::fetch()->fetch_ids()[0];
+                                    $tenant_id = TenantModel::fetch()->fetch_ids()[0];
                                 }
                                 else
                                 {// (Record found)
                                     // Returning the value
                                     return
-                                        Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['name'] already exists (group)" ] ] ) )
+                                        Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['name'] already exists (tenant)" ] ] ) )
                                     ;
                                 }
                             }
 
 
 
-                            if ( UserModel::fetch()->where( [ [ 'group', $group_id ], [ 'name', $authorization->data['request']['input']['user']['name'] ] ] )->exists() )
+                            if ( UserModel::fetch()->where( [ [ 'tenant', $tenant_id ], [ 'name', $authorization->data['request']['input']['user']['name'] ] ] )->exists() )
                             {// (Record found)
                                 // Returning the value
                                 return
-                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['group','name'] already exists (user)" ] ] ) )
+                                    Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['tenant','name'] already exists (user)" ] ] ) )
                                 ;
                             }
 
@@ -163,7 +163,7 @@ class RPC extends Controller
                             $record = $authorization->data['request']['input']['user'];
                             $record =
                             [
-                                'group'           => $group_id,
+                                'tenant'           => $tenant_id,
                                 'name'            => $record['name'],
 
                                 'email'           => $record['email'],
@@ -540,7 +540,7 @@ class RPC extends Controller
 
 
                                 // (Getting the value)
-                                $data['records'] = UserModel::fetch()->where( 'group', $user->group )->list
+                                $data['records'] = UserModel::fetch()->where( 'tenant', $user->tenant )->list
                                 (
                                     transform_record: function ($record)
                                     {
@@ -1047,15 +1047,15 @@ class RPC extends Controller
 
 
                             // (Getting the values)
-                            [ $user, $group ] = explode( '@', $input['login'] );
+                            [ $user, $tenant ] = explode( '@', $input['login'] );
                             $password         = $input['password'];
 
 
 
                             // (Getting the value)
-                            $group = GroupModel::fetch()->where( 'name', $group )->find();
+                            $tenant = TenantModel::fetch()->where( 'name', $tenant )->find();
 
-                            if ( !$group )
+                            if ( !$tenant )
                             {// (Record not found)
                                 // Returning the value
                                 return
@@ -1066,7 +1066,7 @@ class RPC extends Controller
 
 
                             // (Getting the value)
-                            $user = UserModel::fetch()->where( [ [ 'group', $group->id ], [ 'name', $user ] ] )->find();
+                            $user = UserModel::fetch()->where( [ [ 'tenant', $tenant->id ], [ 'name', $user ] ] )->find();
 
                             if ( !$user )
                             {// (Record not found)
@@ -1729,11 +1729,11 @@ class RPC extends Controller
 
 
 
-                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'name', $input['name'] ] ] )->exists() )
+                        if ( UserModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'name', $input['name'] ] ] )->exists() )
                         {// (Record found)
                             // Returning the value
                             return
-                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['group','name'] already exists (user)" ] ] ) )
+                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['tenant','name'] already exists (user)" ] ] ) )
                             ;
                         }
 
@@ -2459,7 +2459,7 @@ class RPC extends Controller
 
 
 
-                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'name', $input['name'] ] ] )->exists() )
+                        if ( UserModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'name', $input['name'] ] ] )->exists() )
                         {// (Record found)
                             // Returning the value
                             return
@@ -2467,7 +2467,7 @@ class RPC extends Controller
                             ;
                         }
 
-                        if ( UserModel::fetch()->where( [ [ 'group', $user->group ], [ 'email', $input['email'] ] ] )->exists() )
+                        if ( UserModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'email', $input['email'] ] ] )->exists() )
                         {// (Record found)
                             // Returning the value
                             return
@@ -2496,9 +2496,9 @@ class RPC extends Controller
                             json_encode
                             (
                                 [
-                                    'group'         =>
+                                    'tenant'         =>
                                     [
-                                        'id'        => $user->group
+                                        'id'        => $user->tenant
                                     ],
 
                                     'user'          =>
@@ -2672,7 +2672,7 @@ class RPC extends Controller
                                     ;
                                 }
 
-                                if ( $user->group !== $current_user->group )
+                                if ( $user->tenant !== $current_user->tenant )
                                 {// Match failed
                                     // Returning the value
                                     return
