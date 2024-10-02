@@ -82,7 +82,9 @@ class Authorization extends Controller
                             'Action: ' . $authorization->data['request']['action'],
                             'Content-Type: application/json',
 
-                            "Auth-Token: $token"
+                            "Auth-Token: $token",
+
+                            'Session-Id: ' . $app->request->cookies['user']
                         ]
                     )
                     ;

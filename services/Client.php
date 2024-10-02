@@ -13,6 +13,8 @@ use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\Client\Client as HttpClient;
 
+use \App\Models\local\simba_db\Session as SessionModel;
+
 
 
 class Client extends Service
@@ -114,6 +116,58 @@ class Client extends Service
         // Returning the value
         return
             new Response( new Status(200), [], $data )
+        ;
+    }
+
+    # Returns [Response] | Throws [Exception]
+    public static function fetch_real_session_id (string $user, ?string $session = null)
+    {
+        // (Setting the value)
+        $session_id = null;
+
+
+
+        if ( $session === null )
+        {// Value not found
+            // (Setting the value)
+            $session_found = false;
+        }
+        else
+        {// Value found
+            // (Getting the value)
+            $session_found = SessionModel::fetch()->where( 'id', $session )->exists();
+        }
+
+
+
+        if ( $session_found )
+        {// Value is true
+            // (Getting the value)
+            $session_id = $session;
+        }
+        else
+        {// Value is false
+            // (Getting the value)
+            $session = SessionModel::fetch()->where( 'id', Request::fetch()->headers['Session-Id'] )->find();
+
+            if ( $session )
+            {// Value found
+                // (Getting the value)
+                $current_user_id = json_decode( $session->data, true )['user'];
+
+                if ( $current_user_id === $user )
+                {// Match OK
+                    // (Getting the value)
+                    $session_id = $session->id;
+                }
+            }
+        }
+
+
+
+        // Returning the value
+        return
+            new Response( new Status(200), [], [ 'session_id' => $session_id ] )
         ;
     }
 }

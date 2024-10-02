@@ -126,15 +126,15 @@ CREATE TABLE `activity`
     `session`                            VARCHAR(255)                                                 NULL,
 
     `ip`                                 VARCHAR(255)                                             NOT NULL,
-    `user_agent`                         LONGTEXT                                                 NOT NULL,
+    `user_agent`                         LONGTEXT                                                     NULL,
 
-    `ip_info.country.code`               VARCHAR(255)                                             NOT NULL,
-    `ip_info.country.name`               VARCHAR(255)                                             NOT NULL,
-    `ip_info.isp`                        VARCHAR(255)                                             NOT NULL,
+    `ip_info.country.code`               VARCHAR(255)                                                 NULL,
+    `ip_info.country.name`               VARCHAR(255)                                                 NULL,
+    `ip_info.isp`                        VARCHAR(255)                                                 NULL,
 
-    `ua_info.browser`                    VARCHAR(255)                                             NOT NULL,
-    `ua_info.os`                         VARCHAR(255)                                             NOT NULL,
-    `ua_info.hw`                         VARCHAR(255)                                             NOT NULL,
+    `ua_info.browser`                    VARCHAR(255)                                                 NULL,
+    `ua_info.os`                         VARCHAR(255)                                                 NULL,
+    `ua_info.hw`                         VARCHAR(255)                                                 NULL,
 
     `resource.action`                    VARCHAR(255)                                                 NULL,
     `resource.type`                      VARCHAR(255)                                                 NULL,

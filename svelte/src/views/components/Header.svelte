@@ -415,6 +415,11 @@
 
 
 
+        // (Setting the value)
+        $appData.user['password_set'] = true;
+
+
+
         // (Resetting the form)
         changePasswordForm.reset();
 
@@ -645,7 +650,8 @@
     $:
         if ( $appData )
         {// Value found
-            if ( !$appData.user.password_set )
+            console.debug('appData', $appData);// ahcid
+            if ( !$appData.user['password_set'] )
             {// (Password is not set)
                 if ( securityModal && changePasswordForm )
                 {// Values found
