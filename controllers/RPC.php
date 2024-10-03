@@ -193,12 +193,25 @@ class RPC extends Controller
                             if ( $authorization->data['request']['input']['client'] )
                             {// Value found
                                 // (Getting the value)
-                                $session_id = ClientService::fetch_real_session_id
+                                $response = ClientService::fetch_real_session_id
                                 (
                                     $authorization->data['request']['input']['client']['user'],
                                     $authorization->data['request']['input']['client']['session']
                                 )
                                 ;
+
+                                if ( $response->status->code !== 200 )
+                                {// (Unable to fetch the real session id)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(500), [], [ 'Unable to fetch the real session id' ] ) )
+                                    ;
+                                }
+
+
+
+                                // (Getting the value)
+                                $session_id = $response->body['session_id'];
 
 
 
@@ -489,32 +502,6 @@ class RPC extends Controller
 
 
 
-                            if ( !$session->start() )
-                            {// (Unable to start the session)
-                                // Returning the value
-                                return
-                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) )
-                                ;
-                            }
-
-                            if ( !$session->regenerate_id() )
-                            {// (Unable to regenerate the session id)
-                                // Returning the value
-                                return
-                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to regenerate the session id' ] ] ) )
-                                ;
-                            }
-
-                            if ( !$session->set_duration() )
-                            {// (Unable to set the session duration)
-                                // Returning the value
-                                return
-                                    Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to set the session duration' ] ] ) )
-                                ;
-                            }
-
-
-
                             // (Getting the value)
                             $session->data['authorization'] = $token;
 
@@ -585,6 +572,17 @@ class RPC extends Controller
 
 
                                 // (Getting the value)
+                                $hierarchies = HierarchyModel::fetch()->list();
+
+                                foreach ( $hierarchies as $hierarchy )
+                                {// Processing each entry
+                                    // (Getting the value)
+                                    $data['hierarchies'][ $hierarchy->id ] = $hierarchy;
+                                }
+
+
+
+                                // (Getting the value)
                                 $data['alerts'] = ActivityModel::fetch()->where( [ [ 'user', $user_id ], [ 'alert_severity', 'IS NOT', null ], [ 'datetime.alert.read', 'IS', null ] ] )->list();
                             break;
                         }
@@ -642,17 +640,6 @@ class RPC extends Controller
                                     return
                                         Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
                                     ;
-                                }
-
-
-
-                                // (Getting the value)
-                                $hierarchies = HierarchyModel::fetch()->list();
-
-                                foreach ( $hierarchies as $hierarchy )
-                                {// Processing each entry
-                                    // (Getting the value)
-                                    $data['hierarchies'][ $hierarchy->id ] = $hierarchy;
                                 }
                             
 
@@ -1138,12 +1125,25 @@ class RPC extends Controller
 
 
                             // (Getting the value)
-                            $session_id = ClientService::fetch_real_session_id
+                            $response = ClientService::fetch_real_session_id
                             (
                                 $authorization->data['request']['input']['client']['user'],
                                 $authorization->data['request']['input']['client']['session']
                             )
                             ;
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to fetch the real session id)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'Unable to fetch the real session id' ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $session_id = $response->body['session_id'];
 
 
 
@@ -1312,6 +1312,8 @@ class RPC extends Controller
 
                             // (Getting the value)
                             $session = SessionsStore::fetch()->sessions['user'];
+
+
 
                             if ( !$session->start() )
                             {// (Unable to start the session)
@@ -2254,12 +2256,25 @@ class RPC extends Controller
 
 
                             // (Getting the value)
-                            $session_id = ClientService::fetch_real_session_id
+                            $response = ClientService::fetch_real_session_id
                             (
                                 $authorization->data['request']['input']['client']['user'],
                                 $authorization->data['request']['input']['client']['session']
                             )
                             ;
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to fetch the real session id)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'Unable to fetch the real session id' ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $session_id = $response->body['session_id'];
 
 
 
@@ -2555,7 +2570,20 @@ class RPC extends Controller
 
 
                             // (Getting the value)
-                            $session_id = ClientService::fetch_real_session_id( $authorization->data['request']['input']['client']['user'] );
+                            $response = ClientService::fetch_real_session_id( $authorization->data['request']['input']['client']['user'] );
+
+                            if ( $response->status->code !== 200 )
+                            {// (Unable to fetch the real session id)
+                                // Returning the value
+                                return
+                                    Server::send( new Response( new Status(500), [], [ 'Unable to fetch the real session id' ] ) )
+                                ;
+                            }
+
+
+
+                            // (Getting the value)
+                            $session_id = $response->body['session_id'];
 
 
 
@@ -2858,32 +2886,6 @@ class RPC extends Controller
 
 
 
-                        if ( !$session->start() )
-                        {// (Unable to start the session)
-                            // Returning the value
-                            return
-                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to start the session' ] ] ) )
-                            ;
-                        }
-
-                        if ( !$session->regenerate_id() )
-                        {// (Unable to regenerate the session id)
-                            // Returning the value
-                            return
-                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to regenerate the session id' ] ] ) )
-                            ;
-                        }
-
-                        if ( !$session->set_duration() )
-                        {// (Unable to set the session duration)
-                            // Returning the value
-                            return
-                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => 'Unable to set the session duration' ] ] ) )
-                            ;
-                        }
-
-
-
                         // (Setting the value)
                         $session->data['authorization'] = $response->body['token'];
 
@@ -2964,66 +2966,81 @@ class RPC extends Controller
                             }
 
 
-
-                            if ( $authorization->data['request']['input']['client'] )
-                            {// Value found
-                                // (Getting the value)
-                                $session_id = ClientService::fetch_real_session_id
-                                (
-                                    $authorization->data['request']['input']['client']['user'],
-                                    $authorization->data['request']['input']['client']['session']
-                                )
-                                ;
-
-
-
-                                // (Getting the values)
-                                $ip = $authorization->data['request']['input']['client']['ip'];
-                                $ua = $authorization->data['request']['input']['client']['ua'];
-
-
-
-                                // (Getting the value)
-                                $response = ClientService::detect( $ip, $ua );
-        
-                                if ( $response->status->code !== 200 )
-                                {// (Unable to detect the client)
-                                    // Returning the value
-                                    return
-                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            if ( $authorization->data['request']['input']['client']['user'] !== $user_id )
+                            {// (User is removed by another user)
+                                if ( $authorization->data['request']['input']['client'] )
+                                {// Value found
+                                    // (Getting the value)
+                                    $response = ClientService::fetch_real_session_id
+                                    (
+                                        $authorization->data['request']['input']['client']['user'],
+                                        $authorization->data['request']['input']['client']['session']
+                                    )
                                     ;
-                                }
+
+                                    if ( $response->status->code !== 200 )
+                                    {// (Unable to fetch the real session id)
+                                        // Returning the value
+                                        return
+                                            Server::send( new Response( new Status(500), [], [ 'Unable to fetch the real session id' ] ) )
+                                        ;
+                                    }
 
 
 
-                                // (Getting the value)
-                                $record =
-                                [
-                                    'user'                 => $authorization->data['request']['input']['client']['user'],
-                                    'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
-                                    'description'          => "User '$user->name' has been removed",
-                                    'session'              => $session_id,
-                                    'ip'                   => $ip,
-                                    'user_agent'           => $ua,
-                                    'ip_info.country.code' => $response->body['ip']['country']['code'],
-                                    'ip_info.country.name' => $response->body['ip']['country']['name'],
-                                    'ip_info.isp'          => $response->body['ip']['isp'],
-                                    'ua_info.browser'      => $response->body['ua']['browser'],
-                                    'ua_info.os'           => $response->body['ua']['os'],
-                                    'ua_info.hw'           => $response->body['ua']['hw'],
-                                    'resource.action'      => 'delete',
-                                    'resource.type'        => 'user',
-                                    'resource.id'          => $user_id,
-                                    'datetime.insert'      => DateTime::fetch()
-                                ]
-                                ;
+                                    // (Getting the value)
+                                    $session_id = $response->body['session_id'];
 
-                                if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
-                                {// (Unable to insert the record)
-                                    // Returning the value
-                                    return
-                                        Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+
+
+                                    // (Getting the values)
+                                    $ip = $authorization->data['request']['input']['client']['ip'];
+                                    $ua = $authorization->data['request']['input']['client']['ua'];
+
+
+
+                                    // (Getting the value)
+                                    $response = ClientService::detect( $ip, $ua );
+            
+                                    if ( $response->status->code !== 200 )
+                                    {// (Unable to detect the client)
+                                        // Returning the value
+                                        return
+                                            Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                                        ;
+                                    }
+
+
+
+                                    // (Getting the value)
+                                    $record =
+                                    [
+                                        'user'                 => $authorization->data['request']['input']['client']['user'],
+                                        'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                                        'description'          => "User '$user->name' has been removed",
+                                        'session'              => $session_id,
+                                        'ip'                   => $ip,
+                                        'user_agent'           => $ua,
+                                        'ip_info.country.code' => $response->body['ip']['country']['code'],
+                                        'ip_info.country.name' => $response->body['ip']['country']['name'],
+                                        'ip_info.isp'          => $response->body['ip']['isp'],
+                                        'ua_info.browser'      => $response->body['ua']['browser'],
+                                        'ua_info.os'           => $response->body['ua']['os'],
+                                        'ua_info.hw'           => $response->body['ua']['hw'],
+                                        'resource.action'      => 'delete',
+                                        'resource.type'        => 'user',
+                                        'resource.id'          => $user_id,
+                                        'datetime.insert'      => DateTime::fetch()
+                                    ]
                                     ;
+
+                                    if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                                    {// (Unable to insert the record)
+                                        // Returning the value
+                                        return
+                                            Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                                        ;
+                                    }
                                 }
                             }
 

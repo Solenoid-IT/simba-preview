@@ -17,6 +17,7 @@ use \App\Controllers\Admin;
 use \App\Controllers\User;
 use \App\Controllers\Docs;
 use \App\Controllers\FormData;
+use \App\Controllers\DynamicFile;
 
 
 
@@ -132,6 +133,18 @@ $router = new Router
             'GET' => Target::link( FormData::class, 'get' ),
             'RPC' => Target::link( FormData::class, 'rpc' )->set_middlewares(['RPC/Parser'])
         ],
+
+
+
+        '/robots.txt' =>
+        [
+            'GET' => Target::link( DynamicFile::class, 'get' )
+        ],
+
+        '/sitemap.xml' =>
+        [
+            'GET' => Target::link( DynamicFile::class, 'get' )
+        ]
     ],
 
     Target::link( Fallback::class, 'view' )

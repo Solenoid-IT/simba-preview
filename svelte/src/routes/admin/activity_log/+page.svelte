@@ -148,15 +148,11 @@
                 ],
 
                 'controls':
-                    record['session'] && !record['current_session']
-                        ?
                     `
-                        <button class="btn btn-sm btn-danger" value="user::terminate_session" title="terminate session">
+                        <button class="btn btn-sm btn-danger" value="user::terminate_session" title="terminate session" ${ record['session'] && !record['current_session'] ? '' : 'disabled' }>
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     `
-                        :
-                    ''
                 ,
 
                 'hidden': false
@@ -277,8 +273,11 @@
                 // (Terminating the session)
                 result = await terminateSession( [ entry.id ] );
 
-                // (Removing the element)
-                jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').remove();
+                if ( result )
+                {// Value is true
+                    // (Setting the property)
+                    jQuery(entry.element).find('.controls .btn[value="' + entry.action + '"]').prop( 'disabled', true );
+                }
             break;
         }
 

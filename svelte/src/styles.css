@@ -152,6 +152,12 @@ a:hover
 	}
 }
 
+.sidebar.closed .nav-item
+{
+	/*display: none !important;*/
+	visibility: hidden !important;
+}
+
 
 
 .color-danger

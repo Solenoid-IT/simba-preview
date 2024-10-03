@@ -312,26 +312,26 @@
 
 
 
-    let userModal;
+    let addUserModal;
     
 
 
-    let userForm;
+    let addUserForm;
 
-    let userFormMsg = '';
+    let addUserFormMsg = '';
 
     // Returns [Promise:bool]
-    async function onUserFormSubmit ()
+    async function onAddUserFormSubmit ()
     {
         // (Validating the form)
-        const result = userForm.validate();
+        const result = addUserForm.validate();
 
         if ( !result.valid ) return false;
 
 
 
         // (Setting the value)
-        userFormMsg = '';
+        addUserFormMsg = '';
 
 
 
@@ -377,10 +377,10 @@
 
 
         // (Setting the value)
-        userForm.disabled = true;
+        addUserForm.disabled = true;
 
         // (Setting the value)
-        userFormMsg = `Confirm operation by email '${ result.entries['email'].value }' ...`;
+        addUserFormMsg = `Confirm operation by email '${ result.entries['email'].value }' ...`;
 
 
 
@@ -425,8 +425,16 @@
 
 
 
-        // (Setting the location)
-        window.location.href = '';
+        // (Fetching the data)
+        await fetchData();
+
+
+
+        // (Setting the value)
+        addUserForm.disabled = false;
+
+        // (Setting the value)
+        addUserFormMsg = '';
 
 
 
@@ -441,7 +449,7 @@
         <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
             <div slot="fixed-controls">
                 { #if $appData.user.user.hierarchy === 1 }
-                    <button class="btn btn-primary btn-sm" title="add" on:click={ userModal.show }>
+                    <button class="btn btn-primary btn-sm" title="add" on:click={ addUserModal.show }>
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 { /if }
@@ -455,8 +463,8 @@
             </div>
         </Table>
 
-        <Modal title="{ resourceType }" bind:api={ userModal }>
-            <Form bind:api={ userForm } on:submit={ onUserFormSubmit }>
+        <Modal title="{ resourceType }" bind:api={ addUserModal }>
+            <Form bind:api={ addUserForm } on:submit={ onAddUserFormSubmit }>
                 <div class="row">
                     <div class="col">
                         <label class="d-block m-0">
@@ -498,7 +506,7 @@
 
                 <div class="row mt-4">
                     <div class="col text-center">
-                        <span class="color-warning">{ userFormMsg }</span>
+                        <span class="color-warning">{ addUserFormMsg }</span>
                     </div>
                 </div>
             </Form>

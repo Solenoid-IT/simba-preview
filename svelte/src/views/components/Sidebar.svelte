@@ -18,6 +18,31 @@
 
         // (Setting the value)
         localStorage.setItem( 'sidebarClosed', JSON.stringify( closed ) );
+
+
+
+        /*
+        
+        // (Iterating each entry)
+        element.querySelectorAll('.page-section').forEach
+        (
+            function (el)
+            {
+                // (Setting the class)
+                el.classList.remove('collapsed');
+
+
+
+                // (Getting the value)
+                const targetId = el.getAttribute('data-target').replace( /^\#/, '' );
+
+                // (Setting the class)
+                document.getElementById( targetId ).classList.remove('show');
+            }
+        )
+        ;
+        
+        */
     }
 
     // Returns [void]
@@ -43,14 +68,48 @@
         {
             // (Getting the value)
             closed = JSON.parse( localStorage.getItem('sidebarClosed') ?? false );
+
+
+
+            // (Getting the value)
+            const openSection = localStorage.getItem( 'openSection' );
+
+            if ( openSection )
+            {// Value found
+                // (Triggering the event)
+                jQuery(element).find(`.page-section[data-target="${ openSection }"]`).trigger('click');
+            }
         }
     )
     ;
 
+
+
+    let element;
+
+
+
+    // Returns [void]
+    function saveOpenSection (event)
+    {
+        // (Getting the value)
+        const targetId = event.target.getAttribute('data-target');
+
+        if ( targetId === null ) return;
+
+
+
+        // (Getting the value)
+        const id = targetId.replace( /^\#/, '' );
+
+        // (Setting the item)
+        localStorage.setItem( 'openSection', document.getElementById(id).classList.contains('show') ? null : targetId );
+    }
+
 </script>
 
 <!-- Sidebar -->
-<ul class="navbar-nav sidebar sidebar-dark accordion { closed ? 'closed' : '' }" id="accordionSidebar">
+<ul class="navbar-nav sidebar sidebar-dark accordion { closed ? 'closed' : '' }" id="accordionSidebar" bind:this={ element }>
 
     <!-- Sidebar - Brand -->
     <!--<a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
@@ -77,23 +136,35 @@
         Modules
     </div>
 
-    <!-- Nav Item - Pages Collapse Menu -->
+    <!-- Nav Item - External Endpoints Collapse Menu -->
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-            aria-expanded="true" aria-controls="collapsePages">
+        <a class="nav-link collapsed page-section" href="#" data-toggle="collapse" data-target="#external_endpoints_section" aria-expanded="true" aria-controls="collapsePages" on:click={ saveOpenSection }>
             <i class="fas fa-fw fa-folder"></i>
-            <span>Pages</span>
+            <span>External Endpoints</span>
         </a>
-        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div id="external_endpoints_section" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Login Screens:</h6>
+                <h6 class="collapse-header">Pages</h6>
                 <a class="collapse-item" href="/admin/login">Login</a>
-                <a class="collapse-item" href="#">Register</a>
-                <a class="collapse-item" href="/admin/login">Forgot Password</a>
+                <a class="collapse-item" href="/admin/login?modal=user_recovery">User Recovery</a>
                 <div class="collapse-divider"></div>
-                <h6 class="collapse-header">Other Pages:</h6>
+                <h6 class="collapse-header">Fallback</h6>
                 <a class="collapse-item" href="/404">404 Page</a>
-                <a class="collapse-item" href="#">Blank Page</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - Shared Resources Collapse Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed page-section" href="#" data-toggle="collapse" data-target="#shared_resources_section" aria-expanded="true" aria-controls="collapsePages" on:click={ saveOpenSection }>
+            <i class="fas fa-fw fa-folder"></i>
+            <span>Shared Resources</span>
+        </a>
+        <div id="shared_resources_section" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">List</h6>
+                <a class="collapse-item" href="#">A</a>
+                <a class="collapse-item" href="#">B</a>
             </div>
         </div>
     </li>

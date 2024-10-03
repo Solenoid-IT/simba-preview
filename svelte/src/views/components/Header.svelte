@@ -85,7 +85,7 @@
 
 
         // (Alerting the value)
-        alert('Name has been changed');
+        //alert('Name has been changed');
 
 
 
@@ -236,7 +236,7 @@
 
 
         // (Alerting the value)
-        alert('Birth data has been changed');
+        //alert('Birth data have been changed');
 
 
 
@@ -426,7 +426,7 @@
 
 
         // (Alerting the value)
-        alert('Password has been changed');
+        //alert('Password has been changed');
 
 
 
@@ -650,7 +650,6 @@
     $:
         if ( $appData )
         {// Value found
-            console.debug('appData', $appData);// ahcid
             if ( !$appData.user['password_set'] )
             {// (Password is not set)
                 if ( securityModal && changePasswordForm )
@@ -902,8 +901,7 @@
         <!-- Nav Item - Alerts -->
         <li class="nav-item dropdown no-arrow mx-1">
             <!-- svelte-ignore a11y-invalid-attribute -->
-            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="alerts">
                 <i class="fas fa-bell fa-fw"></i>
 
                 { #if $appData.alerts.length > 0 }
@@ -912,10 +910,9 @@
                 { /if }
             </a>
             <!-- Dropdown - Alerts -->
-            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="alertsDropdown">
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
                 <h6 class="dropdown-header">
-                    Alerts Center
+                    Alerts
                 </h6>
 
                 <!--
@@ -1038,8 +1035,10 @@
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
                 <!-- svelte-ignore a11y-invalid-attribute -->
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                    <span class="mr-2 d-none d-lg-inline small">{ $appData.user.user.name }@{ $appData.user.tenant.name }</span>
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                    <span class="ml-2 mr-2 d-none d-lg-inline small">
+                        <span style="border-bottom: 1px solid { $appData.hierarchies[ $appData.user.user.hierarchy ]['color'] }">{ $appData.user.user.name }</span>@{ $appData.user.tenant.name }
+                    </span>
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
