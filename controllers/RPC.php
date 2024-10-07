@@ -29,8 +29,10 @@ use \App\Models\local\simba_db\User as UserModel;
 use \App\Models\local\simba_db\Tenant as TenantModel;
 use \App\Models\local\simba_db\Activity as ActivityModel;
 use \App\Models\local\simba_db\ActivityView as ActivityViewModel;
-use App\Models\local\simba_db\Hierarchy as HierarchyModel;
+use \App\Models\local\simba_db\Hierarchy as HierarchyModel;
 use \App\Models\local\simba_db\Session as SessionModel;
+use \App\Models\local\simba_db\Document as DocumentModel;
+use \App\Models\local\simba_db\DocumentView as DocumentViewModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Services\User as UserService;
 use \App\Services\Client as ClientService;
@@ -553,6 +555,7 @@ class RPC extends Controller
                             case '/admin/dashboard':
                             case '/admin/activity_log':
                             case '/admin/users':
+                            case '/admin/documents':
                                 // (Getting the value)
                                 $response = UserService::fetch_data( $user_id );
 
@@ -625,8 +628,13 @@ class RPC extends Controller
 
 
 
+                                    // (Removing the element)
+                                    unset( $record['resource']->id );
+
+
+
                                     // (Getting the value)
-                                    $record['current_session'] = $record['session'] && $record['session'] !== $session->id;
+                                    $record['current_session'] = $record['session'] && $record['session'] === $session->found_id;
                                 }
                             break;
 
@@ -668,6 +676,58 @@ class RPC extends Controller
                                             'datetime'    =>
                                             [
                                                 'insert'  => $record->datetime->insert
+                                            ]
+                                        ]
+                                        ;
+
+
+
+                                        // Returning the value
+                                        return $record;
+                                    }
+                                )
+                                ;
+                            break;
+
+                            case '/admin/documents':
+                                // (Getting the value)
+                                $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                                if ( !$user )
+                                {// (Record not found)
+                                    // Returning the value
+                                    return
+                                        Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                                    ;
+                                }
+                            
+
+
+                                // (Getting the value)
+                                $data['records'] = DocumentModel::fetch()->where( 'tenant', $user->tenant )->list
+                                (
+                                    transform_record: function ($record)
+                                    {
+                                        // (Getting the value)
+                                        $record =
+                                        [
+                                            'id'              => $record->id,
+
+                                            'path'            => $record->path,
+
+                                            'title'           => $record->title,
+                                            'description'     => $record->description,
+
+                                            'datetime'        =>
+                                            [
+                                                'insert'      => $record->datetime->insert,
+                                                'update'      => $record->datetime->update,
+
+                                                'option'      =>
+                                                [
+                                                    'active'  => $record->datetime->option->active,
+                                                    'sitemap' => $record->datetime->option->sitemap,
+                                                ]
                                             ]
                                         ]
                                         ;
@@ -3215,6 +3275,459 @@ class RPC extends Controller
                         // Returning the value
                         return
                             Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
+                }
+            break;
+
+            case 'document':
+                switch ( RPCParser::$verb )
+                {
+                    case 'insert':
+                        // (Verifying the user)
+                        $response = UserService::verify( 1 );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                        if ( !$user )
+                        {// Value not found
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        if ( DocumentModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'path', $input['path'] ] ] )->exists() )
+                        {// (Record found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['tenant','path'] already exist (document)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'tenant'                  => $user->tenant,
+                            'path'                    => $input['path'],
+
+                            'owner'                   => $user->id,
+
+                            'title'                   => $input['title'],
+                            'description'             => $input['description'],
+
+                            'content'                 => $input['content'],
+
+                            'datetime.insert'         => DateTime::fetch(),
+                            'datetime.update'         => null,
+
+                            'datetime.option.active'  => null,
+                            'datetime.option.sitemap' => null
+                        ]
+                        ;
+
+                        if ( !DocumentModel::fetch()->insert( [ $record ] ) )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => "Unable to insert the record (document)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $resource_id = DocumentModel::fetch()->fetch_ids()[0];
+
+
+
+                        // (Getting the values)
+                        $ip = $_SERVER['REMOTE_ADDR'];
+                        $ua = $_SERVER['HTTP_USER_AGENT'];
+
+
+
+                        // (Getting the value)
+                        $response = ClientService::detect( $ip, $ua );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => 'Document has been created',
+                            'session'              => $session->id,
+                            'ip'                   => $ip,
+                            'user_agent'           => $ua,
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'resource.action'      => 'insert',
+                            'resource.type'        => 'document',
+                            'resource.id'          => $resource_id,
+                            'datetime.insert'      => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200), [ 'Content-Type: application/json' ], $resource_id ) )
+                        ;
+                    break;
+
+                    case 'update':
+                        // (Verifying the user)
+                        $response = UserService::verify( 1 );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                        if ( !$user )
+                        {// Value not found
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        if ( DocumentModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'path', $input['path'] ], [ 'owner', '<>', $user->id ] ] )->exists() )
+                        {// (Record found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(409), [], [ 'error' => [ 'message' => "['tenant','path'] already exist (document)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'path'                    => $input['path'],
+
+                            'title'                   => $input['title'],
+                            'description'             => $input['description'],
+
+                            'content'                 => $input['content'],
+
+                            'datetime.update'         => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( !DocumentModel::fetch()->where( 'id', $input['id'] )->update( $record ) )
+                        {// (Unable to update the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => "Unable to update the record (document)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the values)
+                        $ip = $_SERVER['REMOTE_ADDR'];
+                        $ua = $_SERVER['HTTP_USER_AGENT'];
+
+
+
+                        // (Getting the value)
+                        $response = ClientService::detect( $ip, $ua );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => 'Document has been changed',
+                            'session'              => $session->id,
+                            'ip'                   => $ip,
+                            'user_agent'           => $ua,
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'resource.action'      => 'update',
+                            'resource.type'        => 'document',
+                            'resource.id'          => $input['id'],
+                            'datetime.insert'      => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
+
+                    case 'delete':
+                        // (Verifying the user)
+                        $response = UserService::verify( 1 );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                        if ( !$user )
+                        {// Value not found
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        if ( !DocumentModel::fetch()->where( 'id', 'IN', $input )->delete() )
+                        {// (Unable to delete the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [ 'error' => [ 'message' => "Unable to delete the record (document)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the values)
+                        $ip = $_SERVER['REMOTE_ADDR'];
+                        $ua = $_SERVER['HTTP_USER_AGENT'];
+
+
+
+                        // (Getting the value)
+                        $response = ClientService::detect( $ip, $ua );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Unable to detect the client)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to detect the client" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $record =
+                        [
+                            'user'                 => $user_id,
+                            'action'               => RPCParser::$subject . '.' . RPCParser::$verb,
+                            'description'          => 'Document has been removed',
+                            'session'              => $session->id,
+                            'ip'                   => $ip,
+                            'user_agent'           => $ua,
+                            'ip_info.country.code' => $response->body['ip']['country']['code'],
+                            'ip_info.country.name' => $response->body['ip']['country']['name'],
+                            'ip_info.isp'          => $response->body['ip']['isp'],
+                            'ua_info.browser'      => $response->body['ua']['browser'],
+                            'ua_info.os'           => $response->body['ua']['os'],
+                            'ua_info.hw'           => $response->body['ua']['hw'],
+                            'resource.action'      => 'delete',
+                            'resource.type'        => 'document',
+                            'resource.id'          => $input['id'],
+                            'datetime.insert'      => DateTime::fetch()
+                        ]
+                        ;
+
+                        if ( ActivityModel::fetch()->insert( [ $record ] ) === false )
+                        {// (Unable to insert the record)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(500), [], [  'error' => [ 'message' => "Unable to insert the record (activity)" ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200) ) )
+                        ;
+                    break;
+
+                    case 'find':
+                        // (Verifying the user)
+                        $response = UserService::verify( 1 );
+
+                        if ( $response->status->code !== 200 )
+                        {// (Verification is failed)
+                            // Returning the value
+                            return
+                                Server::send( $response )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $session = SessionsStore::fetch()->sessions['user'];
+
+
+
+                        // (Getting the value)
+                        $user_id = $session->data['user'];
+
+
+
+                        // (Getting the value)
+                        $user = UserModel::fetch()->where( 'id', $user_id )->find();
+
+                        if ( !$user )
+                        {// Value not found
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (user)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // (Getting the value)
+                        $input = RPCRequest::fetch()->parse_body();
+
+
+
+                        // (Getting the value)
+                        $document = DocumentModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'id', $input['id'] ] ] )->find();
+
+                        if ( !$document )
+                        {// (Record not found)
+                            // Returning the value
+                            return
+                                Server::send( new Response( new Status(404), [], [ 'error' => [ 'message' => 'Record not found (document)' ] ] ) )
+                            ;
+                        }
+
+
+
+                        // Returning the value
+                        return
+                            Server::send( new Response( new Status(200), [], $document ) )
                         ;
                     break;
                 }

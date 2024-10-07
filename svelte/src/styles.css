@@ -199,3 +199,10 @@ a:hover
 
 	border-radius: 4px;
 }
+
+
+
+textarea.input
+{
+	min-height: 150px;
+}

@@ -163,8 +163,8 @@
         <div id="shared_resources_section" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">List</h6>
-                <a class="collapse-item" href="#">A</a>
-                <a class="collapse-item" href="#">B</a>
+                <a class="collapse-item" href="/admin/documents">Documents</a>
+                <a class="collapse-item" href="/admin/tags">Tags</a>
             </div>
         </div>
     </li>

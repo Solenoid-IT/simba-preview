@@ -179,23 +179,22 @@ CREATE TABLE `authorization`
 
 
 
-/*
-
 CREATE TABLE `document`
 (
     `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
 
-    `owner`                              BIGINT UNSIGNED                                              NULL,
-
+    `tenant`                             BIGINT UNSIGNED                                          NOT NULL,
     `path`                               VARCHAR(255)                                             NOT NULL,
+
+    `owner`                              BIGINT UNSIGNED                                              NULL,
 
     `title`                              VARCHAR(255)                                             NOT NULL,
     `description`                        TEXT                                                     NOT NULL,
 
     `content`                            LONGTEXT                                                 NOT NULL,
 
-    `datetime.insert`                    TIMESTAMP                      DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    `datetime.update`                    TIMESTAMP                                                    NULL ON UPDATE CURRENT_TIMESTAMP,
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `datetime.update`                    TIMESTAMP                                                    NULL,
 
     `datetime.option.active`             TIMESTAMP                                                    NULL,
     `datetime.option.sitemap`            TIMESTAMP                                                    NULL,
@@ -204,7 +203,12 @@ CREATE TABLE `document`
 
     PRIMARY KEY (`id`),
 
-    UNIQUE  KEY (`path`),
+    UNIQUE  KEY (`tenant`,`path`),
+    
+    FOREIGN KEY (`tenant`)
+    REFERENCES `tenant` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
     
     FOREIGN KEY (`owner`)
     REFERENCES `user` (`id`)
@@ -212,6 +216,10 @@ CREATE TABLE `document`
     ON DELETE SET NULL
 )
 ;
+
+
+
+/*
 
 CREATE TABLE `tag`
 (
