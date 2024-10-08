@@ -7,6 +7,7 @@
     import App from '../../../views/App.svelte';
     import Base from '../../../views/components/Base.svelte';
     import Table from '../../../views/components/Table.svelte';
+    import SelectionTable from '../../../views/components/SelectionTable.svelte';
     import Modal from '../../../views/components/Modal.svelte';
     import Form from '../../../views/components/Form.svelte';
 
@@ -456,6 +457,45 @@
         return true;
     }
 
+
+
+    let availableTagsRecords = [];
+    let selectedTagsRecords  = [];
+
+
+
+    // debug
+    availableTagsRecords =
+    [
+        {
+            'id': 1,
+
+            'values':
+            [
+                {
+                    'column': 'name',
+                    'value':  'iOS'
+                }
+            ],
+
+            'controls': ''
+        },
+        {
+            'id': 2,
+
+            'values':
+            [
+                {
+                    'column': 'name',
+                    'value':  'Android'
+                }
+            ],
+
+            'controls': ''
+        },
+    ]
+    ;
+
 </script>
 
 <App>
@@ -477,7 +517,7 @@
             </div>
         </Table>
 
-        <Modal title="{ resourceType }" bind:api={ resourceModal }>
+        <Modal title="{ resourceType }" bind:api={ resourceModal } width="1300px">
             <Form bind:api={ resourceForm } on:submit={ onResourceFormSubmit }>
                 <input type="hidden" class="input" name="id" value="">
 
@@ -516,6 +556,11 @@
                         </label>
                     </div>
                 </div>
+
+                <fieldset class="fieldset mt-2">
+                    <legend>Tags</legend>
+                    <SelectionTable bind:availableRecords={ availableTagsRecords } bind:selectedRecords={ selectedTagsRecords }/>
+                </fieldset>
 
                 <div class="row mt-4">
                     <div class="col text-center">

@@ -263,6 +263,14 @@
     // Returns [void]
     api.filter = function (fn)
     {
+        if ( selectable )
+        {// Value is true
+            // (Deselecting the records)
+            api.deselectRecords();
+        }
+
+
+
         switch ( fn )
         {
             case 'SEARCH_GLOBAL':// (OR of values)
@@ -662,6 +670,29 @@
 
         // Returning the value
         return recordsIds;
+    }
+
+    // Returns [void]
+    api.deselectRecords = function ()
+    {
+        // (Setting the property)
+        element.querySelector('.table .selection .input[value="all"]').checked = false;
+
+        // (Iterating each entry)
+        element.querySelectorAll('.table .selectable .input[value="select"]').forEach
+        (
+            function (el)
+            {
+                // (Setting the property)
+                el.checked = false;
+            }
+        )
+        ;
+
+
+
+        // (Setting the value)
+        api.numSelectedRecords = 0;
     }
 
 
@@ -1205,6 +1236,7 @@
         width: 100%;
         display: table;
         position: fixed;
+        z-index: 1;
         background-color: #ffffff;
         border-radius: 2px;
     }
