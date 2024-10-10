@@ -331,7 +331,7 @@
                 const record = await Resource.find( entry.id );
 
                 // (Getting the values)
-                resourceForm.getValues(record);
+                resourceForm.setValues(record);
 
                 // (Showing the modal)
                 resourceModal.show();
@@ -460,7 +460,6 @@
 
 
     let availableTagsRecords = [];
-    let selectedTagsRecords  = [];
 
 
 
@@ -517,15 +516,15 @@
             </div>
         </Table>
 
-        <Modal title="{ resourceType }" bind:api={ resourceModal } width="1300px">
+        <Modal title="{ resourceName }" bind:api={ resourceModal } width="1300px">
             <Form bind:api={ resourceForm } on:submit={ onResourceFormSubmit }>
-                <input type="hidden" class="input" name="id" value="">
+                <input type="hidden" class="form-input" name="id" value="">
 
                 <div class="row">
                     <div class="col">
                         <label class="d-block m-0">
                             Path
-                            <input type="text" class="form-control input" name="path" data-required>
+                            <input type="text" class="form-control input form-input" name="path" data-required>
                         </label>
                     </div>
                 </div>
@@ -534,7 +533,7 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Title
-                            <input type="text" class="form-control input" name="title" data-required>
+                            <input type="text" class="form-control input form-input" name="title" data-required>
                         </label>
                     </div>
                 </div>
@@ -543,7 +542,7 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Description
-                            <textarea  class="form-control input" name="description"></textarea>
+                            <textarea  class="form-control input form-input" name="description"></textarea>
                         </label>
                     </div>
                 </div>
@@ -552,14 +551,14 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Content
-                            <textarea  class="form-control input" name="content"></textarea>
+                            <textarea  class="form-control input form-input" name="content"></textarea>
                         </label>
                     </div>
                 </div>
 
                 <fieldset class="fieldset mt-2">
                     <legend>Tags</legend>
-                    <SelectionTable bind:availableRecords={ availableTagsRecords } bind:selectedRecords={ selectedTagsRecords }/>
+                    <SelectionTable input='tags' bind:availableRecords={ availableTagsRecords }/>
                 </fieldset>
 
                 <div class="row mt-4">

@@ -510,7 +510,7 @@
             if ( !confirm("Are you sure to enable the IDK authentication ?\n\nWhen enabled you can authenticate only by providing the generated key") )
             {// (Confirmation is failed)
                 // (Setting the property)
-                jQuery( '#set_idk_form .input[name="idk"]' ).prop( 'checked', false );
+                jQuery( '#set_idk_form .form-input[name="idk"]' ).prop( 'checked', false );
 
 
 
@@ -861,7 +861,7 @@
     <form
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
-            <input type="text" class="form-control input bg-light border-0 small" placeholder="Search ...">
+            <input type="text" class="form-control input form-input bg-light border-0 small" placeholder="Search ...">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search fa-sm"></i>
@@ -885,9 +885,7 @@
                 aria-labelledby="searchDropdown">
                 <form class="form-inline mr-auto w-100 navbar-search">
                     <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small"
-                            placeholder="Search for..." aria-label="Search"
-                            aria-describedby="basic-addon2">
+                        <input type="text" class="form-control input bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="button">
                                 <i class="fas fa-search fa-sm"></i>
@@ -1086,7 +1084,7 @@
                 <legend>Name</legend>
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <input type="text" class="form-control input" name="name" value="{ $appData.user.user.name }" data-required>
+                        <input type="text" class="form-control input form-input" name="name" value="{ $appData.user.user.name }" data-required>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
@@ -1101,7 +1099,7 @@
                 <legend>Email</legend>
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <input type="text" class="form-control input" name="email" value="{ $appData.user.user.email }" data-required>
+                        <input type="text" class="form-control input form-input" name="email" value="{ $appData.user.user.email }" data-required>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>
                     </div>
@@ -1124,12 +1122,12 @@
                     <div class="col d-flex align-items-end" style="justify-content: space-between;">
                         <label class="m-0">
                             Name
-                            <input type="text" class="form-control input" name="birth.name" value="{ $appData.user.user.birth.name }">
+                            <input type="text" class="form-control input form-input" name="birth.name" value="{ $appData.user.user.birth.name }">
                         </label>
                         
                         <label class="m-0 ml-3">
                             Surname
-                            <input type="text" class="form-control input" name="birth.surname" value="{ $appData.user.user.birth.surname }">
+                            <input type="text" class="form-control input form-input" name="birth.surname" value="{ $appData.user.user.birth.surname }">
                         </label>
 
                         <button type="submit" class="btn btn-primary ml-3">Save</button>

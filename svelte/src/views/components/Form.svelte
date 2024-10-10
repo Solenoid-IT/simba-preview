@@ -86,10 +86,14 @@
 
 
                 // (Iterating each entry)
-                element.querySelectorAll('.input:not(.input-ignore)').forEach
+                element.querySelectorAll('.form-input:not(.input-ignore)').forEach
                 (
                     function (inputElement)
                     {
+                        if ( inputElement.classList.contains('table-component') ) return;
+
+
+
                         // (Getting the value)
                         const name = inputElement.getAttribute('name');
 
@@ -142,6 +146,8 @@
 
 
 
+                        /*
+
                         if ( !result.entries[ name ].valid )
                         {// (Entry is not valid)
                             if ( result.valid )
@@ -155,10 +161,75 @@
                             // (Setting the value)
                             result.valid = false;
                         }
-                        
+
+                        */
                     }
                 )
                 ;
+
+
+
+                // (Iterating each entry)
+                element.querySelectorAll('.table-component[data-input]').forEach
+                (
+                    function (el)
+                    {
+                        // (Getting the values)
+                        const name  = el.getAttribute('data-input');
+                        const value = el.api.listIds();
+
+
+
+                        // (Getting the value)
+                        result.entries[ name ] =
+                        {
+                            'name':    name,
+                            'value':   value,
+
+                            'element': el,
+                            'valid':   el.getAttribute('data-required') === null ? true : value.length > 0
+                        }
+                        ;
+
+
+
+                        if ( result.entries[ name ].valid )
+                        {// (Entry is valid)
+                            // (Removing the class)
+                            result.entries[ name ].element.classList.remove( 'input-invalid' );
+                        }
+                        else
+                        {// (Entry is not valid)
+                            // (Adding the class)
+                            result.entries[ name ].element.classList.add( 'input-invalid' );
+                        }
+                    }
+                )
+                ;
+
+
+
+                for ( const name in result.entries )
+                {// Processing each entry
+                    // (Getting the value)
+                    const entry = result.entries[name];
+
+                    if ( !entry.valid )
+                    {// Match OK
+                        // (Setting the value)
+                        result.valid = false;
+
+
+
+                        // (Focusing the element)
+                        entry.element.focus();
+
+
+
+                        // Breaking the iteration
+                        break;
+                    }
+                }
 
 
 
@@ -172,7 +243,7 @@
                 for ( const k in values )
                 {// Processing each entry
                     // (Getting the value)
-                    const el = element.querySelector(`.input[name="${ k }"]`);
+                    const el = element.querySelector(`.form-input[name="${ k }"]`);
 
                     if ( el === null ) continue;
 
@@ -198,13 +269,13 @@
             if ( api.disabled )
             {// Value is true
                 // (Setting the properties)
-                jQuery(element).find('.input').prop( 'disabled', true );
+                jQuery(element).find('.form-input').prop( 'disabled', true );
                 jQuery(element).find('.btn[type="submit"]').prop( 'disabled', true );
             }
             else
             {// Value is false
                 // (Setting the properties)
-                jQuery(element).find('.input').prop( 'disabled', false );
+                jQuery(element).find('.form-input').prop( 'disabled', false );
                 jQuery(element).find('.btn[type="submit"]').prop( 'disabled', false );
             }
         }
@@ -217,8 +288,8 @@
 
 <style>
 
-    .form :global(.input.is-invalid),
-    .form :global(.input.input-invalid)
+    .form :global(.form-input.is-invalid),
+    .form :global(.form-input.input-invalid)
     {
         border-color: #dc3545 !important;
         padding-right: calc(1.5em + .75rem) !important;
@@ -228,8 +299,8 @@
         background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
     }
     
-    .form :global(.input.is-invalid:focus),
-    .form :global(.input.input-invalid:focus)
+    .form :global(.form-input.is-invalid:focus),
+    .form :global(.form-input.input-invalid:focus)
     {
         box-shadow: 0 0 0 .2rem rgba(220,53,69,.25) !important;
     }

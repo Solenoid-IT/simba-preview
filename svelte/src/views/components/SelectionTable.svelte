@@ -2,7 +2,7 @@
 
     import { browser } from '$app/environment';
 
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
 
     import Table from '../components/Table.svelte';
 
@@ -12,7 +12,10 @@
 
 
 
-    export let title = '';
+    export let title    = '';
+
+    export let input    = null;
+    export let required = null;
 
 
 
@@ -88,7 +91,7 @@
     }
 
 
-
+    // ahcid to add compatibility for selectIds
     // Returns [void]
     function selectEntries ()
     {
@@ -155,6 +158,30 @@
         selectedRecords = results;
     }
 
+
+
+    // (Listening for the event)
+    onMount
+    (
+        function ()
+        {
+            /*
+            
+            // (Setting the value)
+            element.api =
+            {
+                'selectIds': function (ids)
+                {
+                    // ahcid to implementt
+                }
+            }
+            ;
+
+            */
+        }
+    )
+    ;
+
 </script>
 
 <div class="row">
@@ -170,7 +197,7 @@
         </button>
     </div>
     <div class="col">
-        <Table title="Selected" bind:api={ selectedTable } bind:records={ selectedRecords } selectable on:selection.change={ onSelectedSelectionChange }/>
+        <Table title="Selected" input={ input } required={ required } bind:api={ selectedTable } bind:records={ selectedRecords } selectable on:selection.change={ onSelectedSelectionChange }/>
     </div>
 </div>
 

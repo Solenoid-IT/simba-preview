@@ -139,6 +139,7 @@ CREATE TABLE `activity`
     `resource.action`                    VARCHAR(255)                                                 NULL,
     `resource.type`                      VARCHAR(255)                                                 NULL,
     `resource.id`                        BIGINT UNSIGNED                                              NULL,
+    `resource.name`                      VARCHAR(255)                                                 NULL,
 
     `alert_severity`                     TINYINT UNSIGNED                                             NULL,
 

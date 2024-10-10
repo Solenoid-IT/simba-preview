@@ -469,7 +469,7 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Name
-                            <input type="text" class="form-control input" name="name" data-required>
+                            <input type="text" class="form-control input form-input" name="name" data-required>
                         </label>
                     </div>
                 </div>
@@ -477,7 +477,7 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Email
-                            <input type="text" class="form-control input" name="email" data-required>
+                            <input type="text" class="form-control input form-input" name="email" data-required>
                         </label>
                     </div>
                 </div>
@@ -486,7 +486,7 @@
                     <div class="col">
                         <label class="d-block m-0">
                             Hierarchy
-                            <select class="form-control input" name="hierarchy" data-required>
+                            <select class="form-control input form-input" name="hierarchy" data-required>
                                 <option value=""></option>
                                 <option disabled></option>
 

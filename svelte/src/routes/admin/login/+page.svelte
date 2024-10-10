@@ -304,7 +304,7 @@
 
                             <Form id="login_form" on:submit={ onLoginFormSubmit } bind:api={ loginForm }>
                                 <div class="form-group">
-                                    <input type="text" class="form-control input" name="login" placeholder="Login" data-required>
+                                    <input type="text" class="form-control input form-input" name="login" placeholder="Login" data-required>
                                 </div>
                                 <div class="form-group">
                                     <PasswordField name="password" placeholder="Password" required/>
@@ -361,7 +361,7 @@
                 <div class="col">
                     <label class="m-0 d-block">
                         Email
-                        <input type="text" class="form-control input" name="email" data-required>
+                        <input type="text" class="form-control input form-input" name="email" data-required>
                     </label>
                 </div>
             </div>

@@ -3408,6 +3408,7 @@ class RPC extends Controller
                             'resource.action'      => 'insert',
                             'resource.type'        => 'document',
                             'resource.id'          => $resource_id,
+                            'resource.name'        => $record['path'],
                             'datetime.insert'      => DateTime::fetch()
                         ]
                         ;
@@ -3541,6 +3542,7 @@ class RPC extends Controller
                             'resource.action'      => 'update',
                             'resource.type'        => 'document',
                             'resource.id'          => $input['id'],
+                            'resource.name'        => $record['path'],
                             'datetime.insert'      => DateTime::fetch()
                         ]
                         ;
@@ -3649,7 +3651,7 @@ class RPC extends Controller
                             'ua_info.hw'           => $response->body['ua']['hw'],
                             'resource.action'      => 'delete',
                             'resource.type'        => 'document',
-                            'resource.id'          => $input['id'],
+                            'resource.id'          => $input['id'],# 'ahcid to implement'
                             'datetime.insert'      => DateTime::fetch()
                         ]
                         ;

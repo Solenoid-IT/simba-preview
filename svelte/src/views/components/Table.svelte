@@ -12,7 +12,10 @@
 
 
 
-    export let title = '';
+    export let title    = '';
+
+    export let input    = null;
+    export let required = null;
 
 
 
@@ -41,12 +44,12 @@
             // (Listening for the event)
             jQuery(element).delegate('.selection-controls-box .btn', 'click', function (event) {
                 // (Setting the property)
-                jQuery(element).find('.table .selection .input[value="all"]').prop( 'checked', false );
+                jQuery(element).find('.table .selection .table-input[value="all"]').prop( 'checked', false );
 
 
 
                 // (Iterating each entry)
-                element.querySelectorAll('.table tbody .selectable .input').forEach
+                element.querySelectorAll('.table tbody .selectable .table-input').forEach
                 (
                     function (el)
                     {
@@ -61,6 +64,27 @@
                 // (Getting the value)
                 api.numSelectedRecords = api.fetchSelectedRecords().length;
             });
+
+
+
+            // (Getting the value)
+            element.api =
+            {
+                'listIds': function ()
+                {
+                    // Returning the value
+                    return records.map( function (record) { return record.id; } );
+                }
+            }
+            ;
+
+
+
+            if ( input )
+            {// Value found
+                // (Setting the class name)
+                element.classList.add('form-input');
+            }
         }
     )
     ;
@@ -193,7 +217,7 @@
         // (Getting the value)
         const result =
         {
-            'global': element.querySelector('.search-box .input').value,
+            'global': element.querySelector('.search-box .table-input').value,
             'local': {},
             'keys':  {}
         }
@@ -207,8 +231,7 @@
             function (el)
             {
                 // (Getting the values)
-                result.local[ el.getAttribute('data-column') ] = el.querySelector('.input').value;
-                //result.keys[ el.getAttribute('data-column') ]  = Array.from( el.querySelectorAll('.column-key-search-menu .key-list .input:not(.input-all):checked') ).map( function (elem) { return elem.value; } );
+                result.local[ el.getAttribute('data-column') ] = el.querySelector('.table-input').value;
                 result.keys[ el.getAttribute('data-column') ]  = api.useKeys ? api.keys[ el.getAttribute('data-column') ].entries.filter( function (entry) { return entry.checked && !entry.hidden; } ).map( function (entry) { return entry.value; } ) : [];
             }
         )
@@ -224,7 +247,7 @@
     api.setSearchValues = function (searchValues)
     {
         // (Getting the value)
-        element.querySelector('.search-box .input').value = searchValues.global;
+        element.querySelector('.search-box .table-input').value = searchValues.global;
 
 
 
@@ -239,7 +262,7 @@
 
 
                 // (Getting the value)
-                el.querySelector('.input').value = searchValues.local[ column ];
+                el.querySelector('.table-input').value = searchValues.local[ column ];
 
                 if ( api.useKeys )
                 {// Value is true
@@ -433,10 +456,10 @@
 
 
         // (Setting the value)
-        element.querySelector('.search-box .input').value = '';
+        element.querySelector('.search-box .table-input').value = '';
 
         // (Iterating each entry)
-        element.querySelectorAll('.column-search-box .input').forEach
+        element.querySelectorAll('.column-search-box .table-input').forEach
         (
             function (el)
             {
@@ -447,7 +470,7 @@
         ;
 
         // (Iterating each entry)
-        element.querySelectorAll('.column-key-search-box .key-list .input[value="all"]').forEach
+        element.querySelectorAll('.column-key-search-box .key-list .table-input[value="all"]').forEach
         (
             function (el)
             {
@@ -653,7 +676,7 @@
         let recordsIds = [];
 
         // (Iterating each entry)
-        element.querySelectorAll('.table tbody .selectable .input').forEach
+        element.querySelectorAll('.table tbody .selectable .table-input').forEach
         (
             function (el)
             {
@@ -676,10 +699,10 @@
     api.deselectRecords = function ()
     {
         // (Setting the property)
-        element.querySelector('.table .selection .input[value="all"]').checked = false;
+        element.querySelector('.table .selection .table-input[value="all"]').checked = false;
 
         // (Iterating each entry)
-        element.querySelectorAll('.table .selectable .input[value="select"]').forEach
+        element.querySelectorAll('.table .selectable .table-input[value="select"]').forEach
         (
             function (el)
             {
@@ -926,7 +949,7 @@
         const checked = event.target.checked;
 
         // (Iterating each entry)
-        element.querySelectorAll('.table tbody .selectable .input').forEach
+        element.querySelectorAll('.table tbody .selectable .table-input').forEach
         (
             function (el)
             {
@@ -966,7 +989,7 @@
 
 </script>
 
-<div class="card shadow mb-4 jtable" bind:this={ element }>
+<div class="card shadow mb-4 jtable component table-component" data-input="{ input }" data-required={ required } bind:this={ element }>
     <div class="card-header py-3 d-flex align-items-center" style="justify-content: space-between;">
         <h6 class="m-0 font-weight-bold text-primary">{ title }</h6>
 
@@ -982,7 +1005,7 @@
                             <div class="controls-left">
                                 <div class="num-results">( <b>{ records.filter( function (record) { return !record.hidden; } ).length }</b> )</div>
 
-                                <button class="btn btn-secondary btn-sm ml-3" title="download csv" on:click={ () => { api.downloadCSV(); } }>
+                                <button type="button" class="btn btn-secondary btn-sm ml-3" title="download csv" on:click={ () => { api.downloadCSV(); } }>
                                     <i class="fa-solid fa-download"></i>
                                 </button>
 
@@ -995,7 +1018,7 @@
                             </div>
 
                             <div class="search-box">
-                                <button class="btn btn-secondary btn-sm mr-3" title="extract keys" on:click={ extractKeys }>
+                                <button type="button" class="btn btn-secondary btn-sm mr-3" title="extract keys" on:click={ extractKeys }>
                                     { #if api.useKeys }
                                         <i class="fa-solid fa-caret-up"></i>
                                     { :else }
@@ -1004,7 +1027,7 @@
                                 </button>
 
                                 { #if api.filterEnabled }
-                                    <button class="btn btn-danger btn-sm" title="remove filter { api.activeFilter }" on:click={ api.saveFilter }>
+                                    <button type="button" class="btn btn-danger btn-sm" title="remove filter { api.activeFilter }" on:click={ api.saveFilter }>
                                         <i class="fa-solid fa-filter-circle-xmark"></i>
 
                                         <div class="active-filter-indicator">
@@ -1012,12 +1035,12 @@
                                         </div>
                                     </button>
                                 { :else }
-                                    <button class="btn btn-secondary btn-sm" title="apply filter { api.activeFilter }" on:click={ api.restoreFilter }>
+                                    <button type="button" class="btn btn-secondary btn-sm" title="apply filter { api.activeFilter }" on:click={ api.restoreFilter }>
                                         <i class="fa-solid fa-filter"></i>
                                     </button>
                                 { /if }
 
-                                <input type="text" class="form-control form-control-sm input ml-3" placeholder="Search ..." style="width: 250px;" on:input={ onGlobalSearch }>
+                                <input type="text" class="form-control form-control-sm input table-input ml-3" placeholder="Search ..." style="width: 250px;" on:input={ onGlobalSearch }>
                             </div>
                         </div>
                     </div>
@@ -1029,7 +1052,7 @@
                                     <tr>
                                         { #if selectable }
                                             <th class="selection text-center">
-                                                <input type="checkbox" class="input" value="all" on:change={ toggleSelectAllRecords }>
+                                                <input type="checkbox" class="input table-input" value="all" on:change={ toggleSelectAllRecords }>
                                             </th>
                                         { /if }
 
@@ -1050,7 +1073,7 @@
                                                 </div>
 
                                                 <div class="column-search-box">
-                                                    <input type="text" class="form-control form-control-sm input" on:input={ onLocalSearch }>
+                                                    <input type="text" class="form-control form-control-sm input table-input" on:input={ onLocalSearch }>
                                                 </div>
 
                                                 { #if api.useKeys }
@@ -1072,14 +1095,14 @@
                                                             <div class="column-key-search-menu" data-state={ api.keys[ column ].menuOpen ? 'open' : 'closed' }>
                                                                 <div class="row">
                                                                     <div class="col">
-                                                                        <input type="text" class="form-control form-control-sm input" name="search" on:input={ onKeySearch( event, column ) }>
+                                                                        <input type="text" class="form-control form-control-sm input table-input" name="search" on:input={ onKeySearch( event, column ) }>
                                                                     </div>
                                                                 </div>
 
                                                                 <ul class="key-list">
                                                                     <li>
                                                                         <label class="m-0 d-block">
-                                                                            <input type="checkbox" class="input input-all mb-3" value="all" on:change={ onKeySelectAll( event, column ) }> ALL [ { api.keys[ column ].entries.filter( function (entry) { return !entry.hidden; } ).length } ]
+                                                                            <input type="checkbox" class="input table-input table-input-all mb-3" value="all" on:change={ onKeySelectAll( event, column ) }> ALL [ { api.keys[ column ].entries.filter( function (entry) { return !entry.hidden; } ).length } ]
                                                                         </label>
                                                                     </li>
 
@@ -1087,7 +1110,7 @@
                                                                         { #if !api.keys[ column ].entries.filter( function (entry) { return entry.value === key; } )[0].hidden }
                                                                             <li>
                                                                                 <label class="m-0 d-block">
-                                                                                    <input type="checkbox" class="input" value={ key } on:change={ onKeySelect( event, column, key) }> { key }
+                                                                                    <input type="checkbox" class="input table-input" value={ key } on:change={ onKeySelect( event, column, key) }> { key }
                                                                                 </label>
                                                                             </li>
                                                                         { /if }
@@ -1096,7 +1119,7 @@
                                                                     { #each api.keys[ column ].entries.filter( function (entry) { return !entry.hidden; } ) as entry }
                                                                         <li>
                                                                             <label class="m-0 d-block">
-                                                                                <input type="checkbox" class="input" value={ entry.value } checked={ entry.checked } on:change={ onKeySelect( event, column, entry.value ) }> { entry.value }
+                                                                                <input type="checkbox" class="input table-input" value={ entry.value } checked={ entry.checked } on:change={ onKeySelect( event, column, entry.value ) }> { entry.value }
                                                                             </label>
                                                                         </li>
                                                                     { /each }
@@ -1118,7 +1141,7 @@
                                             <tr data-index={ i } data-id={ record.id }>
                                                 { #if selectable }
                                                     <td class="selectable text-center">
-                                                        <input type="checkbox" class="input" value="select" on:change={ onSelectionChange }>
+                                                        <input type="checkbox" class="input table-input" value="select" on:change={ onSelectionChange }>
                                                     </td>
                                                 { /if }
 
@@ -1200,7 +1223,7 @@
         align-items: center;
     }
 
-    .search-box .input
+    .search-box .table-input
     {
         flex-grow: 1;
     }

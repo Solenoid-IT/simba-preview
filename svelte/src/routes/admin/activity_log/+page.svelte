@@ -137,6 +137,11 @@
                     },
 
                     {
+                        'column': 'resource.name',
+                        'value':  record['resource']['name']
+                    },
+
+                    {
                         'column': 'datetime.insert',
                         'value':  record['datetime']['insert']
                     },
