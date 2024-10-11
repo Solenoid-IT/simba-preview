@@ -53,6 +53,17 @@
             {
                 // (Resetting the form)
                 element.reset();
+
+                // (Iterating each entry)
+                element.querySelectorAll('.table-component[data-input]').forEach
+                (
+                    function (el)
+                    {
+                        // (Emptying the records)
+                        el.api.emptyRecords();
+                    }
+                )
+                ;
             }
 
             // Returns [object]
@@ -176,7 +187,7 @@
                     {
                         // (Getting the values)
                         const name  = el.getAttribute('data-input');
-                        const value = el.api.listIds();
+                        const value = el.api.transformRecord === null ? el.api.listIds() : el.api.listTransformedRecords();
 
 
 
@@ -240,22 +251,39 @@
             // Returns [void]
             api.setValues = function (values)
             {
+                // (Setting the value)
+                let el = null;
+
                 for ( const k in values )
                 {// Processing each entry
                     // (Getting the value)
-                    const el = element.querySelector(`.form-input[name="${ k }"]`);
+                    el = element.querySelector(`.form-input[name="${ k }"]`);
 
-                    if ( el === null ) continue;
+                    if ( el === null )
+                    {// Value not found
+                        // (Getting the value)
+                        el = element.querySelector(`.form-input.table-component[data-input="${ k }"]`);
 
-
-
-                    // (Setting the property)
-                    el.value = values[k];
-
-                    if ( el.tagName === 'INPUT' && el.getAttribute('type') === 'checkbox' )
-                    {// Match OK
+                        if ( el === null )
+                        {// Value not found
+                            // (Doing nothing)
+                        }
+                        else
+                        {// Value found
+                            // (Setting the records)
+                            el.api.setRecords( values[k] );
+                        }
+                    }
+                    else
+                    {// Value found
                         // (Setting the property)
-                        el.checked = values[k];
+                        el.value = values[k];
+
+                        if ( el.tagName === 'INPUT' && el.getAttribute('type') === 'checkbox' )
+                        {// Match OK
+                            // (Setting the property)
+                            el.checked = values[k];
+                        }
                     }
                 }
             }

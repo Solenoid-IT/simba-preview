@@ -17,6 +17,8 @@
     export let input    = null;
     export let required = null;
 
+    export let controls = false;
+
 
 
     onMount
@@ -24,7 +26,7 @@
         function ()
         {
             // (Listening for the event)
-            jQuery(element).delegate('table tbody tr .controls .btn', 'click', function (event) {
+            jQuery(element).delegate('.action-input[data-action]', 'click', function (event) {
                 // (Getting the value)
                 const rowElement = this.closest('tr');
 
@@ -33,9 +35,11 @@
                 (
                     'record.action',
                     {
-                        'element': rowElement,
-                        'id':      rowElement.getAttribute('data-id'),
-                        'action':  this.getAttribute('value')
+                        'action':     this.getAttribute('data-action'),
+                        'id':         rowElement.getAttribute('data-id'),
+
+                        'element':    this,
+                        'rowElement': rowElement
                     }
                 )
                 ;
@@ -70,10 +74,34 @@
             // (Getting the value)
             element.api =
             {
+                'transformRecord': null,
+
+                'listRecords': function ()
+                {
+                    // Returning the value
+                    return element.api.transformRecord ? records.map( element.api.transformRecord ) : records;
+                },
+
+                
+
                 'listIds': function ()
                 {
                     // Returning the value
                     return records.map( function (record) { return record.id; } );
+                },
+
+
+
+                'emptyRecords': function ()
+                {
+                    // (Setting the value)
+                    records = [];
+                },
+
+                'setRecords': function (value)
+                {
+                    // (Getting the value)
+                    records = value;
                 }
             }
             ;
@@ -85,6 +113,11 @@
                 // (Setting the class name)
                 element.classList.add('form-input');
             }
+
+
+
+            // (Getting the value)
+            api.element = element;
         }
     )
     ;
@@ -989,7 +1022,7 @@
 
 </script>
 
-<div class="card shadow mb-4 jtable component table-component" data-input="{ input }" data-required={ required } bind:this={ element }>
+<div class="card shadow mb-4 jtable component table-component" data-input={ input } data-required={ required } bind:this={ element }>
     <div class="card-header py-3 d-flex align-items-center" style="justify-content: space-between;">
         <h6 class="m-0 font-weight-bold text-primary">{ title }</h6>
 
@@ -1154,7 +1187,11 @@
                                                 { /each }
 
                                                 <td class="controls text-center">
-                                                    { @html record.controls }
+                                                    { #if controls }
+                                                        { #if record.controls }
+                                                            { @html record.controls }
+                                                        { /if }
+                                                    { /if }
                                                 </td>
                                             </tr>
                                         { /if }

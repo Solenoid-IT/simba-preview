@@ -27,11 +27,6 @@ class User extends Service
     public static function verify (?int $hierarchy = null)
     {
         // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
-        // (Getting the value)
         $session = SessionsStore::fetch()->sessions['user'];
 
 
@@ -80,42 +75,8 @@ class User extends Service
 
 
 
-            if ( $app->request->method === 'GET' )
-            {// Match OK
-                // (Getting the value)
-                $fwd_route = $app->request->cookies['route'] ?? ( $_SERVER['REQUEST_URI'] ?? '/admin/dashboard' );
-
-                if ( in_array( $fwd_route, [ '/admin/login', '/admin/logout' ] ) )
-                {// Match OK
-                    // (Setting the value)
-                    $fwd_route = '/admin/dashboard';
-                }
-
-                if ( $fwd_route === '/user' && $app->request->headers['Action'] === 'session::validate' )
-                {// Match OK
-                    // (Setting the value)
-                    $fwd_route = '/admin';
-
-
-
-                    // (Getting the value)
-                    $referer = $app->request->headers['Referer'];
-
-                    if ( $referer )
-                    {// Value found
-                        // (Getting the value)
-                        $url = URL::parse( $referer );
-
-                        // (Getting the value)
-                        $fwd_route = $url->path . ( $url->query ? '?' . $url->query : '' );
-                    }
-                }
-
-
-
-                // (Setting the cookie)
-                CookiesStore::fetch()->cookies['user']->set( $fwd_route );
-            }
+            // (Setting the cookie)
+            CookiesStore::fetch()->cookies['fwd_route']->set( $_SERVER['HTTP_REFERER'] );
 
 
 

@@ -136,7 +136,9 @@
 
                         'content':
                             `
-                                <input type="checkbox" ${ record['datetime']['option']['active'] ? 'checked' : '' } title="active">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <input type="checkbox" class="input action-input" data-action="toggle_active" ${ record['datetime']['option']['active'] ? 'checked' : '' } title="toggle active">
+                                </div>
                             `
                     },
 
@@ -146,7 +148,9 @@
 
                         'content':
                             `
-                                <input type="checkbox" ${ record['datetime']['option']['sitemap'] ? 'checked' : '' } title="sitemap">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <input type="checkbox" class="input action-input" data-action="toggle_sitemap" ${ record['datetime']['option']['sitemap'] ? 'checked' : '' } title="toggle sitemap">
+                                </div>
                             `
                     },
                 ],
@@ -154,10 +158,10 @@
                 'controls':
                     `
                         <div class="d-flex justify-content-center align-items-center">
-                            <button class="btn btn-sm btn-warning" value="update" title="edit">
+                            <button type="button" class="btn btn-sm btn-warning action-input" data-action="update" title="edit">
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger ml-2" value="delete" title="remove">
+                            <button type="button" class="btn btn-sm btn-danger ml-2 action-input" data-action="delete" title="remove">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -305,7 +309,63 @@
 
             // Returning the value
             return true;
-        }
+        },
+
+        'setOption': async function (id, option, value)
+        {
+            // (Sending a request)
+            const response = await Solenoid.HTTP.sendRequest
+            (
+                envs.APP_URL + '/rpc',
+                'RPC',
+                [
+                    'Action: ' + resourceType + '::set_option',
+                    'Content-Type: application/json',
+
+                    'Route: ' + window.location.pathname
+                ],
+                JSON.stringify
+                (
+                    {
+                        'id':     id,
+                        'option': option,
+                        'value':  value
+                    }
+                ),
+                '',
+                true
+            )
+            ;
+
+            if ( response.status.code !== 200 )
+            {// (Request failed)
+                if ( response.status.code === 401 )
+                {// (Client is not authorized)
+                    // (Setting the location)
+                    window.location.href = '/admin/login';
+
+
+
+                    // Returning the value
+                    return false;
+                }
+
+
+
+                // (Alerting the value)
+                alert( response.body['error']['message'] );
+
+
+
+                // Returning the value
+                return false;
+            }
+
+
+
+            // Returning the value
+            return true;
+        },
     }
     ;
 
@@ -341,6 +401,16 @@
                 // (Removing the resource)
                 result = await Resource.remove( [ entry.id ] );
             break;
+
+            case 'toggle_active':
+                // (Setting the option)
+                result = await Resource.setOption( entry.id, 'active', entry.element.checked  )
+            break;
+
+            case 'toggle_sitemap':
+                // (Setting the option)
+                result = await Resource.setOption( entry.id, 'sitemap', entry.element.checked );
+            break;
         }
 
 
@@ -374,7 +444,7 @@
 
 
         // (Removing the users)
-        const result = await Resource.delete( ids );
+        const result = await Resource.remove( ids );
 
 
 
@@ -495,21 +565,30 @@
     ]
     ;
 
+
+
+    // Returns [void]
+    function onAddResource ()
+    {
+        // (Showing the modal)
+        resourceModal.show();
+    }
+
 </script>
 
 <App>
     <Base>
-        <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
+        <Table title={ title } controls bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
             <div slot="fixed-controls">
                 { #if $appData.user.user.hierarchy === 1 }
-                    <button class="btn btn-primary btn-sm" title="add" on:click={ resourceModal.show }>
+                    <button type="button" class="btn btn-primary btn-sm" title="add" on:click={ onAddResource }>
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 { /if }
             </div>
             <div slot="selection-controls">
                 { #if $appData.user.user.hierarchy === 1 }
-                    <button class="btn btn-danger btn-sm" on:click={ onBulkRemove } title="remove">
+                    <button type="button" class="btn btn-danger btn-sm" title="remove" on:click={ onBulkRemove }>
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 { /if }

@@ -137,8 +137,8 @@
                     },
 
                     {
-                        'column': 'resource.name',
-                        'value':  record['resource']['name']
+                        'column': 'resource.key',
+                        'value':  record['resource']['key']
                     },
 
                     {
@@ -291,7 +291,7 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable>
+        <Table title={ title } controls bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable>
             <div slot="selection-controls">
                 <button class="btn btn-sm btn-danger" title="terminate session" on:click={ () => { terminateSession( table.fetchSelectedRecords().map( function (index) { return tableRecords[index].id; } ) ); } }>
                     <i class="fa-solid fa-right-from-bracket"></i>

@@ -160,6 +160,15 @@
 
 
 
+    // Returns [void]
+    function onSelectedRecordAction (event)
+    {
+        // (Triggering the event)
+        dispatch( 'record.action', event.detail );
+    }
+
+
+
     // (Listening for the event)
     onMount
     (
@@ -197,7 +206,7 @@
         </button>
     </div>
     <div class="col">
-        <Table title="Selected" input={ input } required={ required } bind:api={ selectedTable } bind:records={ selectedRecords } selectable on:selection.change={ onSelectedSelectionChange }/>
+        <Table title="Selected" input={ input } required={ required } controls bind:api={ selectedTable } bind:records={ selectedRecords } selectable on:selection.change={ onSelectedSelectionChange } on:record.action={ onSelectedRecordAction }/>
     </div>
 </div>
 

@@ -208,3 +208,10 @@ textarea.input
 {
 	min-height: 150px;
 }
+
+
+
+.modal
+{
+	overflow-y: auto;
+}

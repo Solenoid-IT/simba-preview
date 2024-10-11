@@ -446,7 +446,7 @@
 
 <App>
     <Base>
-        <Table title={ title } bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
+        <Table title={ title } controls bind:api={ table } bind:records={ tableRecords } on:record.action={ onTableRecordAction } selectable on:selection.change={ onTableSelectionChange }>
             <div slot="fixed-controls">
                 { #if $appData.user.user.hierarchy === 1 }
                     <button class="btn btn-primary btn-sm" title="add" on:click={ addUserModal.show }>

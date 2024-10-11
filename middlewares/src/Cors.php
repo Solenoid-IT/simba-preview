@@ -74,7 +74,7 @@ class Cors extends Middleware
         if ( $request->headers['Origin'] )
         {// Match OK
             // (Setting the cors)
-            Server::set_cors( [ $request->headers['Origin'] ], [ 'GET', 'RPC', 'SSE' ], [ 'Action', 'Content-Type', 'Auth-Token', 'Dev-Sid', 'Route' ], true );
+            Server::set_cors( [ $request->headers['Origin'] ], [ 'GET', 'RPC', 'SSE' ], [ 'Action', 'Content-Type', 'Auth-Token', 'Route' ], true );
         }
 
         if ( $request->method === 'OPTIONS' )

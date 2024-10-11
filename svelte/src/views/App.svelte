@@ -37,6 +37,8 @@
             Solenoid.HTTP.addEventListener('end', function (event) {
                 // (Setting the value)
                 activityBarVisible = false;
+
+                console.debug(event.data.response.body);// ahcid
             });
 
 
