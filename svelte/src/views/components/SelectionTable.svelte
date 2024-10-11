@@ -71,7 +71,7 @@
 
 
     let availableTable;
-    let selectedTable;
+    export let selectedTable;
 
     let availableSelection = [];
     let selectedSelection  = [];
@@ -91,7 +91,7 @@
     }
 
 
-    // ahcid to add compatibility for selectIds
+
     // Returns [void]
     function selectEntries ()
     {

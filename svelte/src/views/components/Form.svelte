@@ -187,7 +187,7 @@
                     {
                         // (Getting the values)
                         const name  = el.getAttribute('data-input');
-                        const value = el.api.transformRecord === null ? el.api.listIds() : el.api.listTransformedRecords();
+                        const value = el.api.listRecords();
 
 
 

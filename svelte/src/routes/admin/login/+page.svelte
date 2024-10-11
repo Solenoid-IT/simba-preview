@@ -195,8 +195,13 @@
 
 
 
+        // (Getting the value)
+        const location = response.body['location'] ?? '/admin/dashboard';
+
+
+
         // (Moving to the URL)
-        goto( '/admin/dashboard' );
+        goto( location );
 
 
 
