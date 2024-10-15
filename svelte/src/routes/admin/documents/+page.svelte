@@ -121,6 +121,13 @@
                     },
 
                     {
+                        'column':  'tags',
+                        'value':   record['tags'].map( function (tag) { return tag['name'] + '=' + tag['value']; } ).join(';'),
+
+                        'content': record['tags'].map( function (tag) { return '<span class="tag-label" style="border-bottom-color: ' + tag['color'] + '">' + tag['name'] + ': ' + tag['value'] + '</span>' } ).join('')
+                    },
+
+                    {
                         'column': 'datetime.insert',
                         'value':  record['datetime']['insert']
                     },
@@ -424,6 +431,44 @@
                 // (Getting the value)
                 const record = await Resource.find( entry.id );
 
+                
+
+                // (Setting the value)
+                const recordTags = [];
+
+                for ( const tag of record['tags'] )
+                {// Processing each entry
+                    // (Appending the value)
+                    const r =
+                    {
+                        'id': tag['id'],
+
+                        'values':
+                        [
+                            {
+                                'column': 'name',
+                                'value':  tag['name']
+                            },
+
+                            {
+                                'column': 'value',
+                                'value':  tag['value']
+                            }
+                        ]
+                    }
+                    ;
+
+                    // (Appending the value)
+                    recordTags.push( r );
+                }
+
+
+
+                // (Getting the value)
+                record['tags'] = recordTags;
+
+
+
                 // (Getting the values)
                 resourceForm.setValues(record);
 
@@ -574,6 +619,7 @@
 
 
     let availableTagsRecords = [];
+    let selectedTagsRecords  = [];
     let tagsSelectedTable;
 
 
@@ -689,7 +735,7 @@
 
                 <fieldset class="fieldset mt-2">
                     <legend>Tags</legend>
-                    <SelectionTable input='tags' bind:availableRecords={ availableTagsRecords } bind:selectedTable={ tagsSelectedTable }/>
+                    <SelectionTable input='tags' bind:availableRecords={ availableTagsRecords } bind:selectedRecords={ selectedTagsRecords } bind:selectedTable={ tagsSelectedTable }/>
                 </fieldset>
 
                 <div class="row mt-4">

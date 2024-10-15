@@ -34,6 +34,7 @@ use \App\Models\local\simba_db\Session as SessionModel;
 use \App\Models\local\simba_db\Document as DocumentModel;
 use \App\Models\local\simba_db\Tag as TagModel;
 use \App\Models\local\simba_db\DocumentTag as DocumentTagModel;
+use \App\Models\local\simba_db\DocumentTagView as DocumentTagViewModel;
 use \App\Services\Authorization as AuthorizationService;
 use \App\Services\User as UserService;
 use \App\Services\Client as ClientService;
@@ -723,7 +724,7 @@ class RPC extends Controller
                                 // (Getting the value)
                                 $data['records'] = DocumentModel::fetch()->where( 'tenant', $user->tenant )->list
                                 (
-                                    transform_record: function ($record)
+                                    transform_record: function ($record) use ($user)
                                     {
                                         // (Getting the value)
                                         $record =
@@ -745,7 +746,24 @@ class RPC extends Controller
                                                     'active'  => $record->datetime->option->active,
                                                     'sitemap' => $record->datetime->option->sitemap,
                                                 ]
-                                            ]
+                                            ],
+
+                                            'tags'            => DocumentTagViewModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'document', $record->id ] ] )->list
+                                            (
+                                                transform_record: function ($record)
+                                                {
+                                                    // Returning the value
+                                                    return
+                                                        [
+                                                            'id'    => $record->tag->id,
+
+                                                            'name'  => $record->tag->name,
+                                                            'value' => $record->tag->value,
+                                                            'color' => $record->tag->color
+                                                        ]
+                                                    ;
+                                                }
+                                            )
                                         ]
                                         ;
 
@@ -3857,27 +3875,27 @@ class RPC extends Controller
 
 
                         // (Getting the value)
-                        $tags = DocumentTagModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'document', $resource->id ] ] )->list
+                        $tags = DocumentTagViewModel::fetch()->where( [ [ 'tenant', $user->tenant ], [ 'document', $resource->id ] ] )->list
                         (
                             transform_record: function ($record)
                             {
                                 // Returning the value
                                 return
                                 [
-                                    'id'    => $record->id,
+                                    'id'    => $record->tag->id,
 
-                                    'name'  => $record->name,
-                                    'value' => $record->value
+                                    'name'  => $record->tag->name,
+                                    'value' => $record->tag->value
                                 ]
                                 ;
                             }
                         )
                         ;
 
-                        return $tags;# ahcid to implementt
+
 
                         // (Getting the value)
-                        $resource['tags'] = $tags;
+                        $resource->tags = $tags;
 
 
 

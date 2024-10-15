@@ -193,9 +193,11 @@ a:hover
 
 .tag-label
 {
+	margin: 0 2px;
 	padding: 4px 14px;
 	color: #ffffff;
-	background-color: rgb(100, 100, 52);
+	background-color: #646464;
+	border-bottom: 4px solid #7e7e7e;
 
 	border-radius: 4px;
 
