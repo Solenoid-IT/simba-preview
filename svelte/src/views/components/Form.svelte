@@ -55,6 +55,23 @@
                 element.reset();
 
                 // (Iterating each entry)
+                element.querySelectorAll('.form-input').forEach
+                (
+                    function (el)
+                    {
+                        // (Setting the property)
+                        el.value = '';
+
+                        if ( el.classList.contains('input-invalid') )
+                        {// Match OK
+                            // (Removing the class name)
+                            el.classList.remove('input-invalid');
+                        }
+                    }
+                )
+                ;
+
+                // (Iterating each entry)
                 element.querySelectorAll('.table-component[data-input]').forEach
                 (
                     function (el)

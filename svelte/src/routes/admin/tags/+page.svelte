@@ -18,10 +18,10 @@
 
 
 
-    let resourceType       = 'document';
+    let resourceType       = 'tag';
 
-    let resourceName       = 'Document';
-    let resourceNamePlural = 'Documents';
+    let resourceName       = 'Tag';
+    let resourceNamePlural = 'Tags';
 
 
 
@@ -88,11 +88,6 @@
 
 
 
-        // (Getting the value)
-        title = `${ resourceNamePlural } ( ${ $appData.records.length } )`;
-
-
-
         // (Setting the value)
         const records = [];
 
@@ -106,53 +101,34 @@
                 'values':
                 [
                     {
-                        'column': 'path',
-                        'value':  record['path']
+                        'column': 'name',
+                        'value':  record['name']
                     },
 
                     {
-                        'column': 'title',
-                        'value':  record['title']
+                        'column': 'value',
+                        'value':  record['value']
                     },
 
                     {
-                        'column': 'description',
-                        'value':  record['description']
-                    },
-
-                    {
-                        'column': 'datetime.insert',
-                        'value':  record['datetime']['insert']
-                    },
-
-                    {
-                        'column': 'datetime.update',
-                        'value':  record['datetime']['update']
-                    },
-
-                    {
-                        'column':  'datetime.option.active',
-                        'value':   record['datetime']['option']['active'],
+                        'column': 'color',
+                        'value':  record['color'],
 
                         'content':
                             `
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <input type="checkbox" class="input action-input" data-action="toggle_active" ${ record['datetime']['option']['active'] ? 'checked' : '' } title="toggle active">
-                                </div>
+                                <span class="color-box" style="background-color: ${ record['color'] };" title="${ record['color'] }"></span>
                             `
                     },
 
                     {
-                        'column':  'datetime.option.sitemap',
-                        'value':   record['datetime']['option']['sitemap'],
-
-                        'content':
-                            `
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <input type="checkbox" class="input action-input" data-action="toggle_sitemap" ${ record['datetime']['option']['sitemap'] ? 'checked' : '' } title="toggle sitemap">
-                                </div>
-                            `
+                        'column':  'datetime.insert',
+                        'value':   record['datetime']['insert']
                     },
+
+                    {
+                        'column':  'datetime.update',
+                        'value':   record['datetime']['update']
+                    }
                 ],
 
                 'controls':
@@ -182,40 +158,6 @@
 
         // (Getting the value)
         tableRecords = records;
-
-
-
-        // (Getting the value)
-        availableTagsRecords = [];
-
-        for ( const record of $appData['tags'] )
-        {// Processing each entry
-            // (Getting the value)
-            const r =
-            {
-                'id': record['id'],
-
-                'values':
-                [
-                    {
-                        'column': 'name',
-                        'value':  record['name']
-                    },
-
-                    {
-                        'column': 'value',
-                        'value':  record['value']
-                    }
-                ]
-            }
-            ;
-
-            // (Appending the value)
-            availableTagsRecords.push( r );
-        }
-
-        // (Getting the value)
-        availableTagsRecords = availableTagsRecords;
 
 
 
@@ -499,16 +441,6 @@
     // Returns [Promise:bool]
     async function onResourceFormSubmit ()
     {
-        // (Setting the value)
-        tagsSelectedTable.element.api.transformRecord = function (record)
-        {
-             // Returning the value
-             return record['id'];
-        }
-        ;
-
-
-
         // (Validating the form)
         const result = resourceForm.validate();
 
@@ -574,11 +506,8 @@
 
 
     let availableTagsRecords = [];
-    let tagsSelectedTable;
 
 
-
-    /*
 
     // debug
     availableTagsRecords =
@@ -611,8 +540,6 @@
         },
     ]
     ;
-
-    */
 
 
 
@@ -647,15 +574,15 @@
             </div>
         </Table>
 
-        <Modal title="{ resourceName }" bind:api={ resourceModal } width="1300px">
+        <Modal title="{ resourceName }" bind:api={ resourceModal }>
             <Form bind:api={ resourceForm } on:submit={ onResourceFormSubmit }>
                 <input type="hidden" class="input form-input" name="id" value="">
 
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col">
                         <label class="d-block m-0">
-                            Path
-                            <input type="text" class="form-control input form-input" name="path" data-required>
+                            Name (*)
+                            <input type="text" class="form-control input form-input" name="name" data-required>
                         </label>
                     </div>
                 </div>
@@ -663,8 +590,8 @@
                 <div class="row mt-2">
                     <div class="col">
                         <label class="d-block m-0">
-                            Title
-                            <input type="text" class="form-control input form-input" name="title" data-required>
+                            Value (*)
+                            <input type="text" class="form-control input form-input" name="value" data-required>
                         </label>
                     </div>
                 </div>
@@ -672,25 +599,11 @@
                 <div class="row mt-2">
                     <div class="col">
                         <label class="d-block m-0">
-                            Description
-                            <textarea  class="form-control input form-input" name="description"></textarea>
+                            Color
+                            <input type="color" class="form-control input form-input" name="color">
                         </label>
                     </div>
                 </div>
-
-                <div class="row mt-2">
-                    <div class="col">
-                        <label class="d-block m-0">
-                            Content
-                            <textarea  class="form-control input form-input" name="content"></textarea>
-                        </label>
-                    </div>
-                </div>
-
-                <fieldset class="fieldset mt-2">
-                    <legend>Tags</legend>
-                    <SelectionTable input='tags' bind:availableRecords={ availableTagsRecords } bind:selectedTable={ tagsSelectedTable }/>
-                </fieldset>
 
                 <div class="row mt-4">
                     <div class="col text-center">

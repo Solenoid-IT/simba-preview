@@ -218,6 +218,68 @@ CREATE TABLE `document`
 )
 ;
 
+CREATE TABLE `tag`
+(
+    `id`                                 BIGINT UNSIGNED AUTO_INCREMENT                           NOT NULL,
+
+    `tenant`                             BIGINT UNSIGNED                                          NOT NULL,
+    `name`                               VARCHAR(255)                                             NOT NULL,
+
+    `owner`                              BIGINT UNSIGNED                                              NULL,
+
+    `value`                              VARCHAR(255)                                             NOT NULL,
+    `color`                              VARCHAR(255)                                             NOT NULL,
+
+    `datetime.insert`                    TIMESTAMP                                                NOT NULL,
+    `datetime.update`                    TIMESTAMP                                                    NULL,
+
+
+
+    PRIMARY KEY (`id`),
+
+    UNIQUE  KEY (`tenant`,`name`),
+    
+    FOREIGN KEY (`tenant`)
+    REFERENCES `tenant` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+    
+    FOREIGN KEY (`owner`)
+    REFERENCES `user` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+)
+;
+
+CREATE TABLE `document_tag`
+(
+    `tenant`                              BIGINT UNSIGNED                           NOT NULL,
+
+    `document`                            BIGINT UNSIGNED                           NOT NULL,
+    `tag`                                 BIGINT UNSIGNED                           NOT NULL,
+
+
+
+
+    PRIMARY KEY (`document`,`tag`),
+    
+    FOREIGN KEY (`tenant`)
+    REFERENCES `tenant` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+    
+    FOREIGN KEY (`document`)
+    REFERENCES `document` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+    
+    FOREIGN KEY (`tag`)
+    REFERENCES `tag` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+)
+;
+
 
 
 /*

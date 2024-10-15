@@ -215,3 +215,13 @@ textarea.input
 {
 	overflow-y: auto;
 }
+
+
+
+.color-box
+{
+	width: 20px;
+	height: 20px;
+	display: table;
+	border-radius: 4px;
+}
