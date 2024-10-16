@@ -19,7 +19,7 @@ switch ( App::fetch_context() )
 {
     case 'cli':
         // (Creating a SysApp)
-        $app = SysApp::init( $app_config, 'dev.simba.solenoid.it' );
+        $app = SysApp::init( $app_config, gethostname() );
     break;
 
     case 'http':
@@ -27,7 +27,7 @@ switch ( App::fetch_context() )
         include_once( __DIR__ . '/routes.php' );
 
         // (Creating a WebApp)
-        $app = WebApp::init( $app_config, $router );
+        $app = WebApp::init( $app_config );
     break;
 }
 

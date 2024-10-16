@@ -9,7 +9,11 @@ use \Solenoid\Core\Env;
 // (Getting the value)
 $envs =
 [
-    'cli'  => [],
+    'cli'  =>
+    [
+        new Env( 'dev', Env::TYPE_DEV, [ 'vps' ] )
+    ],
+
     'http' =>
     [
         new Env( 'dev', Env::TYPE_DEV, [ 'dev.simba.solenoid.it' ] ),

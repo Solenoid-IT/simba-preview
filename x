@@ -50,6 +50,7 @@ $helper =
     x dev
     x build
     x release
+    x task <path> <method> ...<args>
 
 
 
@@ -1921,6 +1922,23 @@ switch ( $argv[1] )
     case 'release':
         // (Including the file)
         include_once( __DIR__ . '/release.php' );
+    break;
+
+    case 'task':
+        // (Setting the cwd)
+        chdir( __DIR__ );
+
+
+
+        // (Getting the value)
+        $args = $argv;
+        $args = array_splice( $args, 2 );
+        $args = implode( ' ', $args );
+
+
+
+        // (Executing the cmd)
+        system( "php bootstrap.php $args" );
     break;
 
 

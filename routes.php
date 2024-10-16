@@ -2,154 +2,71 @@
 
 
 
-use \Solenoid\Core\Routing\Router;
+use \Solenoid\Core\Routing\Route;
 use \Solenoid\Core\Routing\Target;
 
-
-
-use \App\Controllers\Test;
-use \App\Controllers\TestArgs;
+use \App\Controllers\API;
+use \App\Controllers\Authorization;
+use \App\Controllers\SPA;
+use \App\Controllers\DynamicFile;
 use \App\Controllers\Fallback;
 
-use \App\Controllers\RPC;
-use \App\Controllers\SPA;
-use \App\Controllers\Admin;
-use \App\Controllers\User;
-use \App\Controllers\Docs;
-use \App\Controllers\FormData;
-use \App\Controllers\DynamicFile;
+
+
+# debug
+Route::handle( 'GET /test/[ x ]/[ y ]/[ z ]', Target::define( function ($app) { return $app->target->args; } ) );
+Route::handle( 'GET /test/[ action ]/[ input ]', Target::link( Test::class, 'get' )->set_middlewares( ['User'] ) );
+Route::handle( 'GET /test/error', Target::define( function () { throw new \Exception('exception test'); } ) );
+Route::handle( 'GET /test/perf', Target::define( function () {} ) );
 
 
 
-// (Creating a Router)
-$router = new Router
-(
-    [
-        '/rpc' =>
-        [
-            'RPC' => Target::link( RPC::class, 'rpc' )->set_middlewares(['RPC/Parser'])
-        ],
+// (Handing the routes)
+Route::handle( 'RPC /rpc', Target::link( API::class, 'rpc' )->set_middlewares( [ 'RPC/Parser' ] ) );
+Route::handle( 'GET /admin', Target::define( function () { header( 'Location: /admin/dashboard', true, 303 ); } ) );
+Route::handle( 'GET /admin/authorization/[ token ]/[ action ]', Target::link( Authorization::class, 'get' ) );
+Route::handle( 'GET /history.json', Target::define( function ($app) { return $app->fetch_history(); } ) );
 
 
 
-        '/test' =>
-        [
-            'GET' => Target::link( Test::class, 'get' )->set_tags( [ 'fw' ] )
-        ],
-
-        '/test/[ x ]/[ y ]/[ z ]' =>
-        [
-            'GET' => Target::define( function ($app) { return $app->target->args; } )
-        ],
-
-        '/test/[ action ]/[ input ]' =>
-        [
-            'GET' => Target::link( Test::class, 'get' )->set_middlewares( ['User'] )
-        ],
-
-        '/test_args/[ str ]/[ int ]' =>
-        [
-            'GET' => Target::link( TestArgs::class, 'get' )
-        ],
-
-        '/test/error' =>
-        [
-            'GET' => Target::define( function () { throw new \Exception('exception test'); } )
-        ],
-
-
-
-        '/' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' )
-        ],
-
-        '/admin' =>
-        [
-            'GET' => Target::define( function () { header( 'Location: /admin/dashboard', true, 303 ); } )
-        ],
-
-        '/admin/login' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' )
-        ],
-
-
-
-        '/admin/dashboard' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' )
-        ],
-
-        '/admin/activity_log' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' )
-        ],
-
-        '/admin/users' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' )
-        ],
-    
-    
-    
-        '/admin/access_log' =>
-        [
-            'GET' => Target::link( SPA::class, 'get' ),
-            'RPC' => Target::link( Admin\AccessLog::class, 'rpc' )->set_middlewares( ['RPC/Parser', 'User'] )
-        ]
-        ,
-    
-    
-    
-        '/admin/authorization' =>
-        [
-            'SSE' => Target::link( Admin\Authorization::class, 'sse' )
-        ],
-
-        '/admin/authorization/[ token ]/[ action ]' =>
-        [
-            'GET' => Target::link( Admin\Authorization::class, 'get' )
-        ],
-    
-    
-    
-        '/perf' =>
-        [
-            'GET' => Target::define( function () {} )
-        ],
-    
-    
-    
-        '/history.json' =>
-        [
-            'GET' => Target::define( function ($app) { return $app->fetch_history(); } )
-        ],
-
-
-
-        '/FormData' =>
-        [
-            'GET' => Target::link( FormData::class, 'get' ),
-            'RPC' => Target::link( FormData::class, 'rpc' )->set_middlewares(['RPC/Parser'])
-        ],
-
-
-
-        '/robots.txt' =>
-        [
-            'GET' => Target::link( DynamicFile::class, 'get' )
-        ],
-
-        '/sitemap.xml' =>
-        [
-            'GET' => Target::link( DynamicFile::class, 'get' )
-        ]
-    ],
-
-    Target::link( Fallback::class, 'view' )
-)
+// (Setting the value)
+$dynamic_files =
+[
+    '/robots.txt',
+    '/sitemap.xml'
+]
 ;
+
+foreach ( $dynamic_files as $id )
+{// Processing each entry
+    // (Handling the route)
+    Route::handle( "GET $id", Target::link( DynamicFile::class, 'get' ) );
+}
+
+
+
+// (Setting the value)
+$spa_routes =
+[
+    '/',
+    '/admin/login',
+    '/admin/dashboard',
+    '/admin/activity_log',
+    '/admin/users',
+    '/admin/access_log'
+]
+;
+
+foreach ( $spa_routes as $id )
+{// Processing each entry
+    // (Handling the route)
+    Route::handle( "GET $id", Target::link( SPA::class, 'get' ) );
+}
+
+
+
+// (Handling the fallback)
+Route::handle_fallback( Target::link( Fallback::class, 'view' ) );
 
 
 

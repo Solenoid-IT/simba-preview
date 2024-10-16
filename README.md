@@ -67,7 +67,7 @@ Restart: `sudo service { name } restart`
 6.  Moving to the directory -> `cd <app-dir>`<br>
 7.  Configuring databases   -> `php x mysql build`<br>
 8.  Importing the DB models -> `php x mysql import-models`<br>
-9.  Creating the user       -> `php bootstrap.php OnDemand/User create <tenant> <user> <email>`
+9.  Creating the user       -> `php x task OnDemand/User create <tenant> <user> <email>`
 10. Building the app        -> `php x build`<br>
 <br><br><br>
 
