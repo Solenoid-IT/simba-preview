@@ -57,18 +57,6 @@ $app_config =
         ]
     ],
 
-    'storage'          =>
-    [
-        'folder_path'  => explicit_path( $root, $app_config->storage->folder_path ),
-        'chroot'       => $app_config->storage->chroot
-    ],
-
-    'blade'            =>
-    [
-        'views'        => explicit_path( $root, $app_config->blade->views ),
-        'cache'        => explicit_path( $root, $app_config->blade->cache )
-    ],
-
     'timezone'         => $app_config->timezone,
 
     'envs'             => $envs,

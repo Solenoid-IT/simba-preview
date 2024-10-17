@@ -15,6 +15,7 @@ use \App\Controllers\Fallback;
 
 # debug
 Route::handle( 'GET /test/[ x ]/[ y ]/[ z ]', Target::define( function ($app) { return $app->target->args; } ) );
+Route::handle( 'GET /^\/tests\/(.+)/', Target::define( function ($app) { return $app->target->args; } ) );
 Route::handle( 'GET /test/[ action ]/[ input ]', Target::link( Test::class, 'get' )->set_middlewares( ['User'] ) );
 Route::handle( 'GET /test/error', Target::define( function () { throw new \Exception('exception test'); } ) );
 Route::handle( 'GET /test/perf', Target::define( function () {} ) );

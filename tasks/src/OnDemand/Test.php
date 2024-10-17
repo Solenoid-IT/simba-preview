@@ -8,7 +8,7 @@ namespace App\Tasks\OnDemand;
 
 use \Solenoid\Core\Task\Task;
 
-use \Solenoid\Core\App\App;
+use \Solenoid\Core\Storage;
 
 
 
@@ -21,16 +21,11 @@ class Test extends Task
     # Returns [void]
     public function run (string $name, string $surname)
     {
-        // (Getting the value)
-        $app = App::get();
-
-
+        // (Writing to the storage)
+        Storage::select('local')->write( '/a/b/c/d/e/file.txt', date('c') );
 
         // (Writing to the storage)
-        $app->storage->write( '/a/b/c/d/e/file.txt', date('c') );
-
-        // (Writing to the storage)
-        $app->storage->write( '/../a/b/c/d/e/file-ext.txt', 'Hello World !!!' );
+        Storage::select('local')->write( '/../a/b/c/d/e/file-ext.txt', 'Hello World !!!' );
 
 
 
