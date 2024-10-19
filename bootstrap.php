@@ -37,7 +37,7 @@ switch ( App::$mode )
 
 
         // (Creating a SysApp)
-        #$app = SysApp::init( $app_config, gethostname() );
+        #$app = SysApp::init( $app_config, gethostname() );# ahcid to implementt
     break;
 
     case 'http':
