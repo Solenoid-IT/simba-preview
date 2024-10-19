@@ -12,7 +12,7 @@ composer.lock
 /capacitor/android
 /capacitor/ios
 
-/credentials.json
+/credentials/*
 
 /web/build
 /web/build_prod

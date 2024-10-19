@@ -12,16 +12,18 @@ use \Solenoid\Core\App\WebApp;
 use \Solenoid\Network\IPv4\IPv4;
 use \Solenoid\Network\IPv4\Firewall;
 
+use \Solenoid\HTTP\Request;
+
 use \App\Middlewares\Cors as CorsMiddleware;
 
 
 
-class Gate implements \Solenoid\Core\Gate
+class Gate
 {
     # Returns [bool]
     public static function run ()
     {
-        switch ( App::fetch_context() )
+        switch ( App::$mode )
         {
             case 'cli':
                 // Printing the value
@@ -29,10 +31,7 @@ class Gate implements \Solenoid\Core\Gate
             break;
 
             case 'http':
-                // (Getting the value)
-                $app = WebApp::fetch();
-
-                if ( in_array( 'fw', $app->target->tags ) )
+                if ( in_array( 'fw', App::$target->tags ) )
                 {// (Route contains this tag)
                     // (Creating a Firewall)
                     $firewall = new Firewall
@@ -47,7 +46,7 @@ class Gate implements \Solenoid\Core\Gate
 
 
                     // Returning the value
-                    return $firewall->check( IPv4::select( $app->request->client_ip ) );
+                    return $firewall->check( IPv4::select( Request::fetch()->client_ip ) );
                 }
 
 

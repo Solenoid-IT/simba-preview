@@ -7,6 +7,8 @@ namespace App\Stores\Connections\MySQL;
 
 
 use \Solenoid\Core\App\App;
+use \Solenoid\Core\Storage;
+use \Solenoid\Core\Credentials;
 
 use \Solenoid\MySQL\Connection;
 
@@ -26,12 +28,7 @@ class Store
     private function __construct ()
     {
         // (Getting the value)
-        $app = App::get();
-
-
-
-        // (Getting the value)
-        $profiles = $app->fetch_credentials()['mysql']['profiles'];
+        $profiles = Credentials::fetch( '/mysql/data.json' );
 
 
 
@@ -49,7 +46,7 @@ class Store
 
 
 
-        if ( $app->env->type === 'dev' )
+        if ( App::$env->type === 'dev' )
         {// Match OK
             // (Listening for the events)
             $this->connections['local/simba_db']->add_event_listener
@@ -75,10 +72,10 @@ class Store
             $this->connections['local/simba_db']->add_event_listener
             (
                 'before-execute',
-                function ($event) use ($app)
+                function ($event)
                 {
                     // (Writing to the file)
-                    file_put_contents( $app->basedir . '/storage/debug/query.sql', $event['query'] . "\n\n\n", FILE_APPEND );
+                    Storage::select( 'local' )->write( '/debug/query.sql', $event['query'] . "\n\n\n", 'append' );
                 }
             )
             ;

@@ -6,7 +6,7 @@ namespace App\Stores\Connections\SMTP;
 
 
 
-use \Solenoid\Core\App\App;
+use \Solenoid\Core\Credentials;
 
 use \Solenoid\SMTP\Connection;
 
@@ -26,12 +26,7 @@ class Store
     private function __construct ()
     {
         // (Getting the value)
-        $app = App::get();
-
-
-
-        // (Getting the value)
-        $profiles = $app->fetch_credentials()['smtp']['profiles'];
+        $profiles = Credentials::fetch( '/smtp/data.json' );
 
 
 

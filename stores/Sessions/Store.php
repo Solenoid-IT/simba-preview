@@ -6,8 +6,6 @@ namespace App\Stores\Sessions;
 
 
 
-use \Solenoid\Core\App\WebApp;
-
 use \Solenoid\HTTP\Session;
 use \Solenoid\HTTP\SessionContent;
 
@@ -34,11 +32,6 @@ class Store
     # Returns [self]
     private function __construct ()
     {
-        // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
         // (Getting the value)
         $this->sessions['user'] = new Session
         (

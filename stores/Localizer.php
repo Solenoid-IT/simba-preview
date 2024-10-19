@@ -19,10 +19,7 @@ class Localizer
 
 
     # Returns [self]
-    private function __construct ()
-    {
-        
-    }
+    private function __construct () {}
 
 
 

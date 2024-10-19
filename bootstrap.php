@@ -6,6 +6,7 @@
 include_once( __DIR__ . '/autoload.php' );
 include_once( __DIR__ . '/config.php' );
 include_once( __DIR__ . '/gate.php' );
+include_once( __DIR__ . '/middlewares/groups.php' );
 
 
 
@@ -16,6 +17,7 @@ use \Solenoid\Core\App\WebApp;
 use \Solenoid\Core\Env;
 use \Solenoid\Core\Storage;
 use \Solenoid\Core\Logger;
+use \Solenoid\Core\Credentials;
 use \Solenoid\Core\MVC\View;
 use \Solenoid\Core\Routing\Target;
 use \Solenoid\Perf\Analyzer;
@@ -23,10 +25,10 @@ use \Solenoid\HTTP\Request;
 
 
 
-// (Getting the value)
-$app_context = App::fetch_context();
+// (Detecting the mode)
+App::detect_mode();
 
-switch ( $app_context )
+switch ( App::$mode )
 {
     case 'cli':
         // (Adding the env)
@@ -35,13 +37,13 @@ switch ( $app_context )
 
 
         // (Creating a SysApp)
-        $app = SysApp::init( $app_config, gethostname() );
+        #$app = SysApp::init( $app_config, gethostname() );
     break;
 
     case 'http':
         // (Adding the envs)
-        Env::add( 'dev', new Env( Env::TYPE_DEV, [ "dev.$app_config->id" ] ) );
-        Env::add( 'prod', new Env( Env::TYPE_PROD, [ $app_config->id ] ) );
+        Env::add( 'dev', new Env( Env::TYPE_DEV, [ $app_config['id'] ] ) );
+        Env::add( 'prod', new Env( Env::TYPE_PROD, [ preg_replace( '/^dev\./', '', $app_config['id'] ) ] ) );
 
 
 
@@ -72,6 +74,11 @@ Logger::add( 'http/error', new Logger( __DIR__ . '/logs/http/error.log' ) );
 
 
 
+// (Configuring the credentials)
+Credentials::config( __DIR__ . '/credentials' );
+
+
+
 // (Configuring the views)
 View::config( __DIR__ . '/views', __DIR__ . '/views/_cache' );
 
@@ -96,7 +103,7 @@ Target::on
 Target::on
 (
     'after-gate',
-    function () use ($performance_analyzer, $app_context)
+    function () use ($performance_analyzer)
     {
         // (Closing the analyzer)
         $performance_analyzer->close();
@@ -104,16 +111,16 @@ Target::on
 
 
         // (Pushing the message)
-        Logger::select( "$app_context/activity" )->push( ( $app_context === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $performance_analyzer );
+        Logger::select( App::$mode . '/activity' )->push( ( App::$mode === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $performance_analyzer );
     }
 )
 ;
 Target::on
 (
     'error',
-    function ($data) use ($app_context)
+    function ($data)
     {
-        if ( $app_context === 'http' )
+        if ( App::$mode === 'http' )
         {// Match OK
             // (Setting the status)
             http_response_code( 500 );
@@ -122,7 +129,7 @@ Target::on
 
 
         // (Pushing the message)
-        Logger::select( "$app_context/error" )->push( ( $app_context === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $data['message'] );
+        Logger::select( App::$mode . '/error' )->push( ( App::$mode === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $data['message'] );
     }
 )
 ;

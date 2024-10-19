@@ -7,6 +7,8 @@ namespace App\Controllers;
 
 
 use \Solenoid\Core\MVC\Controller;
+use \Solenoid\Core\Credentials;
+use \Solenoid\Core\App\App;
 
 use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
@@ -50,13 +52,13 @@ class API extends Controller
     public function rpc ()
     {
         // (Getting the value)
-        $app = WebApp::fetch();
+        $request = Request::fetch();
 
-        if ( false && $app->request->cookies['fwd_route'] )
+        if ( false && $request->cookies['fwd_route'] )
         {// Value found
             // Returning the value
             return
-                Server::send( new Response( new Status(200), [], [ 'redirect' => $app->request->cookies['fwd_route'] ] ) )
+                Server::send( new Response( new Status(200), [], [ 'redirect' => $request->cookies['fwd_route'] ] ) )
             ;
         }
 
@@ -80,10 +82,7 @@ class API extends Controller
                 switch ( RPCParser::$verb )
                 {
                     case 'register':
-                        // (Getting the value)
-                        $app = WebApp::fetch();
-
-                        if ( $app->request->client_ip !== $app->request->server_ip )
+                        if ( $request->client_ip !== $request->server_ip )
                         {// (Request is not from localhost)
                             // Returning the value
                             return
@@ -93,10 +92,10 @@ class API extends Controller
             
 
 
-                        if ( $app->request->headers['Auth-Token'] )
+                        if ( $request->headers['Auth-Token'] )
                         {// (Authorization has been provided)
                             // (Getting the value)
-                            $response = AuthorizationService::fetch( $app->request->headers['Auth-Token'] );
+                            $response = AuthorizationService::fetch( $request->headers['Auth-Token'] );
 
                             if ( $response->status->code !== 200 )
                             {// (Unable to fetch the authorization)
@@ -330,15 +329,15 @@ class API extends Controller
                                 [
                                     'request'           =>
                                     [
-                                        'endpoint_path' => $app->request->url->path,
-                                        'action'        => $app->request->headers['Action'],
+                                        'endpoint_path' => $request->url->path,
+                                        'action'        => $request->headers['Action'],
                                         'input'         => $input
                                     ],
 
                                     'login'             => true
                                 ],
 
-                                $app->request->url->fetch_base() . '/admin/dashboard'
+                                $request->url->fetch_base() . '/admin/dashboard'
                             )
                             ;
                             
@@ -557,17 +556,12 @@ class API extends Controller
 
 
 
-                        // (Getting the value)
-                        $app = WebApp::fetch();
-
-
-
                         // (Setting the value)
                         $data = [];
 
 
 
-                        switch ( $app->request->headers['Route'] )
+                        switch ( $request->headers['Route'] )
                         {
                             case '/admin/dashboard':
                             case '/admin/activity_log':
@@ -610,7 +604,7 @@ class API extends Controller
 
 
 
-                        switch ( $app->request->headers['Route'] )
+                        switch ( $request->headers['Route'] )
                         {
                             case '/admin/activity_log':
                                 // (Getting the value)
@@ -1066,12 +1060,7 @@ class API extends Controller
 
 
                             // (Getting the value)
-                            $app = WebApp::fetch();
-
-
-
-                            // (Getting the value)
-                            $idk = ( new IDK( $user_id, $key_pair->private_key ) )->build( $app->fetch_credentials()['idk']['passphrase'], true );
+                            $idk = ( new IDK( $user_id, $key_pair->private_key ) )->build( Credentials::fetch( '/system/data.json' )['idk']['passphrase'], true );
 
                             if ( $idk === false )
                             {// (Unable to build the IDK)
@@ -1686,12 +1675,7 @@ class API extends Controller
 
                     case 'login_with_idk':
                         // (Getting the value)
-                        $app = WebApp::fetch();
-
-
-
-                        // (Getting the value)
-                        $idk = IDK::read( $app->request->body, $app->fetch_credentials()['idk']['passphrase'], true );
+                        $idk = IDK::read( $request->body, Credentials::fetch( '/system/data.json' )['idk']['passphrase'], true );
 
 
 
@@ -2120,14 +2104,9 @@ class API extends Controller
                     break;
 
                     case 'change_email':
-                        // (Getting the value)
-                        $app = WebApp::fetch();
-
-
-
-                        if ( $app->request->headers['Auth-Token'] )
+                        if ( $request->headers['Auth-Token'] )
                         {// (Authorization has been provided)
-                            if ( $app->request->client_ip !== $app->request->server_ip )
+                            if ( $request->client_ip !== $request->server_ip )
                             {// (Request is not from localhost)
                                 // Returning the value
                                 return
@@ -2138,7 +2117,7 @@ class API extends Controller
 
 
                             // (Getting the value)
-                            $response = AuthorizationService::fetch( $app->request->headers['Auth-Token'] );
+                            $response = AuthorizationService::fetch( $request->headers['Auth-Token'] );
 
                             if ( $response->status->code !== 200 )
                             {// (Unable to fetch the authorization)
@@ -2265,8 +2244,8 @@ class API extends Controller
                                 [
                                     'request'             =>
                                     [
-                                        'endpoint_path'   => $app->request->url->path,
-                                        'action'          => $app->request->headers['Action'],
+                                        'endpoint_path'   => $request->url->path,
+                                        'action'          => $request->headers['Action'],
                                         'input'           =>
                                         [
                                             'new_value'   => $input['email'],
@@ -2321,14 +2300,9 @@ class API extends Controller
                     break;
 
                     case 'confirm_new_email':
-                        // (Getting the value)
-                        $app = WebApp::fetch();
-
-
-
-                        if ( $app->request->headers['Auth-Token'] )
+                        if ( $request->headers['Auth-Token'] )
                         {// (Authorization has been provided)
-                            if ( $app->request->client_ip !== $app->request->server_ip )
+                            if ( $request->client_ip !== $request->server_ip )
                             {// (Request is not from localhost)
                                 // Returning the value
                                 return
@@ -2339,7 +2313,7 @@ class API extends Controller
 
 
                             // (Getting the value)
-                            $response = AuthorizationService::fetch( $app->request->headers['Auth-Token'] );
+                            $response = AuthorizationService::fetch( $request->headers['Auth-Token'] );
 
                             if ( $response->status->code !== 200 )
                             {// (Unable to fetch the authorization)
@@ -2958,15 +2932,10 @@ class API extends Controller
 
 
 
-                        // (Getting the value)
-                        $app = WebApp::fetch();
-
-
-
                         // (Sending an http request)
                         $response = HttpClient::send
                         (
-                            'https://' . $app->id . '/rpc',
+                            'https://' . App::$id . '/rpc',
                             'RPC',
                             [
                                 'Action: user::register',
@@ -4497,7 +4466,7 @@ class API extends Controller
 
 
 
-        switch ( $app->env->type )
+        switch ( App::$env->type )
         {
             case 'dev':
                 // Returning the value

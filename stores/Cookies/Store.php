@@ -6,7 +6,7 @@ namespace App\Stores\Cookies;
 
 
 
-use \Solenoid\Core\App\WebApp;
+use \Solenoid\Core\App\App;
 
 use \Solenoid\HTTP\Cookie;
 
@@ -26,15 +26,10 @@ class Store
     private function __construct ()
     {
         // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
-        // (Getting the value)
         $this->cookies =
         [
-            'user'      => new Cookie( 'user', '.' . $app->id, '/', true, true),
-            'fwd_route' => new Cookie( 'fwd_route', '.' . $app->id, '/', true, true)
+            'user'      => new Cookie( 'user', '.' . App::$id, '/', true, true),
+            'fwd_route' => new Cookie( 'fwd_route', '.' . App::$id, '/', true, true)
         ]
         ;
     }
