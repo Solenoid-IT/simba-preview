@@ -37,7 +37,7 @@ switch ( App::$mode )
 
 
         // (Creating a SysApp)
-        #$app = SysApp::init( $app_config, gethostname() );# ahcid to implementt
+        $app = new SysApp( $app_config );
     break;
 
     case 'http':
@@ -57,30 +57,29 @@ switch ( App::$mode )
 
 
 
-// (Adding the storage)
-Storage::add( 'local', new Storage( __DIR__ . '/storage', true ) );
+foreach ( $app_config['storages'] as $storage )
+{// Processing each entry
+    // (Adding the storage)
+    Storage::add( $storage['id'], new Storage( preg_replace( '/^\./', __DIR__, $storage['path'] ), true ) );
+}
 
 
 
-// (Adding the loggers)
-Logger::add( 'cli/activity', new Logger( __DIR__ . '/logs/cli/activity.log' ) );
-Logger::add( 'cli/error', new Logger( __DIR__ . '/logs/cli/error.log' ) );
-
-
-
-// (Adding the loggers)
-Logger::add( 'http/activity', new Logger( __DIR__ . '/logs/http/activity.log' ) );
-Logger::add( 'http/error', new Logger( __DIR__ . '/logs/http/error.log' ) );
+foreach ( $app_config['loggers'] as $logger )
+{// Processing each entry
+    // (Adding the logger)
+    Logger::add( $logger['id'], new Logger( preg_replace( '/^\./', __DIR__, $logger['path'] ) ) );
+}
 
 
 
 // (Configuring the credentials)
-Credentials::config( __DIR__ . '/credentials' );
+Credentials::config( preg_replace( '/^\./', __DIR__, $app_config['credentials']['folder_path'] ) );
 
 
 
 // (Configuring the views)
-View::config( __DIR__ . '/views', __DIR__ . '/views/_cache' );
+View::config( preg_replace( '/^\./', __DIR__, $app_config['views']['views_folder_path'] ), preg_replace( '/^\./', __DIR__, $app_config['views']['cache_folder_path'] ) );
 
 
 
@@ -103,7 +102,7 @@ Target::on
 Target::on
 (
     'after-gate',
-    function () use ($performance_analyzer)
+    function () use ($performance_analyzer, $app)
     {
         // (Closing the analyzer)
         $performance_analyzer->close();
@@ -111,14 +110,14 @@ Target::on
 
 
         // (Pushing the message)
-        Logger::select( App::$mode . '/activity' )->push( ( App::$mode === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $performance_analyzer );
+        Logger::select( App::$mode . '/activity' )->push( ( App::$mode === 'cli' ? $app->task : Request::fetch() ) . ' -> ' . $performance_analyzer );
     }
 )
 ;
 Target::on
 (
     'error',
-    function ($data)
+    function ($data) use ($app)
     {
         if ( App::$mode === 'http' )
         {// Match OK
@@ -129,7 +128,7 @@ Target::on
 
 
         // (Pushing the message)
-        Logger::select( App::$mode . '/error' )->push( ( App::$mode === 'cli' ? 'ahcid' : Request::fetch() ) . ' -> ' . $data['message'] );
+        Logger::select( App::$mode . '/error' )->push( ( App::$mode === 'cli' ? $app->task : Request::fetch() ) . ' -> ' . $data['message'] );
     }
 )
 ;

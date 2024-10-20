@@ -106,6 +106,8 @@ switch ( $argv[1] )
         // (Setting the cwd)
         chdir( __DIR__ );
 
+
+
         // (Executing the cmd)
         system('php x install');
 
@@ -116,12 +118,118 @@ switch ( $argv[1] )
 
 
 
+        // (Including the files)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
         // (Getting the value)
-        $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+        $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ), true );
 
 
 
-        if ( !file_exists( $app_config->credentials ) )
+        # Returns [string]
+        function explicit_path (string $base, string $path)
+        {
+            // Returning the value
+            return preg_replace( '/^\./', $base, $path );
+        }
+
+
+
+        // (Creating a Storage)
+        $credentials_storage = new \Solenoid\Core\Storage( explicit_path( __DIR__, $app_config['credentials']['folder_path'] ), true );
+
+
+
+        // (Getting the value)
+        $mysql_credentials_file_path = '/mysql/data.json';
+
+        if ( !file_exists( $credentials_storage . $mysql_credentials_file_path ) )
+        {// (File not found)
+            // (Setting the value)
+            $credentials_content =
+                <<<EOD
+                {
+                    "local":
+                    {
+                        "simba_db":
+                        {
+                            "host":     "localhost",
+                            "port":     null,
+                            "username": "simba_db",
+                            "password": ""
+                        }
+                    }
+                }
+                EOD
+            ;
+
+            if ( !$credentials_storage->write( $mysql_credentials_file_path, $credentials_content ) )
+            {// (Unable to write to the file)
+                // (Setting the value)
+                $message = "Unable to write to the file '" . $credentials_storage . $mysql_credentials_file_path . "'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+
+
+
+            // (Executing the cmd)
+            system("sudo chmod 664 \"" . $credentials_storage . $mysql_credentials_file_path .  "\"");
+        }
+
+
+
+        // (Getting the value)
+        $smtp_credentials_file_path = '/smtp/data.json';
+
+        if ( !file_exists( $credentials_storage . $smtp_credentials_file_path ) )
+        {// (File not found)
+            // (Setting the value)
+            $credentials_content =
+                <<<EOD
+                {
+                    "service":
+                    {
+                        "host":            "",
+                        "port":            null,
+                        "username":        "",
+                        "password":        "",
+                        "encryption_type": "ssl"
+                    }
+                }
+                EOD
+            ;
+
+            if ( !$credentials_storage->write( $smtp_credentials_file_path, $credentials_content ) )
+            {// (Unable to write to the file)
+                // (Setting the value)
+                $message = "Unable to write to the file '" . $credentials_storage . $smtp_credentials_file_path . "'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+
+
+
+            // (Executing the cmd)
+            system("sudo chmod 664 \"" . $credentials_storage . $smtp_credentials_file_path .  "\"");
+        }
+
+
+
+        // (Getting the value)
+        $system_credentials_file_path = '/system/data.json';
+
+        if ( !file_exists( $credentials_storage . $system_credentials_file_path ) )
         {// (File not found)
             // (Setting the value)
             $credentials_content =
@@ -129,35 +237,7 @@ switch ( $argv[1] )
                 {
                     "mysql":
                     {
-                        "rpu_username": "",
-                        "profiles":
-                        {
-                            "local":
-                            {
-                                "simba_db":
-                                {
-                                    "host":     "localhost",
-                                    "port":     null,
-                                    "username": "",
-                                    "password": ""
-                                }
-                            }
-                        }
-                    },
-
-                    "smtp":
-                    {
-                        "profiles":
-                        {
-                            "service":
-                            {
-                                "host":            "",
-                                "port":            null,
-                                "username":        "",
-                                "password":        "",
-                                "encryption_type": ""
-                            }
-                        }
+                        "rpu_username": "root"
                     },
 
                     "idk":
@@ -173,10 +253,10 @@ switch ( $argv[1] )
                 EOD
             ;
 
-            if ( file_put_contents( $app_config->credentials, $credentials_content ) === false )
+            if ( $credentials_storage->write( $system_credentials_file_path, $credentials_content ) === false )
             {// (Unable to write to the file)
                 // (Setting the value)
-                $message = "Unable to write to the file '$app_config->credentials'";
+                $message = "Unable to write to the file '" . $credentials_storage . $system_credentials_file_path . "'";
 
                 // Throwing an exception
                 throw new \Exception($message);
@@ -184,57 +264,72 @@ switch ( $argv[1] )
                 // Closing the process
                 exit;
             }
+
+
+
+            // (Executing the cmd)
+            system("sudo chmod 664 \"" . $credentials_storage . $system_credentials_file_path .  "\"");
+        }
+
+
+
+        foreach ( $app_config['storages'] as $storage )
+        {// Processing each entry
+            // (Getting the value)
+            $folder_path = explicit_path( __DIR__, $storage['path'] );
+
+            if ( !( new \Solenoid\Core\Storage( $folder_path, true ) )->make_dir( '/' ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$folder_path'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+
+
+
+            // (Executing the cmd)
+            system("sudo chmod 2775 \"$folder_path\"");
+        }
+
+
+
+        foreach ( $app_config['views'] as $k => $folder_path )
+        {// Processing each entry
+            // (Getting the value)
+            $folder_path = explicit_path( __DIR__, $folder_path );
+
+            if ( !( new \Solenoid\Core\Storage( $folder_path, true ) )->make_dir( '/' ) )
+            {// (Unable to make the directory)
+                // (Setting the value)
+                $message = "Unable to make the directory '$folder_path'";
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Closing the process
+                exit;
+            }
+
+
+
+            // (Executing the cmd)
+            system("sudo chmod 2775 \"$folder_path\"");
         }
 
 
 
         // (Getting the value)
-        $storage_folder_path = $app_config->storage->folder_path;
+        $views_cache_folder_path = explicit_path( __DIR__, $app_config['views']['cache_folder_path'] );
 
-        if ( !is_dir( $storage_folder_path ) )
-        {// (Directory not found)
-            // (Executing the cmds)
-            system("mkdir -p \"$storage_folder_path\"");
-
-            #system("chown -R $cli_user:$http_user \"$storage_folder_path\"");
-            #system("chmod -R 775 \"$dir\"");
-        }
-
-
-
-        foreach ( $app_config->blade as $dir )
-        {// Processing each entry
-            if ( !is_dir( $dir ) )
-            {// (Directory not found)
-                // (Executing the cmds)
-                system("mkdir -p \"$dir\"");
-
-                #system("chown -R $cli_user:$http_user \"$dir\"");
-                #system("chmod -R 775 \"$dir\"");
-            }
-        }
-
-
-
-        foreach ( $app_config->logs as $context => $v )
-        {// Processing each entry
-            foreach ( $v as $type => $file_path )
-            {// Processing each entry
-                // (Getting the values)
-                $dir  = dirname($file_path);
-                $base = basename($file_path);
-
-
-
-                if ( !is_dir( $dir ) )
-                {// (Directory not found)
-                    // (Executing the cmds)
-                    system("mkdir -p \"$dir\" && touch \"$dir/$base\"");
-
-                    #system("chown -R $cli_user:$http_user \"$file_path\"");
-                    #system("chmod -R 664 \"$file_path\"");
-                }
-            }
+        if ( is_dir( $views_cache_folder_path ) )
+        {// (Directory found)
+            // (Executing the cmd)
+            system("sudo rm -rf \"$views_cache_folder_path\"/*");
         }
 
 
@@ -247,68 +342,6 @@ switch ( $argv[1] )
         // (Getting the values)
         $core_user  = posix_getpwuid( fileowner( $core_folder_path ) )['name'];
         $core_group = posix_getpwuid( filegroup( $core_folder_path ) )['name'];
-
-
-
-        # Returns [string]
-        function explicit_path (string $base, string $path)
-        {
-            // Returning the value
-            return preg_replace( '/^\./', $base, $path );
-        }
-
-
-
-        // (Getting the value)
-        $file_paths =
-        [
-            explicit_path( __DIR__, $app_config->history ),
-            explicit_path( __DIR__, $app_config->credentials ),
-        ]
-        ;
-
-        foreach ( $app_config->logs as $context => $v )
-        {// Processing each entry
-            foreach ( $v as $type => $file_path )
-            {// Processing each entry
-                // (Appending the value)
-                $file_paths[] = explicit_path( __DIR__, $file_path );
-            }
-        }
-
-        foreach ( $file_paths as $file_path )
-        {// Processing each entry
-            // (Executing the cmd)
-            system("sudo chmod 664 \"$file_path\"");
-        }
-
-
-
-        // (Getting the value)
-        $blade_cache_folder_path = explicit_path( __DIR__, $app_config->blade->cache );
-
-        // (Getting the value)
-        $folder_paths =
-        [
-            explicit_path( __DIR__, $app_config->storage->folder_path ),
-            explicit_path( __DIR__, $app_config->blade->views ),
-            $blade_cache_folder_path
-        ]
-        ;
-
-        foreach ( $folder_paths as $folder_path )
-        {// Processing each entry
-            // (Executing the cmd)
-            system("sudo chmod 2775 \"$folder_path\"");
-        }
-
-
-
-        if ( $blade_cache_folder_path )
-        {// Value found
-            // (Executing the cmd)
-            system("sudo rm -rf \"$blade_cache_folder_path\"/*");
-        }
 
 
 
@@ -1925,6 +1958,17 @@ switch ( $argv[1] )
     break;
 
     case 'task':
+        if ( count( $argv ) === 2 )
+        {// (There are no args)
+            // Printing the value
+            echo $helper;
+
+            // Closing the process
+            exit;
+        }
+
+
+
         // (Setting the cwd)
         chdir( __DIR__ );
 

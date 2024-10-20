@@ -32,6 +32,13 @@ class Test extends Task
         // Printing the value
         echo "\n\nWelcome $name $surname !\n\n\n";
     }
+
+    # Returns [void]
+    public function print ()
+    {
+        // Printing the value
+        echo date('c') . "\n";
+    }
 }
 
 
