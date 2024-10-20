@@ -1032,7 +1032,12 @@ switch ( $argv[1] )
 
 
                 // (Getting the value)
-                $credentials = json_decode( file_get_contents( $app_config->credentials ) )->mysql;
+                $credentials_folder_path = preg_match( '/^\./', __DIR__, $app_config['credentials'] );
+
+
+
+                // (Getting the value)
+                $mysql_credentials = json_decode( file_get_contents( "$credentials_folder_path/mysql/data.json" ), true );
 
 
 
@@ -1051,8 +1056,8 @@ switch ( $argv[1] )
                     $constants =
                     [
                         '%( DB_NAME )%' => $db_name,
-                        '%( DB_USER )%' => $credentials->profiles->{ $profile }->{ $db_name }->username,
-                        '%( DB_PASS )%' => $credentials->profiles->{ $profile }->{ $db_name }->password
+                        '%( DB_USER )%' => $mysql_credentials[$profile][$db_name]['username'],
+                        '%( DB_PASS )%' => $mysql_credentials[$profile][$db_name]['password']
                     ]
                     ;
 
@@ -1084,8 +1089,13 @@ switch ( $argv[1] )
 
 
 
+                    // (Getting the value)
+                    $rpu_username = json_decode( file_get_contents( "$credentials_folder_path/system/data.json" ), true )['mysql']['rpu_username'];
+
+
+
                     // (Executing the cmd)
-                    system("sudo mysql -u $credentials->rpu_username -p < $merge_sql_file");
+                    system("sudo mysql -u $rpu_username -p < $merge_sql_file");
 
                     // (Removing the file)
                     unlink( $merge_sql_file );
@@ -1127,12 +1137,17 @@ switch ( $argv[1] )
 
 
                 // (Getting the value)
-                $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+                $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ), true );
 
 
 
                 // (Getting the value)
-                $credentials = json_decode( file_get_contents( $app_config->credentials ) )->mysql;
+                $credentials_folder_path = preg_match( '/^\./', __DIR__, $app_config['credentials'] );
+
+
+
+                // (Getting the value)
+                $mysql_credentials = json_decode( file_get_contents( "$credentials_folder_path/mysql/data.json" ), true );
 
 
 
@@ -1151,8 +1166,8 @@ switch ( $argv[1] )
                     $constants =
                     [
                         '%( DB_NAME )%' => $db_name,
-                        '%( DB_USER )%' => $credentials->profiles->{ $profile }->{ $db_name }->username,
-                        '%( DB_PASS )%' => $credentials->profiles->{ $profile }->{ $db_name }->password
+                        '%( DB_USER )%' => $mysql_credentials[$profile][$db_name]['username'],
+                        '%( DB_PASS )%' => $mysql_credentials[$profile][$db_name]['password']
                     ]
                     ;
 
@@ -1212,9 +1227,14 @@ switch ( $argv[1] )
 
 
 
+                    // (Getting the value)
+                    $rpu_username = json_decode( file_get_contents( "$credentials_folder_path/system/data.json" ), true )['mysql']['rpu_username'];
+
+
+
                     // (Executing the cmd)
                     #echo shell_exec("sudo mysql -u $username -p$password $db_name < $merge_sql_file");
-                    system("sudo mysql -u $credentials->rpu_username -p < $merge_sql_file");
+                    system("sudo mysql -u $rpu_username -p < $merge_sql_file");
 
                     // (Removing the file)
                     unlink( $merge_sql_file );
