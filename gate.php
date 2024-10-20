@@ -7,7 +7,6 @@ namespace App;
 
 
 use \Solenoid\Core\App\App;
-use \Solenoid\Core\App\WebApp;
 
 use \Solenoid\Network\IPv4\IPv4;
 use \Solenoid\Network\IPv4\Firewall;
@@ -27,7 +26,7 @@ class Gate
         {
             case 'cli':
                 // Printing the value
-                echo "\n\nGate -> traversed\n\n\n";
+                echo "Gate -> traversed\n\n";
             break;
 
             case 'http':

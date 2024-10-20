@@ -21,4 +21,9 @@ function explicit_path (string $root, string $path)
 
 
 
+// (Getting the value)
+$app_config['basedir'] = $root;
+
+
+
 ?>
