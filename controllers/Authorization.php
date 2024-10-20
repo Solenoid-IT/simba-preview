@@ -10,6 +10,7 @@ use \Solenoid\Core\MVC\Controller;
 
 use \Solenoid\Core\App\WebApp;
 
+use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
 use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\Status;
@@ -49,11 +50,6 @@ class Authorization extends Controller
 
             case 'accept':
                 // (Getting the value)
-                $app = WebApp::fetch();
-
-
-
-                // (Getting the value)
                 $response = AuthorizationService::fetch( $token );
 
                 if ( $response->status->code !== 200 )
@@ -73,10 +69,15 @@ class Authorization extends Controller
 
                 if ( $authorization->data['request'] )
                 {// (Authorization contains a request to make)
+                    // (Getting the value)
+                    $request = Request::fetch();
+
+
+
                     // (Sending an http request)
                     $res = Client::send
                     (
-                        $app->request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
+                        $request->url->fetch_base() . $authorization->data['request']['endpoint_path'],
                         'RPC',
                         [
                             'Action: ' . $authorization->data['request']['action'],
@@ -84,7 +85,7 @@ class Authorization extends Controller
 
                             "Auth-Token: $token",
 
-                            'Session-Id: ' . $app->request->cookies['user']
+                            'Session-Id: ' . $request->cookies['user']
                         ]
                     )
                     ;

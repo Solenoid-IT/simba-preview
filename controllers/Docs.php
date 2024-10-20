@@ -8,13 +8,13 @@ namespace App\Controllers;
 
 use \Solenoid\Core\MVC\Controller;
 
-use \Solenoid\Core\App\WebApp;
+use \Solenoid\Core\App\App;
 
+use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
 
-use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Record;
 use \Solenoid\MySQL\DateTime;
 
@@ -32,14 +32,9 @@ class Docs extends Controller
     public function get ()
     {
         // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
-        // (Getting the value)
-        $route    = $app->target->args[0];
-        $path     = $app->target->args[1];
-        $user_sid = $app->request->cookies['user'];
+        $route    = App::$target->args[0];
+        $path     = App::$target->args[1];
+        $user_sid = Request::fetch()->cookies['user'];
 
 
 
@@ -111,9 +106,6 @@ class Docs extends Controller
     # Returns [void]
     public function rpc ()
     {
-        // (Getting the value)
-        $app = WebApp::fetch();
-
         switch ( RPC::$verb )
         {
             case 'list_by_dir':

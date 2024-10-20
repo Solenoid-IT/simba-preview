@@ -8,8 +8,9 @@ namespace App\Controllers;
 
 use \Solenoid\Core\MVC\Controller;
 
-use \Solenoid\Core\App\WebApp;
+use \Solenoid\Core\MVC\View;
 
+use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Server;
 use \Solenoid\HTTP\Response;
 use \Solenoid\HTTP\Status;
@@ -25,20 +26,20 @@ class Fallback extends Controller
     public function view_OLD ()
     {
         // (Getting the value)
-        $app = WebApp::fetch();
+        $request = Request::fetch();
 
 
 
         // (Getting the values)
-        $path     = $app->request->url->path;
-        $user_sid = $app->request->cookies['user'];
+        $path     = $request->url->path;
+        $user_sid = $request->cookies['user'];
 
 
 
         if ( stripos( $path, '/robots.txt' ) === 0 )
         {// Match OK
             // (Getting the value)
-            $base_url = $app->request->url->fetch_base();
+            $base_url = $request->url->fetch_base();
 
 
 
@@ -70,7 +71,7 @@ class Fallback extends Controller
         if ( stripos( $path, '/sitemap.xml' ) === 0 )
         {// Match OK
             // (Getting the value)
-            $base_url = $app->request->url->fetch_base();
+            $base_url = $request->url->fetch_base();
 
 
 
@@ -172,7 +173,7 @@ class Fallback extends Controller
                 (
                     new Status(404),
                     [],
-                    $app->blade->build_html
+                    View::build_html
                     (
                         'root/Fallback/view.blade.php',
                         [
@@ -187,13 +188,8 @@ class Fallback extends Controller
     # Returns [void]
     public function view ()
     {
-        // (Getting the value)
-        $app = WebApp::fetch();
-
-
-
         // (Printing the value)
-        echo $app->blade->build_html( '../web/build/index.blade.php' );
+        View::build_html( '../web/build/index.blade.php' )->render();
     }
 }
 
