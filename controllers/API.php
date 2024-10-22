@@ -240,7 +240,7 @@ class API extends Controller
                                 // (Getting the value)
                                 $response = ClientService::detect( $ip, $ua );
         
-                                if ( $response->status->code !== 200 )
+                                if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                                 {// (Unable to detect the client)
                                     // Returning the value
                                     return
@@ -859,7 +859,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -964,7 +964,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -1123,7 +1123,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -1263,7 +1263,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect( $ip, $ua );
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
@@ -1369,7 +1369,7 @@ class API extends Controller
                                 // (Getting the value)
                                 $response = ClientService::detect();
 
-                                if ( $response->status->code !== 200 )
+                                if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                                 {// (Unable to detect the client)
                                     // Returning the value
                                     return
@@ -1540,7 +1540,7 @@ class API extends Controller
                                         // (Getting the value)
                                         $response = ClientService::detect( $ip, $ua );
 
-                                        if ( $response->status->code !== 200 )
+                                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                                         {// (Unable to detect the client)
                                             // Returning the value
                                             return
@@ -1725,7 +1725,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect();
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
@@ -1829,7 +1829,7 @@ class API extends Controller
                                 // (Getting the value)
                                 $response = ClientService::detect( $ip, $ua );
 
-                                if ( $response->status->code !== 200 )
+                                if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                                 {// (Unable to detect the client)
                                     // Returning the value
                                     return
@@ -1930,7 +1930,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -2055,7 +2055,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -2379,7 +2379,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect( $ip, $ua );
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
@@ -2577,7 +2577,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -2688,7 +2688,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect( $ip, $ua );
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
@@ -3089,7 +3089,7 @@ class API extends Controller
                                     // (Getting the value)
                                     $response = ClientService::detect( $ip, $ua );
             
-                                    if ( $response->status->code !== 200 )
+                                    if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                                     {// (Unable to detect the client)
                                         // Returning the value
                                         return
@@ -3451,7 +3451,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -3628,7 +3628,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -3738,7 +3738,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect( $ip, $ua );
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
@@ -3961,7 +3961,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -4107,7 +4107,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -4239,7 +4239,7 @@ class API extends Controller
                         // (Getting the value)
                         $response = ClientService::detect( $ip, $ua );
 
-                        if ( $response->status->code !== 200 )
+                        if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                         {// (Unable to detect the client)
                             // Returning the value
                             return
@@ -4350,7 +4350,7 @@ class API extends Controller
                             // (Getting the value)
                             $response = ClientService::detect( $ip, $ua );
 
-                            if ( $response->status->code !== 200 )
+                            if ( !in_array( $response->status->code, [ 200, 401 ] ) )
                             {// (Unable to detect the client)
                                 // Returning the value
                                 return
