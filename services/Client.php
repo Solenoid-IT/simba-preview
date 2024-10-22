@@ -8,6 +8,8 @@ namespace App\Services;
 
 use \Solenoid\Core\Service;
 
+use \Solenoid\Core\Credentials;
+
 use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Status;
 use \Solenoid\HTTP\Response;
@@ -30,11 +32,12 @@ class Client extends Service
         // (Sending a request)
         $response = HttpClient::send
         (
-            'https://api.solenoid.it/ip-info/1',
+            'https://api.solenoid.it/ip-info@1.0.0',
             'RPC',
             [
-                'Action: ip::fetch_data',
-                'Content-Type: application/json'
+                'Action: analyze_ip',
+                'Content-Type: application/json',
+                'License: ' . Credentials::fetch( '/system/data.json' )['api']['ip-info']
             ],
             [
                 'ip' => $ip ?? $request->client_ip
@@ -70,11 +73,12 @@ class Client extends Service
         // (Sending a request)
         $response = HttpClient::send
         (
-            'https://api.solenoid.it/ua-info/1',
+            'https://api.solenoid.it/ua-info@1.0.0',
             'RPC',
             [
-                'Action: ua::fetch_data',
-                'Content-Type: application/json'
+                'Action: analyze_ua',
+                'Content-Type: application/json',
+                'License: ' . Credentials::fetch( '/system/data.json' )['api']['ua-info']
             ],
             [
                 'ua' => $ua ?? $request->headers['User-Agent']

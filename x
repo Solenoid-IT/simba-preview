@@ -248,6 +248,12 @@ switch ( $argv[1] )
                     "rpc":
                     {
                         "token": ""
+                    },
+
+                    "api":
+                    {
+                        "ip-info": "",
+                        "ua-info": ""
                     }
                 }
                 EOD
