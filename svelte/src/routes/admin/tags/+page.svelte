@@ -43,7 +43,7 @@
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::fetch_data',
@@ -182,7 +182,7 @@
             // (Sending a request)
             const response = await Solenoid.HTTP.sendRequest
             (
-                envs.APP_URL + '/rpc',
+                envs.APP_URL + '/api',
                 'RPC',
                 [
                     'Action: ' + resourceType + '::find',
@@ -240,7 +240,7 @@
             // (Sending a request)
             const response = await Solenoid.HTTP.sendRequest
             (
-                envs.APP_URL + '/rpc',
+                envs.APP_URL + '/api',
                 'RPC',
                 [
                     'Action: ' + resourceType + '::delete',
@@ -292,7 +292,7 @@
             // (Sending a request)
             const response = await Solenoid.HTTP.sendRequest
             (
-                envs.APP_URL + '/rpc',
+                envs.APP_URL + '/api',
                 'RPC',
                 [
                     'Action: ' + resourceType + '::set_option',
@@ -456,7 +456,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: ' + resourceType + '::' + ( result.entries['id'].value ? 'update' : 'insert' ),

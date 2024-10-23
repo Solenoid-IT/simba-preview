@@ -63,20 +63,18 @@ $helper =
 function get_envs ()
 {
     // (Getting the value)
-    $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ) );
+    $app_config = json_decode( file_get_contents( __DIR__ . '/app.json' ), true );
 
 
 
     // (Getting the value)
     $envs =
     [
-        'APP_ID'         => $app_config->id,
-        'APP_NAME'       => $app_config->name,
-        'APP_VERSION'    => array_keys( json_decode( file_get_contents( preg_replace( '/^\./', __DIR__, $app_config->history ) ), true ) )[0],
-        'APP_BUILD_TIME' => array_values( json_decode( file_get_contents( preg_replace( '/^\./', __DIR__, $app_config->history ) ), true ) )[0]['buildTime'],
-        'APP_URL'        => 'https://' . $app_config->id,
+        'APP_ID'         => $app_config['id'],
+        'APP_NAME'       => $app_config['name'],
+        'APP_URL'        => 'https://' . $app_config['id'],
 
-        'BE_HOST'        => $app_config->id
+        'BE_HOST'        => $app_config['id']
     ]
     ;
 
@@ -378,27 +376,31 @@ switch ( $argv[1] )
 
 
     case 'make:lib':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/lib/src', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $folder_path = __DIR__ . "/lib/src/$id";
+        $folder_path = "/$id";
 
-        if ( is_dir( $folder_path ) )
+        if ( $storage->dir_exists( $folder_path ) )
         {// (Directory found)
             // Printing the value
             echo "\n\nCannot create the library :: Library '$id' already exists !\n\n\n";
         }
         else
         {// (Directory not found)
-            // (Making the directories)
-            mkdir( $folder_path, 0777, true );
-            mkdir( "$folder_path/src" );
-
-
-
             // (Getting the values)
             $sample_file_path = "$folder_path/src/Sample.php";
             $sample_ns        = str_replace( '/', '\\', $id );
@@ -430,10 +432,10 @@ switch ( $argv[1] )
 
 
 
-            if ( file_put_contents( $sample_file_path, $sample_content ) === false )
+            if ( !$storage->write( $sample_file_path, $sample_content ) )
             {// (Unable to write to the file)
                 // (Setting the value)
-                $message = "Unable to write to the file '$sample_file_path'";
+                $message = "Unable to write to the file '{$storage}{$sample_file_path}'";
 
                 // Throwing an exception
                 throw new \Exception($message);
@@ -445,23 +447,33 @@ switch ( $argv[1] )
 
 
             // Printing the value
-            echo "\n\nFile `$sample_file_path` has been created !\n\n\n";
+            echo "\n\nFile `{$storage}{$sample_file_path}` has been created !\n\n\n";
         }
     break;
 
     case 'make:store':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/stores', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $file_path = __DIR__ . "/stores/$id.php";
+        $file_path = "/$id.php";
 
-        if ( file_exists( $file_path ) )
+        if ( $storage->file_exists( $file_path ) )
         {// (File found)
             // Printing the value
-            echo "\n\nCannot create the store :: File '$file_path' already exists !\n\n\n";
+            echo "\n\nCannot create the store :: File '{$storage}{$file_path}' already exists !\n\n\n";
 
             // Closing the process
             exit;
@@ -534,30 +546,10 @@ switch ( $argv[1] )
 
 
 
-        // (Getting the value)
-        $dir = dirname( $file_path );
-
-        if ( !is_dir( $dir ) )
-        {// (Directory not found)
-            if ( !mkdir( $dir, 0777, true ) )
-            {// (Unable to make the directory)
-                // (Setting the value)
-                $message = "Unable to make the directory '$dir'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( file_put_contents( $file_path, $file_content ) === false )
+        if ( !$storage->write( $file_path, $file_content ) )
         {// (Unable to write to the file)
             // (Setting the value)
-            $message = "Unable to write to the file '$file_path'";
+            $message = "Unable to write to the file '{$storage}{$file_path}'";
 
             // Throwing an exception
             throw new \Exception($message);
@@ -569,22 +561,32 @@ switch ( $argv[1] )
 
 
         // Printing the value
-        echo "\n\nFile `$file_path` has been created !\n\n\n";
+        echo "\n\nFile `{$storage}{$file_path}` has been created !\n\n\n";
     break;
 
     case 'make:service':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/services', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $file_path = __DIR__ . "/services/$id.php";
+        $file_path = "/$id.php";
 
-        if ( file_exists( $file_path ) )
+        if ( $storage->file_exists( $file_path ) )
         {// (File found)
             // Printing the value
-            echo "\n\nCannot create the service :: File '$file_path' already exists !\n\n\n";
+            echo "\n\nCannot create the service :: File '{$storage}{$file_path}' already exists !\n\n\n";
 
             // Closing the process
             exit;
@@ -608,7 +610,7 @@ switch ( $argv[1] )
 
             use \Solenoid\Core\Service;
 
-            use \Solenoid\Core\App\WebApp;
+            use \Solenoid\HTTP\Request;
 
 
 
@@ -617,13 +619,8 @@ switch ( $argv[1] )
                 # Returns [assoc] | Throws [Exception]
                 public static function fetch_url ()
                 {
-                    // (Getting the value)
-                    \$app = WebApp::fetch();
-
-
-
                     // Returning the value
-                    return \$app->request->url;
+                    return Request::fetch()->url;
                 }
             }
 
@@ -635,30 +632,10 @@ switch ( $argv[1] )
 
 
 
-        // (Getting the value)
-        $dir = dirname( $file_path );
-
-        if ( !is_dir( $dir ) )
-        {// (Directory not found)
-            if ( !mkdir( $dir, 0777, true ) )
-            {// (Unable to make the directory)
-                // (Setting the value)
-                $message = "Unable to make the directory '$dir'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( file_put_contents( $file_path, $file_content ) === false )
+        if ( !$storage->write( $file_path, $file_content ) )
         {// (Unable to write to the file)
             // (Setting the value)
-            $message = "Unable to write to the file '$file_path'";
+            $message = "Unable to write to the file '{$storage}{$file_path}'";
 
             // Throwing an exception
             throw new \Exception($message);
@@ -670,22 +647,32 @@ switch ( $argv[1] )
 
 
         // Printing the value
-        echo "\n\nFile `$file_path` has been created !\n\n\n";
+        echo "\n\nFile `{$storage}{$file_path}` has been created !\n\n\n";
     break;
 
     case 'make:middleware':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/middlewares/src', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $file_path = __DIR__ . "/middlewares/src/$id.php";
+        $file_path = "/$id.php";
 
-        if ( file_exists( $file_path ) )
+        if ( $storage->file_exists( $file_path ) )
         {// (File found)
             // Printing the value
-            echo "\n\nCannot create the middleware :: File '$file_path' already exists !\n\n\n";
+            echo "\n\nCannot create the middleware :: File '{$storage}{$file_path}' already exists !\n\n\n";
 
             // Closing the process
             exit;
@@ -709,7 +696,7 @@ switch ( $argv[1] )
 
             use \Solenoid\Core\Middleware;
 
-            use \Solenoid\Core\App\WebApp;
+            use \Solenoid\HTTP\Request;
 
 
 
@@ -719,13 +706,8 @@ switch ( $argv[1] )
                 # Returns [bool] | Throws [Exception]
                 public static function run ()
                 {
-                    // (Getting the value)
-                    \$app = WebApp::fetch();
-
-
-
                     // Returning the value
-                    return \$app->request->headers['Auth-Token'] === 'test';
+                    return Request::fetch()->headers['Auth-Token'] === 'test';
                 }
             }
 
@@ -737,30 +719,10 @@ switch ( $argv[1] )
 
 
 
-        // (Getting the value)
-        $dir = dirname( $file_path );
-
-        if ( !is_dir( $dir ) )
-        {// (Directory not found)
-            if ( !mkdir( $dir, 0777, true ) )
-            {// (Unable to make the directory)
-                // (Setting the value)
-                $message = "Unable to make the directory '$dir'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( file_put_contents( $file_path, $file_content ) === false )
+        if ( !$storage->write( $file_path, $file_content ) )
         {// (Unable to write to the file)
             // (Setting the value)
-            $message = "Unable to write to the file '$file_path'";
+            $message = "Unable to write to the file '{$storage}{$file_path}'";
 
             // Throwing an exception
             throw new \Exception($message);
@@ -772,22 +734,32 @@ switch ( $argv[1] )
 
 
         // Printing the value
-        echo "\n\nFile `$file_path` has been created !\n\n\n";
+        echo "\n\nFile `{$storage}{$file_path}` has been created !\n\n\n";
     break;
 
     case 'make:task':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/tasks/src', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $file_path = __DIR__ . "/tasks/src/$id.php";
+        $file_path = "/$id.php";
 
-        if ( file_exists( $file_path ) )
+        if ( $storage->file_exists( $file_path ) )
         {// (File found)
             // Printing the value
-            echo "\n\nCannot create the task :: File '$file_path' already exists !\n\n\n";
+            echo "\n\nCannot create the task :: File '{$storage}{$file_path}' already exists !\n\n\n";
 
             // Closing the process
             exit;
@@ -811,7 +783,7 @@ switch ( $argv[1] )
 
             use \Solenoid\Core\Task\Task;
 
-            use \Solenoid\Core\App\App;
+            use \Solenoid\Core\Storage;
 
 
 
@@ -822,18 +794,17 @@ switch ( $argv[1] )
 
 
                 # Returns [void]
-                public function run ()
+                public function run (string \$file_ext = 'txt')
                 {
-                    // (Getting the value)
-                    \$app = App::get();
-
-
+                    // (Writing to the storage)
+                    Storage::select('local')->write( "/a/b/c/d/e/file.\$file_ext", date('c') );
 
                     // (Writing to the storage)
-                    \$app->storage->write( '/a/b/c/d/e/file.txt', date('c') );
+                    Storage::select('local')->write( "/../a/b/c/d/e/file-ext.\$file_ext", 'Cannot write here !!!' );
 
-                    // (Writing to the storage)
-                    \$app->storage->write( '/../a/b/c/d/e/file-ext.txt', 'Hello World !!!' );
+
+
+                    # php x task $id "txt"
                 }
             }
 
@@ -845,30 +816,10 @@ switch ( $argv[1] )
 
 
 
-        // (Getting the value)
-        $dir = dirname( $file_path );
-
-        if ( !is_dir( $dir ) )
-        {// (Directory not found)
-            if ( !mkdir( $dir, 0777, true ) )
-            {// (Unable to make the directory)
-                // (Setting the value)
-                $message = "Unable to make the directory '$dir'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( file_put_contents( $file_path, $file_content ) === false )
+        if ( !$storage->write( $file_path, $file_content ) )
         {// (Unable to write to the file)
             // (Setting the value)
-            $message = "Unable to write to the file '$file_path'";
+            $message = "Unable to write to the file '{$storage}{$file_path}'";
 
             // Throwing an exception
             throw new \Exception($message);
@@ -880,22 +831,32 @@ switch ( $argv[1] )
 
 
         // Printing the value
-        echo "\n\nFile `$file_path` has been created !\n\n\n";
+        echo "\n\nFile `{$storage}{$file_path}` has been created !\n\n\n";
     break;
 
     case 'make:controller':
+        // (Including the file)
+        include_once( __DIR__ . '/autoload.php' );
+
+
+
+        // (Creating a Storage)
+        $storage = new \Solenoid\Core\Storage( __DIR__ . '/controllers', true );
+
+
+
         // (Getting the value)
         $id = $argv[2];
 
 
 
         // (Getting the value)
-        $file_path = __DIR__ . "/controllers/$id.php";
+        $file_path = "/$id.php";
 
-        if ( file_exists( $file_path ) )
+        if ( $storage->file_exists( $file_path ) )
         {// (File found)
             // Printing the value
-            echo "\n\nCannot create the controller :: File '$file_path' already exists !\n\n\n";
+            echo "\n\nCannot create the controller :: File '{$storage}{$file_path}' already exists !\n\n\n";
 
             // Closing the process
             exit;
@@ -919,8 +880,7 @@ switch ( $argv[1] )
 
             use \Solenoid\Core\MVC\Controller;
 
-            use \Solenoid\Core\App\WebApp;
-
+            use \Solenoid\HTTP\Request;
             use \Solenoid\HTTP\Server;
             use \Solenoid\HTTP\Status;
             use \Solenoid\HTTP\Response;
@@ -935,26 +895,21 @@ switch ( $argv[1] )
                 public function get ()
                 {
                     // Returning the value
-                    return 'test';
+                    return Request::fetch()->url;
                 }
 
                 # Returns [void]
                 public function rpc ()
                 {
-                    // (Getting the value)
-                    \$app = WebApp::fetch();
-
-
-
                     switch ( RPC::\$subject )
                     {
-                        case 'user':
+                        case 'url':
                             switch ( RPC::\$verb )
                             {
-                                case 'change':
+                                case 'fetch':
                                     // Returning the value
                                     return
-                                        Server::send( new Response( new Status(200), [], \$app->request->url ) )
+                                        Server::send( new Response( new Status(200), [], Request::fetch()->url ) )
                                     ;
                                 break;
                             }
@@ -971,30 +926,10 @@ switch ( $argv[1] )
 
 
 
-        // (Getting the value)
-        $dir = dirname( $file_path );
-
-        if ( !is_dir( $dir ) )
-        {// (Directory not found)
-            if ( !mkdir( $dir, 0777, true ) )
-            {// (Unable to make the directory)
-                // (Setting the value)
-                $message = "Unable to make the directory '$dir'";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Closing the process
-                exit;
-            }
-        }
-
-
-
-        if ( file_put_contents( $file_path, $file_content ) === false )
+        if ( !( $storage )->write( $file_path, $file_content ) )
         {// (Unable to write to the file)
             // (Setting the value)
-            $message = "Unable to write to the file '$file_path'";
+            $message = "Unable to write to the file '{$storage}{$file_path}'";
 
             // Throwing an exception
             throw new \Exception($message);
@@ -1006,7 +941,7 @@ switch ( $argv[1] )
 
 
         // Printing the value
-        echo "\n\nFile `$file_path` has been created !\n\n\n";
+        echo "\n\nFile `{$storage}{$file_path}` has been created !\n\n\n";
     break;
 
 

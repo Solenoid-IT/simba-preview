@@ -40,7 +40,7 @@
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::fetch_data',
@@ -195,7 +195,7 @@
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::remove',
@@ -338,7 +338,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::add',
@@ -387,7 +387,7 @@
         // (Sending the request)
         const res = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::wait_authorization',

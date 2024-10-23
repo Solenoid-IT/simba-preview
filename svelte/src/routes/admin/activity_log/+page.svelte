@@ -29,7 +29,7 @@
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::fetch_data',
@@ -212,7 +212,7 @@
         // (Sending a request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::terminate_session',

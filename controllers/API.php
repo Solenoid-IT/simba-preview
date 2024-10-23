@@ -2935,7 +2935,7 @@ class API extends Controller
                         // (Sending an http request)
                         $response = HttpClient::send
                         (
-                            'https://' . App::$id . '/rpc',
+                            'https://' . App::$id . '/api',
                             'RPC',
                             [
                                 'Action: user::register',

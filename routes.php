@@ -23,7 +23,7 @@ Route::handle( 'GET /test/perf', Target::define( function () {} ) );
 
 
 // (Handing the routes)
-Route::handle( 'RPC /rpc', Target::link( API::class, 'rpc' )->set_middlewares( [ 'RPC/Parser' ] ) );
+Route::handle( 'RPC /api', Target::link( API::class, 'rpc' )->set_middlewares( [ 'RPC/Parser' ] ) );
 Route::handle( 'GET /admin', Target::define( function () { header( 'Location: /admin/dashboard', true, 303 ); } ) );
 Route::handle( 'GET /admin/authorization/[ token ]/[ action ]', Target::link( Authorization::class, 'get' ) );
 Route::handle( 'GET /history.json', Target::define( function ($app) { return $app->fetch_history(); } ) );

@@ -39,7 +39,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::login',
@@ -92,7 +92,7 @@
         // (Sending the request)
         const res = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::login_wait',
@@ -170,7 +170,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::login_with_idk',
@@ -236,7 +236,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::recover',

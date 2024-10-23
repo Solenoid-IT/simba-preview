@@ -41,7 +41,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_name',
@@ -120,7 +120,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_email',
@@ -191,7 +191,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_birth_data',
@@ -263,7 +263,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::destroy',
@@ -309,7 +309,7 @@
         // (Sending the request)
         const res = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::wait_authorization',
@@ -377,7 +377,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_password',
@@ -453,7 +453,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_mfa',
@@ -533,7 +533,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::change_idk',
@@ -611,7 +611,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::logout',
@@ -797,7 +797,7 @@
         // (Sending the request)
         const response = await Solenoid.HTTP.sendRequest
         (
-            envs.APP_URL + '/rpc',
+            envs.APP_URL + '/api',
             'RPC',
             [
                 'Action: user::mark_alert_as_read',

@@ -31,7 +31,7 @@ class User extends Task
         // (Sending an http request)
         $response = Client::send
         (
-            'https://' . $app->id . '/rpc',
+            'https://' . $app->id . '/api',
             'RPC',
             [
                 'Action: user::register',
